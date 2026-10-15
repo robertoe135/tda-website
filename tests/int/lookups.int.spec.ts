@@ -13,9 +13,8 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-  for (const collection of ['typologies'] as const) {
-    await payload.delete({ collection, where: { name: { like: prefix } } })
-  }
+  await payload.delete({ collection: 'typologies', where: { name: { like: prefix } } })
+  await payload.delete({ collection: 'locations', where: { city: { like: prefix } } })
 })
 
 describe('normalizeName', () => {
@@ -82,5 +81,63 @@ describe('toSlug', () => {
     expect(toSlug('Restaurants & Hospitality')).toBe('restaurants-and-hospitality')
     expect(toSlug('New York, NY')).toBe('new-york-ny')
     expect(toSlug('  ')).toBeUndefined()
+  })
+})
+
+describe('locations', () => {
+  it('builds the display name and slug from city and state', async () => {
+    const doc = await payload.create({
+      collection: 'locations',
+      data: { city: `${prefix} New York`, region: 'NY', country: 'United States' },
+    })
+    expect(doc.displayName).toBe(`${prefix} New York, NY`)
+    expect(doc.slug).toBe(`${prefix}-new-york-ny`)
+  })
+
+  it('falls back to the country when there is no region', async () => {
+    const doc = await payload.create({
+      collection: 'locations',
+      data: { city: `${prefix} London`, country: 'United Kingdom' },
+    })
+    expect(doc.displayName).toBe(`${prefix} London, United Kingdom`)
+  })
+
+  it('updates the display name on a partial update but keeps the slug', async () => {
+    const doc = await payload.create({
+      collection: 'locations',
+      data: { city: `${prefix} Portland`, region: 'OR', country: 'United States' },
+    })
+    const updated = await payload.update({
+      collection: 'locations',
+      id: doc.id,
+      data: { region: 'Oregon' },
+    })
+    expect(updated.displayName).toBe(`${prefix} Portland, Oregon`)
+    expect(updated.slug).toBe(`${prefix}-portland-or`)
+  })
+
+  it('allows the same city name in different states', async () => {
+    await payload.create({
+      collection: 'locations',
+      data: { city: `${prefix} Springfield`, region: 'IL', country: 'United States' },
+    })
+    const other = await payload.create({
+      collection: 'locations',
+      data: { city: `${prefix} Springfield`, region: 'MA', country: 'United States' },
+    })
+    expect(other.slug).toBe(`${prefix}-springfield-ma`)
+  })
+
+  it('refuses a near-duplicate city', async () => {
+    await payload.create({
+      collection: 'locations',
+      data: { city: `${prefix} Minneapolis`, region: 'MN', country: 'United States' },
+    })
+    await expect(
+      payload.create({
+        collection: 'locations',
+        data: { city: `${prefix} minneapolis`, region: 'mn', country: 'United States' },
+      }),
+    ).rejects.toThrow()
   })
 })

@@ -1,5 +1,6 @@
 import * as migration_20261015_230956_initial from './20261015_230956_initial';
 import * as migration_20261015_232427_typologies from './20261015_232427_typologies';
+import * as migration_20261015_232557_locations from './20261015_232557_locations';
 
 export const migrations = [
   {
@@ -10,6 +11,11 @@ export const migrations = [
   {
     up: migration_20261015_232427_typologies.up,
     down: migration_20261015_232427_typologies.down,
-    name: '20261015_232427_typologies'
+    name: '20261015_232427_typologies',
+  },
+  {
+    up: migration_20261015_232557_locations.up,
+    down: migration_20261015_232557_locations.down,
+    name: '20261015_232557_locations'
   },
 ];

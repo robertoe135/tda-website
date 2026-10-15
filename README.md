@@ -26,9 +26,9 @@ migrations. After editing a collection or global:
 2. `pnpm payload migrate:create <short-name>`
 3. Check the new migration's `down` function. Payload 3.91 generates `DROP TABLE ... CASCADE`
    followed by `DROP CONSTRAINT` / `DROP INDEX` on objects the cascade already removed, so the
-   rollback fails. Add `IF EXISTS` to those statements, then confirm with
-   `pnpm payload migrate:down` and `pnpm payload migrate`.
-4. `pnpm payload migrate`
+   rollback fails. Add `IF EXISTS` to those statements.
+4. `pnpm payload migrate`, then `pnpm payload migrate:down` and `pnpm payload migrate` again to
+   prove the rollback works.
 5. Commit the collection change, `src/payload-types.ts` and the new files in `src/migrations/`
    together.
 

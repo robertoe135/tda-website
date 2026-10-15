@@ -70,6 +70,7 @@ export interface Config {
     users: User;
     media: Media;
     typologies: Typology;
+    locations: Location;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -80,6 +81,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     typologies: TypologiesSelect<false> | TypologiesSelect<true>;
+    locations: LocationsSelect<false> | LocationsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -187,6 +189,41 @@ export interface Typology {
   createdAt: string;
 }
 /**
+ * Cities where projects are. One record per city; projects link to it so the site can filter and map by place.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "locations".
+ */
+export interface Location {
+  id: number;
+  city: string;
+  /**
+   * State or province, as it should appear, e.g. NY
+   */
+  region?: string | null;
+  /**
+   * Write each country the same way every time.
+   */
+  country: string;
+  /**
+   * Filled in automatically from city and state, or city and country.
+   */
+  displayName?: string | null;
+  /**
+   * For the map. Right-click the city in Google Maps to copy it.
+   */
+  lat?: number | null;
+  lng?: number | null;
+  normalizedName?: string | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -221,6 +258,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'typologies';
         value: number | Typology;
+      } | null)
+    | ({
+        relationTo: 'locations';
+        value: number | Location;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -312,6 +353,23 @@ export interface MediaSelect<T extends boolean = true> {
 export interface TypologiesSelect<T extends boolean = true> {
   name?: T;
   order?: T;
+  normalizedName?: T;
+  generateSlug?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "locations_select".
+ */
+export interface LocationsSelect<T extends boolean = true> {
+  city?: T;
+  region?: T;
+  country?: T;
+  displayName?: T;
+  lat?: T;
+  lng?: T;
   normalizedName?: T;
   generateSlug?: T;
   slug?: T;
