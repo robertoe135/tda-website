@@ -67,27 +67,36 @@ export interface Config {
   };
   blocks: {};
   collections: {
-    users: User;
-    media: Media;
+    projects: Project;
     people: Person;
+    media: Media;
     typologies: Typology;
     locations: Location;
     firms: Firm;
     photographers: Photographer;
+    users: User;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    people: {
+      projects: 'projects';
+    };
+    firms: {
+      projects: 'projects';
+    };
+  };
   collectionsSelect: {
-    users: UsersSelect<false> | UsersSelect<true>;
-    media: MediaSelect<false> | MediaSelect<true>;
+    projects: ProjectsSelect<false> | ProjectsSelect<true>;
     people: PeopleSelect<false> | PeopleSelect<true>;
+    media: MediaSelect<false> | MediaSelect<true>;
     typologies: TypologiesSelect<false> | TypologiesSelect<true>;
     locations: LocationsSelect<false> | LocationsSelect<true>;
     firms: FirmsSelect<false> | FirmsSelect<true>;
     photographers: PhotographersSelect<false> | PhotographersSelect<true>;
+    users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -129,29 +138,270 @@ export interface UserAuthOperations {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
+ * via the `definition` "projects".
  */
-export interface User {
+export interface Project {
   id: number;
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  resetPasswordRequestedAt?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
+  /**
+   * The project name only. Location and architect have their own fields.
+   */
+  name: string;
+  status: 'completed' | 'in-progress' | 'unbuilt';
+  /**
+   * Completion year, or expected year if in progress.
+   */
+  year?: number | null;
+  location?: (number | null) | Location;
+  /**
+   * A project can belong to more than one.
+   */
+  typologies?: (number | Typology)[] | null;
+  /**
+   * Architect(s) of the project. Add missing firms under Firms.
+   */
+  architects?: (number | Firm)[] | null;
+  otherCollaborators?:
     | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
+        firm: number | Firm;
+        role: 'interior-designer' | 'landscape-architect' | 'exhibit-designer' | 'artist' | 'other';
+        id?: string | null;
       }[]
     | null;
-  password?: string | null;
-  collection: 'users';
+  /**
+   * Only people with "Show on site" turned on can be picked.
+   */
+  team?: (number | Person)[] | null;
+  client?: string | null;
+  /**
+   * Hides the client everywhere on the public site. Usual for residences.
+   */
+  confidential?: boolean | null;
+  /**
+   * Only for work completed under a predecessor firm, e.g. Kugler Tillotson Associates.
+   */
+  predecessorFirm?: string | null;
+  /**
+   * About two sentences. Used on project cards and in search results. Leave empty until marketing provides it.
+   */
+  summary?: string | null;
+  /**
+   * Leave empty until marketing provides it.
+   */
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Main image. Also used when the page is shared.
+   */
+  heroImage?: (number | null) | Media;
+  gallery?:
+    | {
+        image: number | Media;
+        /**
+         * Optional. Never paste the file name here.
+         */
+        caption?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Every address this project had on the old site, e.g. /corporate/one-vanderbilt. Visitors and search engines using them are redirected here.
+   */
+  legacyUrls?:
+    | {
+        path: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Show on the homepage.
+   */
+  featured?: boolean | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * Cities where projects are. One record per city; projects link to it so the site can filter and map by place.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "locations".
+ */
+export interface Location {
+  id: number;
+  city: string;
+  /**
+   * State or province, as it should appear, e.g. NY
+   */
+  region?: string | null;
+  /**
+   * Write each country the same way every time.
+   */
+  country: string;
+  /**
+   * Filled in automatically from city and state, or city and country.
+   */
+  displayName?: string | null;
+  /**
+   * For the map. Right-click the city in Google Maps to copy it.
+   */
+  lat?: number | null;
+  lng?: number | null;
+  normalizedName?: string | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Project types used to group and filter projects, e.g. Performing Arts.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "typologies".
+ */
+export interface Typology {
+  id: number;
+  name: string;
+  /**
+   * Position in menus and filters. Lower numbers come first.
+   */
+  order?: number | null;
+  normalizedName?: string | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Architects and other collaborators. Each firm gets a page listing every project TDA did with them.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "firms".
+ */
+export interface Firm {
+  id: number;
+  /**
+   * The firm's own spelling of its name, e.g. Kohn Pedersen Fox.
+   */
+  name: string;
+  /**
+   * Full address, starting with https://
+   */
+  website?: string | null;
+  /**
+   * Projects where this firm is an architect. Edit the project to change this.
+   */
+  projects?: {
+    docs?: (number | Project)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  normalizedName?: string | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Everyone who can be credited on a project or shown on the team page. Only people with "Show on site" on and a published version appear publicly.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "people".
+ */
+export interface Person {
+  id: number;
+  /**
+   * As the person wants it to appear.
+   */
+  name: string;
+  /**
+   * e.g. Principal, Associate Principal, Senior Associate, Senior Designer, Designer
+   */
+  title?: string | null;
+  /**
+   * Section of the team page.
+   */
+  group?: ('leadership' | 'design' | 'administration') | null;
+  /**
+   * Approved by the person.
+   */
+  headshot?: (number | null) | Media;
+  /**
+   * Written or approved by the person. Leave empty until it is.
+   */
+  bio?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Full address, starting with https://
+   */
+  linkedin?: string | null;
+  /**
+   * Projects crediting this person. Edit the project to change this.
+   */
+  projects?: {
+    docs?: (number | Project)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Off: hidden from the team page and from project credits.
+   */
+  showOnSite?: boolean | null;
+  /**
+   * Turn off when someone leaves TDA.
+   */
+  isCurrent?: boolean | null;
+  /**
+   * Position within their group on the team page. Lower numbers come first.
+   */
+  order?: number | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * Photographs and headshots. Every image needs a description for screen readers and a credit; crediting the photographer is part of the license.
@@ -237,153 +487,30 @@ export interface Photographer {
   createdAt: string;
 }
 /**
- * Everyone who can be credited on a project or shown on the team page. Only people with "Show on site" on and a published version appear publicly.
- *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "people".
+ * via the `definition` "users".
  */
-export interface Person {
+export interface User {
   id: number;
-  /**
-   * As the person wants it to appear.
-   */
-  name: string;
-  /**
-   * e.g. Principal, Associate Principal, Senior Associate, Senior Designer, Designer
-   */
-  title?: string | null;
-  /**
-   * Section of the team page.
-   */
-  group?: ('leadership' | 'design' | 'administration') | null;
-  /**
-   * Approved by the person.
-   */
-  headshot?: (number | null) | Media;
-  /**
-   * Written or approved by the person. Leave empty until it is.
-   */
-  bio?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  /**
-   * Full address, starting with https://
-   */
-  linkedin?: string | null;
-  /**
-   * Off: hidden from the team page and from project credits.
-   */
-  showOnSite?: boolean | null;
-  /**
-   * Turn off when someone leaves TDA.
-   */
-  isCurrent?: boolean | null;
-  /**
-   * Position within their group on the team page. Lower numbers come first.
-   */
-  order?: number | null;
-  /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
-  slug?: string | null;
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
-}
-/**
- * Project types used to group and filter projects, e.g. Performing Arts.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "typologies".
- */
-export interface Typology {
-  id: number;
-  name: string;
-  /**
-   * Position in menus and filters. Lower numbers come first.
-   */
-  order?: number | null;
-  normalizedName?: string | null;
-  /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
-  slug?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Cities where projects are. One record per city; projects link to it so the site can filter and map by place.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "locations".
- */
-export interface Location {
-  id: number;
-  city: string;
-  /**
-   * State or province, as it should appear, e.g. NY
-   */
-  region?: string | null;
-  /**
-   * Write each country the same way every time.
-   */
-  country: string;
-  /**
-   * Filled in automatically from city and state, or city and country.
-   */
-  displayName?: string | null;
-  /**
-   * For the map. Right-click the city in Google Maps to copy it.
-   */
-  lat?: number | null;
-  lng?: number | null;
-  normalizedName?: string | null;
-  /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
-  slug?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Architects and other collaborators. Each firm gets a page listing every project TDA did with them.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "firms".
- */
-export interface Firm {
-  id: number;
-  /**
-   * The firm's own spelling of its name, e.g. Kohn Pedersen Fox.
-   */
-  name: string;
-  /**
-   * Full address, starting with https://
-   */
-  website?: string | null;
-  normalizedName?: string | null;
-  /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
-  slug?: string | null;
-  updatedAt: string;
-  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  resetPasswordRequestedAt?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+  collection: 'users';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -410,16 +537,16 @@ export interface PayloadLockedDocument {
   id: number;
   document?:
     | ({
-        relationTo: 'users';
-        value: number | User;
-      } | null)
-    | ({
-        relationTo: 'media';
-        value: number | Media;
+        relationTo: 'projects';
+        value: number | Project;
       } | null)
     | ({
         relationTo: 'people';
         value: number | Person;
+      } | null)
+    | ({
+        relationTo: 'media';
+        value: number | Media;
       } | null)
     | ({
         relationTo: 'typologies';
@@ -436,6 +563,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'photographers';
         value: number | Photographer;
+      } | null)
+    | ({
+        relationTo: 'users';
+        value: number | User;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -481,26 +612,69 @@ export interface PayloadMigration {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users_select".
+ * via the `definition` "projects_select".
  */
-export interface UsersSelect<T extends boolean = true> {
-  updatedAt?: T;
-  createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  resetPasswordRequestedAt?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
-  sessions?:
+export interface ProjectsSelect<T extends boolean = true> {
+  name?: T;
+  status?: T;
+  year?: T;
+  location?: T;
+  typologies?: T;
+  architects?: T;
+  otherCollaborators?:
     | T
     | {
+        firm?: T;
+        role?: T;
         id?: T;
-        createdAt?: T;
-        expiresAt?: T;
       };
+  team?: T;
+  client?: T;
+  confidential?: T;
+  predecessorFirm?: T;
+  summary?: T;
+  description?: T;
+  heroImage?: T;
+  gallery?:
+    | T
+    | {
+        image?: T;
+        caption?: T;
+        id?: T;
+      };
+  legacyUrls?:
+    | T
+    | {
+        path?: T;
+        id?: T;
+      };
+  featured?: T;
+  generateSlug?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "people_select".
+ */
+export interface PeopleSelect<T extends boolean = true> {
+  name?: T;
+  title?: T;
+  group?: T;
+  headshot?: T;
+  bio?: T;
+  linkedin?: T;
+  projects?: T;
+  showOnSite?: T;
+  isCurrent?: T;
+  order?: T;
+  generateSlug?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -568,26 +742,6 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "people_select".
- */
-export interface PeopleSelect<T extends boolean = true> {
-  name?: T;
-  title?: T;
-  group?: T;
-  headshot?: T;
-  bio?: T;
-  linkedin?: T;
-  showOnSite?: T;
-  isCurrent?: T;
-  order?: T;
-  generateSlug?: T;
-  slug?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  _status?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "typologies_select".
  */
 export interface TypologiesSelect<T extends boolean = true> {
@@ -623,6 +777,7 @@ export interface LocationsSelect<T extends boolean = true> {
 export interface FirmsSelect<T extends boolean = true> {
   name?: T;
   website?: T;
+  projects?: T;
   normalizedName?: T;
   generateSlug?: T;
   slug?: T;
@@ -639,6 +794,29 @@ export interface PhotographersSelect<T extends boolean = true> {
   normalizedName?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users_select".
+ */
+export interface UsersSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  resetPasswordRequestedAt?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+  sessions?:
+    | T
+    | {
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

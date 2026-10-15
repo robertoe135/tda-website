@@ -72,6 +72,13 @@ export const People: CollectionConfig = {
     },
     urlField('linkedin', 'LinkedIn'),
     {
+      name: 'projects',
+      type: 'join',
+      collection: 'projects',
+      on: 'team',
+      admin: { description: 'Projects crediting this person. Edit the project to change this.' },
+    },
+    {
       name: 'showOnSite',
       label: 'Show on site',
       type: 'checkbox',

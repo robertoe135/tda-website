@@ -5,6 +5,7 @@ import * as migration_20261015_232728_firms from './20261015_232728_firms';
 import * as migration_20261015_232831_photographers from './20261015_232831_photographers';
 import * as migration_20261015_233304_people from './20261015_233304_people';
 import * as migration_20261015_233457_media_credits from './20261015_233457_media_credits';
+import * as migration_20261015_233820_projects from './20261015_233820_projects';
 
 export const migrations = [
   {
@@ -40,6 +41,11 @@ export const migrations = [
   {
     up: migration_20261015_233457_media_credits.up,
     down: migration_20261015_233457_media_credits.down,
-    name: '20261015_233457_media_credits'
+    name: '20261015_233457_media_credits',
+  },
+  {
+    up: migration_20261015_233820_projects.up,
+    down: migration_20261015_233820_projects.down,
+    name: '20261015_233820_projects'
   },
 ];

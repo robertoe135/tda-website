@@ -7,7 +7,6 @@ import { websiteField } from '../fields/website'
 import { normalizedNameField, preventNearDuplicates } from '../hooks/preventNearDuplicates'
 
 // Architects and other collaborators. Firm names are canonical here and nowhere else.
-// The `projects` join on projects.architects is added together with the projects collection.
 export const Firms: CollectionConfig = {
   slug: 'firms',
   labels: { singular: 'Firm', plural: 'Firms' },
@@ -39,6 +38,13 @@ export const Firms: CollectionConfig = {
       },
     },
     websiteField,
+    {
+      name: 'projects',
+      type: 'join',
+      collection: 'projects',
+      on: 'architects',
+      admin: { description: 'Projects where this firm is an architect. Edit the project to change this.' },
+    },
     normalizedNameField,
     slug('name'),
   ],
