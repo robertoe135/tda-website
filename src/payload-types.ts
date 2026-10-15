@@ -560,11 +560,15 @@ export interface Press {
   createdAt: string;
 }
 /**
+ * People who can log in to this admin. Only admins can add or remove them.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
 export interface User {
   id: number;
+  name?: string | null;
+  role: 'editor' | 'admin';
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -908,6 +912,8 @@ export interface PhotographersSelect<T extends boolean = true> {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  name?: T;
+  role?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;

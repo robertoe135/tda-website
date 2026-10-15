@@ -7,6 +7,7 @@ import * as migration_20261015_233304_people from './20261015_233304_people';
 import * as migration_20261015_233457_media_credits from './20261015_233457_media_credits';
 import * as migration_20261015_233820_projects from './20261015_233820_projects';
 import * as migration_20261015_233932_awards_press from './20261015_233932_awards_press';
+import * as migration_20261015_234111_user_roles from './20261015_234111_user_roles';
 
 export const migrations = [
   {
@@ -52,6 +53,11 @@ export const migrations = [
   {
     up: migration_20261015_233932_awards_press.up,
     down: migration_20261015_233932_awards_press.down,
-    name: '20261015_233932_awards_press'
+    name: '20261015_233932_awards_press',
+  },
+  {
+    up: migration_20261015_234111_user_roles.up,
+    down: migration_20261015_234111_user_roles.down,
+    name: '20261015_234111_user_roles'
   },
 ];
