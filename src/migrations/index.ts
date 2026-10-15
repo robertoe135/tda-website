@@ -4,6 +4,7 @@ import * as migration_20261015_232557_locations from './20261015_232557_location
 import * as migration_20261015_232728_firms from './20261015_232728_firms';
 import * as migration_20261015_232831_photographers from './20261015_232831_photographers';
 import * as migration_20261015_233304_people from './20261015_233304_people';
+import * as migration_20261015_233457_media_credits from './20261015_233457_media_credits';
 
 export const migrations = [
   {
@@ -34,6 +35,11 @@ export const migrations = [
   {
     up: migration_20261015_233304_people.up,
     down: migration_20261015_233304_people.down,
-    name: '20261015_233304_people'
+    name: '20261015_233304_people',
+  },
+  {
+    up: migration_20261015_233457_media_credits.up,
+    down: migration_20261015_233457_media_credits.down,
+    name: '20261015_233457_media_credits'
   },
 ];

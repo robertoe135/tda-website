@@ -154,12 +154,22 @@ export interface User {
   collection: 'users';
 }
 /**
+ * Photographs and headshots. Every image needs a description for screen readers and a credit; crediting the photographer is part of the license.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
 export interface Media {
   id: number;
+  /**
+   * What the image shows, for people using screen readers, e.g. "Lobby with a backlit onyx wall". Do not name private clients.
+   */
   alt: string;
+  photographer?: (number | null) | Photographer;
+  /**
+   * Only when the credit is not a photographer in the list, or must read differently, e.g. "Courtesy of the architect".
+   */
+  credit?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -171,6 +181,60 @@ export interface Media {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
+  sizes?: {
+    card?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    gallery?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    hero?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    og?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * Credited on every image they took. The credit links to their website.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "photographers".
+ */
+export interface Photographer {
+  id: number;
+  /**
+   * As the photographer wants to be credited.
+   */
+  name: string;
+  /**
+   * Full address, starting with https://
+   */
+  website?: string | null;
+  normalizedName?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * Everyone who can be credited on a project or shown on the team page. Only people with "Show on site" on and a published version appear publicly.
@@ -322,26 +386,6 @@ export interface Firm {
   createdAt: string;
 }
 /**
- * Credited on every image they took. The credit links to their website.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "photographers".
- */
-export interface Photographer {
-  id: number;
-  /**
-   * As the photographer wants to be credited.
-   */
-  name: string;
-  /**
-   * Full address, starting with https://
-   */
-  website?: string | null;
-  normalizedName?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -464,6 +508,8 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  photographer?: T;
+  credit?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -475,6 +521,50 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+  sizes?:
+    | T
+    | {
+        card?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        gallery?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        hero?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        og?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
