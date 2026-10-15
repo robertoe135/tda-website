@@ -1,0 +1,30 @@
+# TDA Website
+
+Public website for Tillotson Design Associates (tillotsondesign.com), replacing the current
+Squarespace site. Payload CMS 3 inside Next.js (App Router), TypeScript, Postgres, pnpm.
+
+For any work in this repo, read `.claude/skills/tda-website/SKILL.md` first. Its `references/`
+folder holds the audit of the current site, the competitor analysis, and the pitfall list.
+`docs/decisions.md` records why this stack was chosen and the questions TDA still has to answer.
+
+## Non-negotiables
+
+- Project information is structured data. Never store architect, location, year or team as
+  free text inside a name or description.
+- Every tag, chip or metadata label links to a filtered view or a detail page. No dead ends.
+- Never write, invent or "improve" biographies, project descriptions, client names or credits.
+  Leave fields empty and flag them for marketing.
+- Never connect to the internal TDA app (app.tillotsondesign.com) at runtime or reuse its
+  credentials. Any data sync is a manual, one-way, allowlisted script that writes drafts.
+- Never correct real place, firm or project names on your own. Write anomalies to a review file.
+- Editors are marketing staff, not developers. A change that only a developer can maintain needs
+  a reason, and should usually be a field in the admin instead.
+- Publishing in the admin must update the live site without a redeploy (revalidation hooks).
+- Schema changes ship with a committed migration. Production never relies on push mode.
+
+## Commands
+
+- `pnpm dev`: local dev, admin at http://localhost:3000/admin
+- `pnpm payload generate:types`: regenerate `payload-types.ts` after any schema change
+- `pnpm payload migrate:create <name>` / `pnpm payload migrate`
+- `pnpm build` and `pnpm tsc --noEmit` must pass before a task is done
