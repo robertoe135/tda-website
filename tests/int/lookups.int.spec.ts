@@ -16,6 +16,7 @@ afterAll(async () => {
   await payload.delete({ collection: 'typologies', where: { name: { like: prefix } } })
   await payload.delete({ collection: 'locations', where: { city: { like: prefix } } })
   await payload.delete({ collection: 'firms', where: { name: { like: prefix } } })
+  await payload.delete({ collection: 'photographers', where: { name: { like: prefix } } })
 })
 
 describe('normalizeName', () => {
@@ -169,6 +170,19 @@ describe('firms', () => {
   it('rejects a website without https://', async () => {
     await expect(
       payload.create({ collection: 'firms', data: { name: `${prefix} Snohetta`, website: 'snohetta.com' } }),
+    ).rejects.toThrow()
+  })
+})
+
+describe('photographers', () => {
+  it('saves a photographer with a website and refuses a near-duplicate', async () => {
+    const doc = await payload.create({
+      collection: 'photographers',
+      data: { name: `${prefix} Jane Doe Photography`, website: 'https://example.com' },
+    })
+    expect(doc.website).toBe('https://example.com')
+    await expect(
+      payload.create({ collection: 'photographers', data: { name: `${prefix} jane doe photography` } }),
     ).rejects.toThrow()
   })
 })

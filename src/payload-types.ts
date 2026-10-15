@@ -72,6 +72,7 @@ export interface Config {
     typologies: Typology;
     locations: Location;
     firms: Firm;
+    photographers: Photographer;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -84,6 +85,7 @@ export interface Config {
     typologies: TypologiesSelect<false> | TypologiesSelect<true>;
     locations: LocationsSelect<false> | LocationsSelect<true>;
     firms: FirmsSelect<false> | FirmsSelect<true>;
+    photographers: PhotographersSelect<false> | PhotographersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -251,6 +253,26 @@ export interface Firm {
   createdAt: string;
 }
 /**
+ * Credited on every image they took. The credit links to their website.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "photographers".
+ */
+export interface Photographer {
+  id: number;
+  /**
+   * As the photographer wants to be credited.
+   */
+  name: string;
+  /**
+   * Full address, starting with https://
+   */
+  website?: string | null;
+  normalizedName?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -293,6 +315,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'firms';
         value: number | Firm;
+      } | null)
+    | ({
+        relationTo: 'photographers';
+        value: number | Photographer;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -417,6 +443,17 @@ export interface FirmsSelect<T extends boolean = true> {
   normalizedName?: T;
   generateSlug?: T;
   slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "photographers_select".
+ */
+export interface PhotographersSelect<T extends boolean = true> {
+  name?: T;
+  website?: T;
+  normalizedName?: T;
   updatedAt?: T;
   createdAt?: T;
 }
