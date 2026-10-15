@@ -3,6 +3,7 @@ import * as migration_20261015_232427_typologies from './20261015_232427_typolog
 import * as migration_20261015_232557_locations from './20261015_232557_locations';
 import * as migration_20261015_232728_firms from './20261015_232728_firms';
 import * as migration_20261015_232831_photographers from './20261015_232831_photographers';
+import * as migration_20261015_233304_people from './20261015_233304_people';
 
 export const migrations = [
   {
@@ -28,6 +29,11 @@ export const migrations = [
   {
     up: migration_20261015_232831_photographers.up,
     down: migration_20261015_232831_photographers.down,
-    name: '20261015_232831_photographers'
+    name: '20261015_232831_photographers',
+  },
+  {
+    up: migration_20261015_233304_people.up,
+    down: migration_20261015_233304_people.down,
+    name: '20261015_233304_people'
   },
 ];

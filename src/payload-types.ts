@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    people: Person;
     typologies: Typology;
     locations: Location;
     firms: Firm;
@@ -82,6 +83,7 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    people: PeopleSelect<false> | PeopleSelect<true>;
     typologies: TypologiesSelect<false> | TypologiesSelect<true>;
     locations: LocationsSelect<false> | LocationsSelect<true>;
     firms: FirmsSelect<false> | FirmsSelect<true>;
@@ -169,6 +171,73 @@ export interface Media {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
+}
+/**
+ * Everyone who can be credited on a project or shown on the team page. Only people with "Show on site" on and a published version appear publicly.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "people".
+ */
+export interface Person {
+  id: number;
+  /**
+   * As the person wants it to appear.
+   */
+  name: string;
+  /**
+   * e.g. Principal, Associate Principal, Senior Associate, Senior Designer, Designer
+   */
+  title?: string | null;
+  /**
+   * Section of the team page.
+   */
+  group?: ('leadership' | 'design' | 'administration') | null;
+  /**
+   * Approved by the person.
+   */
+  headshot?: (number | null) | Media;
+  /**
+   * Written or approved by the person. Leave empty until it is.
+   */
+  bio?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Full address, starting with https://
+   */
+  linkedin?: string | null;
+  /**
+   * Off: hidden from the team page and from project credits.
+   */
+  showOnSite?: boolean | null;
+  /**
+   * Turn off when someone leaves TDA.
+   */
+  isCurrent?: boolean | null;
+  /**
+   * Position within their group on the team page. Lower numbers come first.
+   */
+  order?: number | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * Project types used to group and filter projects, e.g. Performing Arts.
@@ -305,6 +374,10 @@ export interface PayloadLockedDocument {
         value: number | Media;
       } | null)
     | ({
+        relationTo: 'people';
+        value: number | Person;
+      } | null)
+    | ({
         relationTo: 'typologies';
         value: number | Typology;
       } | null)
@@ -402,6 +475,26 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "people_select".
+ */
+export interface PeopleSelect<T extends boolean = true> {
+  name?: T;
+  title?: T;
+  group?: T;
+  headshot?: T;
+  bio?: T;
+  linkedin?: T;
+  showOnSite?: T;
+  isCurrent?: T;
+  order?: T;
+  generateSlug?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
