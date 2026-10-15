@@ -197,6 +197,25 @@ export const Projects: CollectionConfig = {
           ],
         },
         {
+          label: 'Awards & press',
+          fields: [
+            {
+              name: 'awards',
+              type: 'join',
+              collection: 'awards',
+              on: 'project',
+              admin: { description: 'Add awards under Awards and pick this project.' },
+            },
+            {
+              name: 'press',
+              type: 'join',
+              collection: 'press',
+              on: 'projects',
+              admin: { description: 'Add articles under Press and pick this project.' },
+            },
+          ],
+        },
+        {
           label: 'Old site',
           fields: [
             {

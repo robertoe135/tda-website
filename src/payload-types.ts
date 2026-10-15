@@ -70,6 +70,8 @@ export interface Config {
     projects: Project;
     people: Person;
     media: Media;
+    awards: Award;
+    press: Press;
     typologies: Typology;
     locations: Location;
     firms: Firm;
@@ -81,6 +83,10 @@ export interface Config {
     'payload-migrations': PayloadMigration;
   };
   collectionsJoins: {
+    projects: {
+      awards: 'awards';
+      press: 'press';
+    };
     people: {
       projects: 'projects';
     };
@@ -92,6 +98,8 @@ export interface Config {
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     people: PeopleSelect<false> | PeopleSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    awards: AwardsSelect<false> | AwardsSelect<true>;
+    press: PressSelect<false> | PressSelect<true>;
     typologies: TypologiesSelect<false> | TypologiesSelect<true>;
     locations: LocationsSelect<false> | LocationsSelect<true>;
     firms: FirmsSelect<false> | FirmsSelect<true>;
@@ -216,6 +224,22 @@ export interface Project {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Add awards under Awards and pick this project.
+   */
+  awards?: {
+    docs?: (number | Award)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Add articles under Press and pick this project.
+   */
+  press?: {
+    docs?: (number | Press)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   /**
    * Every address this project had on the old site, e.g. /corporate/one-vanderbilt. Visitors and search engines using them are redirected here.
    */
@@ -487,6 +511,55 @@ export interface Photographer {
   createdAt: string;
 }
 /**
+ * Awards won by a project. They appear on the project page.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "awards".
+ */
+export interface Award {
+  id: number;
+  /**
+   * As the issuer names it, e.g. Award of Excellence.
+   */
+  name: string;
+  /**
+   * e.g. IALD International Lighting Design Awards
+   */
+  issuer?: string | null;
+  year?: number | null;
+  project: number | Project;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Articles about TDA or its projects. They appear on the press page and on each project.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "press".
+ */
+export interface Press {
+  id: number;
+  /**
+   * The headline as published.
+   */
+  title: string;
+  /**
+   * e.g. Architectural Record
+   */
+  outlet?: string | null;
+  date?: string | null;
+  /**
+   * Full address, starting with https://
+   */
+  url: string;
+  /**
+   * Projects the article covers, if any.
+   */
+  projects?: (number | Project)[] | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
@@ -547,6 +620,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'awards';
+        value: number | Award;
+      } | null)
+    | ({
+        relationTo: 'press';
+        value: number | Press;
       } | null)
     | ({
         relationTo: 'typologies';
@@ -642,6 +723,8 @@ export interface ProjectsSelect<T extends boolean = true> {
         caption?: T;
         id?: T;
       };
+  awards?: T;
+  press?: T;
   legacyUrls?:
     | T
     | {
@@ -739,6 +822,31 @@ export interface MediaSelect<T extends boolean = true> {
               filename?: T;
             };
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "awards_select".
+ */
+export interface AwardsSelect<T extends boolean = true> {
+  name?: T;
+  issuer?: T;
+  year?: T;
+  project?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "press_select".
+ */
+export interface PressSelect<T extends boolean = true> {
+  title?: T;
+  outlet?: T;
+  date?: T;
+  url?: T;
+  projects?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -11,6 +11,8 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
+  await payload.delete({ collection: 'awards', where: { name: { like: prefix } } })
+  await payload.delete({ collection: 'press', where: { title: { like: prefix } } })
   await payload.delete({ collection: 'projects', where: { name: { like: prefix } } })
   await payload.delete({ collection: 'people', where: { name: { like: prefix } } })
   await payload.delete({ collection: 'firms', where: { name: { like: prefix } } })
@@ -127,5 +129,25 @@ describe('projects', () => {
         },
       }),
     ).rejects.toThrow()
+  })
+
+  it('shows awards and press on the project through joins', async () => {
+    const project = await payload.create({
+      collection: 'projects',
+      data: { name: `${prefix} Awarded`, status: 'completed', _status: 'published' },
+    })
+    const award = await payload.create({
+      collection: 'awards',
+      data: { name: `${prefix} Award of Excellence`, year: 2024, project: project.id },
+    })
+    const article = await payload.create({
+      collection: 'press',
+      data: { title: `${prefix} Headline`, url: 'https://example.com/a', projects: [project.id] },
+    })
+
+    const doc = await payload.findByID({ collection: 'projects', id: project.id, ...anon })
+    const idsOf = (docs?: unknown[]) => docs?.map((d) => (typeof d === 'object' && d ? (d as { id: unknown }).id : d))
+    expect(idsOf(doc.awards?.docs)).toContain(award.id)
+    expect(idsOf(doc.press?.docs)).toContain(article.id)
   })
 })
