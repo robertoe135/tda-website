@@ -15,6 +15,7 @@ beforeAll(async () => {
 afterAll(async () => {
   await payload.delete({ collection: 'typologies', where: { name: { like: prefix } } })
   await payload.delete({ collection: 'locations', where: { city: { like: prefix } } })
+  await payload.delete({ collection: 'firms', where: { name: { like: prefix } } })
 })
 
 describe('normalizeName', () => {
@@ -138,6 +139,36 @@ describe('locations', () => {
         collection: 'locations',
         data: { city: `${prefix} minneapolis`, region: 'mn', country: 'United States' },
       }),
+    ).rejects.toThrow()
+  })
+})
+
+describe('firms', () => {
+  it('refuses the OMA spelling variant from the old site', async () => {
+    await payload.create({
+      collection: 'firms',
+      data: { name: `${prefix} OMA - Office for Metropolitan Architecture` },
+    })
+    await expect(
+      payload.create({
+        collection: 'firms',
+        data: { name: `${prefix} OMA-Office for Metropolitan Architecture` },
+      }),
+    ).rejects.toThrow()
+  })
+
+  it('stores the name exactly as typed', async () => {
+    const doc = await payload.create({
+      collection: 'firms',
+      data: { name: `${prefix} Diller Scofidio + Renfro`, website: 'https://dsrny.com' },
+    })
+    expect(doc.name).toBe(`${prefix} Diller Scofidio + Renfro`)
+    expect(doc.slug).toBe(`${prefix}-diller-scofidio-renfro`)
+  })
+
+  it('rejects a website without https://', async () => {
+    await expect(
+      payload.create({ collection: 'firms', data: { name: `${prefix} Snohetta`, website: 'snohetta.com' } }),
     ).rejects.toThrow()
   })
 })

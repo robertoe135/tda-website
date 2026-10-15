@@ -9,6 +9,7 @@ import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Typologies } from './collections/Typologies'
 import { Locations } from './collections/Locations'
+import { Firms } from './collections/Firms'
 import { migrations } from './migrations'
 
 const filename = fileURLToPath(import.meta.url)
@@ -21,7 +22,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Typologies, Locations],
+  collections: [Users, Media, Typologies, Locations, Firms],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

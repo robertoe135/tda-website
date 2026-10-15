@@ -71,6 +71,7 @@ export interface Config {
     media: Media;
     typologies: Typology;
     locations: Location;
+    firms: Firm;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -82,6 +83,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     typologies: TypologiesSelect<false> | TypologiesSelect<true>;
     locations: LocationsSelect<false> | LocationsSelect<true>;
+    firms: FirmsSelect<false> | FirmsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -224,6 +226,31 @@ export interface Location {
   createdAt: string;
 }
 /**
+ * Architects and other collaborators. Each firm gets a page listing every project TDA did with them.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "firms".
+ */
+export interface Firm {
+  id: number;
+  /**
+   * The firm's own spelling of its name, e.g. Kohn Pedersen Fox.
+   */
+  name: string;
+  /**
+   * Full address, starting with https://
+   */
+  website?: string | null;
+  normalizedName?: string | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -262,6 +289,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'locations';
         value: number | Location;
+      } | null)
+    | ({
+        relationTo: 'firms';
+        value: number | Firm;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -370,6 +401,19 @@ export interface LocationsSelect<T extends boolean = true> {
   displayName?: T;
   lat?: T;
   lng?: T;
+  normalizedName?: T;
+  generateSlug?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "firms_select".
+ */
+export interface FirmsSelect<T extends boolean = true> {
+  name?: T;
+  website?: T;
   normalizedName?: T;
   generateSlug?: T;
   slug?: T;
