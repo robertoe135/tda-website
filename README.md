@@ -24,8 +24,12 @@ migrations. After editing a collection or global:
 
 1. `pnpm payload generate:types`
 2. `pnpm payload migrate:create <short-name>`
-3. `pnpm payload migrate`
-4. Commit the collection change, `src/payload-types.ts` and the new files in `src/migrations/`
+3. Check the new migration's `down` function. Payload 3.91 generates `DROP TABLE ... CASCADE`
+   followed by `DROP CONSTRAINT` / `DROP INDEX` on objects the cascade already removed, so the
+   rollback fails. Add `IF EXISTS` to those statements, then confirm with
+   `pnpm payload migrate:down` and `pnpm payload migrate`.
+4. `pnpm payload migrate`
+5. Commit the collection change, `src/payload-types.ts` and the new files in `src/migrations/`
    together.
 
 Production runs pending migrations on startup (`prodMigrations` in `src/payload.config.ts`).
