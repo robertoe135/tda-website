@@ -8,6 +8,7 @@ import * as migration_20261015_233457_media_credits from './20261015_233457_medi
 import * as migration_20261015_233820_projects from './20261015_233820_projects';
 import * as migration_20261015_233932_awards_press from './20261015_233932_awards_press';
 import * as migration_20261015_234111_user_roles from './20261015_234111_user_roles';
+import * as migration_20261015_234239_globals from './20261015_234239_globals';
 
 export const migrations = [
   {
@@ -58,6 +59,11 @@ export const migrations = [
   {
     up: migration_20261015_234111_user_roles.up,
     down: migration_20261015_234111_user_roles.down,
-    name: '20261015_234111_user_roles'
+    name: '20261015_234111_user_roles',
+  },
+  {
+    up: migration_20261015_234239_globals.up,
+    down: migration_20261015_234239_globals.down,
+    name: '20261015_234239_globals'
   },
 ];

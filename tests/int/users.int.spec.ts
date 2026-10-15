@@ -78,4 +78,12 @@ describe('users and roles', () => {
       for (const u of others) await payload.update({ collection: 'users', id: u.id, data: { role: 'admin' } })
     }
   })
+
+  it('lets editors edit the About page but not site settings', async () => {
+    await expect(
+      payload.updateGlobal({ slug: 'siteSettings', data: { phone: 'x' }, ...as(editor) }),
+    ).rejects.toThrow()
+    const before = await payload.findGlobal({ slug: 'about' })
+    await payload.updateGlobal({ slug: 'about', data: { philosophy: before.philosophy }, ...as(editor) })
+  })
 })
