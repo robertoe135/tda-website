@@ -87,13 +87,24 @@ async function main() {
     leftOut.set(key, l)
   }
   let psds = 0
+  const subfolderNames = new Map<string, { projects: Set<string>; files: number; onlyThere: number }>()
   const files = walked.files.filter((rel) => {
     const parts = rel.split('/')
     if (IGNORED_EXTENSIONS.has(extOf(rel))) return (psds++, false)
     if (parts.length < 3) return (leaveOut(parts.slice(0, -1).join('/') || '.', 'not inside a project folder'), false)
     const reason = skipReason(parts[0], parts[1], PORTFOLIO_CATEGORIES)
     if (reason) return (leaveOut(`${parts[0]}/${parts[1]}`, reason), false)
-    if (parts.length > 3) return (leaveOut(parts.slice(0, 3).join('/'), 'in a subfolder of a project (the import reads only the project folder itself)'), false)
+    if (parts.length > 3) {
+      leaveOut(parts.slice(0, 3).join('/'), 'in a subfolder of a project (the import reads only the project folder itself)')
+      // Subfolder names (Hi-Res, Selects…), not under Residential where they could be private.
+      if (!/residen|private/i.test(parts[0])) {
+        const sub = subfolderNames.get(parts[2]) ?? { projects: new Set<string>(), files: 0, onlyThere: 0 }
+        sub.projects.add(`${parts[0]}/${parts[1]}`)
+        sub.files++
+        subfolderNames.set(parts[2], sub)
+      }
+      return false
+    }
     return true
   })
 
@@ -216,6 +227,18 @@ async function main() {
     const named = [...leftOut].filter(([, l]) => /NO RIGHTS|removed/.test(l.reason))
     for (const [key, l] of named) line(`         ${redact(key)} (${l.count}): ${l.reason}`)
   }
+  if (subfolderNames.size) {
+    const direct = new Set(rows.filter((r) => r.kind === 'photo').map((r) => r.path.split('/').slice(0, 2).join('/')))
+    line()
+    line('Subfolders inside project folders (not imported). Name: projects that have one, files:')
+    for (const [name, v] of [...subfolderNames].sort((a, b) => b[1].projects.size - a[1].projects.size).slice(0, 25))
+      line(`  ${name}: ${v.projects.size} project(s), ${v.files} files`)
+    const onlyInSub = new Set([...subfolderNames.values()].flatMap((v) => [...v.projects]).filter((p) => !direct.has(p)))
+    if (onlyInSub.size) {
+      line(`  ${onlyInSub.size} project folder(s) have photos ONLY in subfolders, so would get none:`)
+      for (const p of [...onlyInSub].slice(0, 20)) line(`    ${redact(p)}`)
+    }
+  }
   if (skipped.length) {
     line()
     line(`${skipped.length} folder(s) could not be read (permissions).`)
@@ -231,7 +254,11 @@ async function main() {
     for (const rel of addFiles) {
       if (IGNORED_EXTENSIONS.has(extOf(rel))) continue
       const parts = rel.split('/')
-      const name = parts.length > 1 ? parts[0] : '(loose files)'
+      // A folder holding only folders (like "0 - Archive") holds projects: listed one level
+      // down, as "0 - Archive / FIT". A project's own subfolders (Images, Hi-Res) stay inside it.
+      const nested = parts.length > 2 && !addFiles.some((f) => f.split('/').length === 2 && f.startsWith(`${parts[0]}/`))
+      const name = parts.length > 1 ? (nested ? `${parts[0]} / ${parts[1]}` : parts[0]) : '(loose files)'
+      const inner = nested ? parts.slice(1) : parts
       const g = groups.get(name) ?? { photo: 0, video: 0, document: 0, other: 0, bytes: 0, deeper: new Set(), docs: new Set() }
       const k = kindOf(rel)
       if (k === 'photo' || k === 'needs-export') g.photo++
@@ -240,7 +267,7 @@ async function main() {
         g.document++
         g.docs.add(extOf(rel))
       } else g.other++
-      if (parts.length > 2) g.deeper.add(parts[1])
+      if (inner.length > 2) g.deeper.add(inner[1])
       g.bytes += (await stat(path.join(dir, rel))).size
       groups.set(name, g)
       toAddRows.push({ path: `${path.basename(dir)}/${rel}`, kind: k })
@@ -249,7 +276,7 @@ async function main() {
     line(`${path.relative(given, dir) || path.basename(dir)}: ${groups.size} folder(s)  (photos / videos / documents)`)
     for (const [name, g] of [...groups].sort(([a], [b]) => a.localeCompare(b, 'en', { numeric: true }))) {
       toAddNames.push(name)
-      const shown = redact(`${path.basename(dir)}/${name}`).split('/').pop()!
+      const shown = name
       const isPrivate = /residen|private|confidential/i.test(name)
       const sub = g.deeper.size && !isPrivate ? `; subfolders: ${[...g.deeper].slice(0, 4).join(', ')}${g.deeper.size > 4 ? ', …' : ''}` : ''
       const docs = g.docs.size ? `; documents: ${[...g.docs].join(', ')}` : ''
