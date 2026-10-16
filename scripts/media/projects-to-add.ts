@@ -49,6 +49,7 @@ import { type ReviewRow, richText, writeReview } from '../migrate/lib'
 import { extOf, isClutter, kindOf } from './inventory-lib'
 import { type Candidate, findProjectsToAdd, IGNORED_EXTENSIONS, IMAGE_EXTENSIONS, matchProject, photosRoot, slideOrder } from './lib'
 import { docLines, folderProjectName, markedReady, parseProjectDoc, type ProjectDoc } from './project-doc'
+import { recordTouched } from './publish'
 import { assertSafeTarget, uploadPhoto } from './upload'
 
 // ── reading the folders (disk only) ──────────────────────────────────────────
@@ -149,6 +150,7 @@ export type Options = {
   update?: Set<string> // existing projects to update from their document
   publish?: Set<string> // projects to publish once written
   readDoc?: (file: string) => Promise<ProjectDoc> // tests pass the document already parsed
+  onWrite?: (projectId: number) => Promise<void> // after each project is saved (media:publish's list)
 }
 export type Outcome = { folder: string; action: 'create' | 'update' | 'photos' | 'skip' | 'held'; project?: string; detail: string }
 
@@ -290,6 +292,7 @@ export async function addProjects(payload: Payload, plans: FolderPlan[], options
           draft: !publish,
           data: { ...changes, ...(publish ? { _status: 'published' } : {}) } as never,
         })
+      if (options.write) await options.onWrite?.(project.id)
       done({ action: update ? 'update' : 'photos', project: project.name, detail: [...said, publish ? 'published' : 'saved as draft'].join('; ') + '.' })
       continue
     }
@@ -325,6 +328,7 @@ export async function addProjects(payload: Payload, plans: FolderPlan[], options
       const photos = await uploadPhotos(payload, plan, slug, name, (fromDoc?.data?.photographers as number[] | undefined) ?? [])
       await payload.update({ collection: 'projects', id: created.id, draft: true, data: photos as never })
     }
+    await options.onWrite?.(created.id)
     done({ action: 'create', project: name, detail: publish ? `${detail}; not published: a new project needs its categories first` : detail })
   }
   return { outcomes, review }
@@ -466,7 +470,7 @@ async function main() {
   }
   const { plans, skipped } = await planProjectsToAdd(base)
   const payload = await getPayload({ config })
-  const { outcomes, review } = await addProjects(payload, plans, { write, as, forceNew, update, publish })
+  const { outcomes, review } = await addProjects(payload, plans, { write, as, forceNew, update, publish, onWrite: (id) => recordTouched(id) })
 
   const label = { create: write ? 'Created' : 'New', update: write ? 'Updated' : 'Update', photos: 'Photos', skip: 'Skipped', held: 'Held' } as const
   for (const action of ['create', 'update', 'photos', 'skip', 'held'] as const) {
@@ -483,7 +487,7 @@ async function main() {
   }
   const total = await writeReview('projects-to-add', review)
   console.log(`\n${review.length} rows for marketing in scripts/migrate/review.csv (now ${total}).`)
-  console.log(write ? 'Saved as drafts: review and publish them in the admin.' : 'Nothing was written. Rerun with --write.')
+  console.log(write ? 'Saved as drafts: publish them in the admin, or all at once with pnpm media:publish.' : 'Nothing was written. Rerun with --write.')
   process.exit(0)
 }
 

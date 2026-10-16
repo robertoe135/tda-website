@@ -92,6 +92,8 @@ pnpm media:import "/Volumes/<share>/Marketing/Website/Photos" --write --confirm-
 - Photos are scaled to 3000 px and stripped of camera data on your computer; originals stay
   on F:.
 - Projects that already have photos are skipped unless `--replace` is added.
+- `--skip-uncredited` leaves out projects with no photographer, lists them, and imports the
+  rest. Run it again once their credits are in: what's already uploaded is skipped.
 - Projects are saved as drafts. Publish them in the admin to show the photos.
 - Safe to run again after an interruption: photos already uploaded are reused, not duplicated.
 
@@ -140,3 +142,21 @@ pnpm projects:add "/Volumes/T7/Website" --write    # create drafts and upload ph
 
 Photo descriptions start as "<Project>, photograph N", the same as the photo import. Write
 better ones in the admin before publishing.
+
+## 5. Publish what the imports saved (`pnpm media:publish`)
+
+The imports save drafts, so nothing is public until it is published. Spot-check a few projects
+in the admin, then publish the rest at once:
+
+```bash
+pnpm media:publish                              # list what would be published
+pnpm media:publish --write --confirm-backup     # publish it
+```
+
+- Only projects that `media:import` or `projects:add` saved on this computer are published.
+  They're kept in `scripts/media/cache/touched.json` as each one is saved. Other drafts in the
+  admin are left alone.
+- Each project's latest draft goes live exactly as the admin shows it.
+- **Held:** a project without categories (typologies) or without a status. New projects from
+  Projects to Add always need their categories chosen first. They stay on the list, so run the
+  command again once they are ready.

@@ -5,6 +5,7 @@
  *   pnpm media:import "/Volumes/<share>/Marketing/Website/Photos"            # check only
  *   pnpm media:import "/Volumes/<share>/Marketing/Website/Photos" --write    # upload, save drafts
  *     --replace          also replace photos on projects that already have some
+ *     --skip-uncredited  leave out projects with no photographer (listed), instead of stopping
  *     --csv <file>       a different CSV than scripts/media/cache/photos.csv
  *     --confirm-backup   required when DATABASE_URL is not this machine
  *
@@ -26,6 +27,7 @@ import { normalizeName } from '../../src/hooks/preventNearDuplicates'
 import { parseCsv } from '../team/lib'
 
 import { photosRoot } from './lib'
+import { recordTouched } from './publish'
 import { PHOTOS_CSV } from './scan'
 import { assertSafeTarget, uploadPhoto } from './upload'
 
@@ -35,6 +37,7 @@ const option = (name: string) => (args.includes(name) ? args[args.indexOf(name) 
 const rootArg = args.find((a, i) => !a.startsWith('--') && args[i - 1] !== '--csv')
 const write = flag('--write')
 const replace = flag('--replace')
+const skipUncredited = flag('--skip-uncredited')
 
 type Row = { line: number; project: string; file: string; folder: string; category: string; slide: number; photographer: string; alt: string }
 
@@ -83,6 +86,7 @@ async function main() {
   }
 
   const targets: { id: number; name: string; rows: Row[] }[] = []
+  const uncredited: string[] = []
   for (const [slug, list] of byProject) {
     if (!slug) continue
     const found = await payload.find({ collection: 'projects', where: { slug: { equals: slug } }, draft: true, limit: 1, depth: 0 })
@@ -92,6 +96,10 @@ async function main() {
       continue
     }
     if (!project.photographers?.length && list.some((r) => !r.photographer)) {
+      if (skipUncredited) {
+        uncredited.push(project.name)
+        continue
+      }
       problems.push(`line ${list[0].line}: ${project.name} has no photographer. Add one to the project (Images → Photographers) or to each photo.`)
       continue
     }
@@ -108,6 +116,10 @@ async function main() {
     targets.push({ id: project.id, name: project.name, rows: [...list].sort((a, b) => a.slide - b.slide) })
   }
 
+  if (uncredited.length) {
+    console.log(`Left out, no photographer (${uncredited.length}): ${uncredited.join(', ')}.`)
+    console.log('Add one to each project (Images → Photographers), then run this again to import them.\n')
+  }
   if (problems.length) {
     for (const p of problems) console.error(p)
     console.error(`\n${problems.length} problem(s). Nothing was uploaded.`)
@@ -142,8 +154,10 @@ async function main() {
       data: { heroImage: ids[0], gallery: ids.slice(1).map((image) => ({ image })) },
       draft: true,
     })
+    await recordTouched(target.id)
   }
-  console.log(`\nUploaded ${uploaded} photos (${reused} already there) to ${targets.length} project drafts. Publish them in the admin.`)
+  console.log(`\nUploaded ${uploaded} photos (${reused} already there) to ${targets.length} project drafts.`)
+  console.log('Publish them in the admin, or all at once with: pnpm media:publish')
   process.exit(0)
 }
 
