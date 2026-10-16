@@ -13,7 +13,7 @@
  *
  * Squarespace stays the source of truth for text and facts; this only brings in photographs.
  */
-import 'dotenv/config'
+import '../env'
 
 import { mkdir, readdir, writeFile } from 'fs/promises'
 import path from 'path'

@@ -12,7 +12,7 @@
  * (gitignored, real names) with what needs attention before upload. --match needs
  * DATABASE_URL (local or production; it only reads).
  */
-import 'dotenv/config'
+import '../env'
 
 import { mkdir, readdir, stat, writeFile } from 'fs/promises'
 import path from 'path'

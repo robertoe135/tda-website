@@ -11,7 +11,7 @@
  * republished with only this change. Refuses a database that is not on this machine unless
  * --confirm-backup is passed.
  */
-import 'dotenv/config'
+import '../env'
 
 import { fileURLToPath } from 'url'
 

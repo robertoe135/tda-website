@@ -23,7 +23,7 @@
  * Names are matched exactly; a close-but-different name is held until --as or --new says what
  * it is. Anything the document leaves unclear goes to scripts/migrate/review.csv.
  */
-import 'dotenv/config'
+import '../env'
 
 import { readdir, readFile } from 'fs/promises'
 import path from 'path'

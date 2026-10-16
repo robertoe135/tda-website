@@ -14,7 +14,7 @@
  * Projects are saved as drafts. Re-running reuses photos already uploaded (matched on a hash
  * of the file and its project), so an interrupted run can simply be started again.
  */
-import 'dotenv/config'
+import '../env'
 
 import { readFile, stat } from 'fs/promises'
 import path from 'path'

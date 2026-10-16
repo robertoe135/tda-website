@@ -16,7 +16,7 @@
  * Refuses to run against a database that is not on this machine unless --confirm-backup is
  * passed (the skill: never import into production without a fresh backup).
  */
-import 'dotenv/config'
+import '../env'
 
 import { readFile } from 'fs/promises'
 import path from 'path'

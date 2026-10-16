@@ -6,7 +6,7 @@
  *   pnpm migrate:check-redirects            # all projects, published or not
  *   pnpm migrate:check-redirects --live     # only what redirects today (published projects)
  */
-import 'dotenv/config'
+import '../env'
 
 import { readFile } from 'fs/promises'
 import path from 'path'
