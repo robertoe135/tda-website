@@ -4,16 +4,18 @@ import { permanentRedirect } from 'next/navigation'
 
 import {
   canonicalFirmFilters,
+  FILTER_KEYS,
   type Filters,
   getPublishedProjects,
   getTypologies,
-  LINK_ONLY_KEYS,
   matches,
   parseFilters,
   REGION_OPTIONS,
+  setHref,
   STATUS_OPTIONS,
   toggleHref,
 } from '@/lib/projects'
+import { type CategoryLink, CategoryNav } from '@/components/CategoryNav'
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> }
 
@@ -24,8 +26,9 @@ export const metadata: Metadata = {
 }
 
 /**
- * The portfolio: TDA's grid of project names (as on the old category pages), with filters.
- * Categories are listed in the order of the old portfolio menu.
+ * The portfolio: TDA's grid of projects (as on the old category pages). Categories are one line
+ * of links in the old portfolio menu's order, so each has its own address; Location and
+ * Architect are two small menus; filters reached from project pages show as removable chips.
  */
 export default async function ProjectsPage({ searchParams }: Props) {
   const filters = parseFilters(await searchParams)
@@ -37,11 +40,18 @@ export default async function ProjectsPage({ searchParams }: Props) {
 
   // Only offer options that have at least one published project.
   const usedTypologies = new Set(projects.flatMap((p) => p.typologies.map((t) => t.slug)))
-  const usedRegions = new Set(projects.map((p) => p.location?.worldRegion).filter(Boolean))
+  // Each menu offers only what gives results with the other filters (no dead ends), plus
+  // anything already chosen.
+  const without = (key: keyof Filters) => projects.filter((p) => matches(p, { ...filters, [key]: [] }))
+  const usedRegions = new Set([...without('region').map((p) => p.location?.worldRegion).filter(Boolean), ...filters.region])
   const usedStatuses = new Set(projects.flatMap((p) => [p.status, p.featured ? 'featured' : undefined]))
+  const allArchitects = new Map(projects.flatMap((p) => p.architects).map((a) => [a.slug, a]))
   const architects = [
-    ...new Map(projects.flatMap((p) => p.architects).map((a) => [a.slug, a])).values(),
-  ].sort((a, b) => a.name.localeCompare(b.name))
+    ...new Map(without('architect').flatMap((p) => p.architects).map((a) => [a.slug, a])).values(),
+    ...filters.architect.map((slug) => allArchitects.get(slug)).filter((a) => a !== undefined),
+  ]
+    .filter((a, i, list) => list.findIndex((b) => b.slug === a.slug) === i)
+    .sort((a, b) => a.name.localeCompare(b.name))
 
   const active = Object.entries(filters).flatMap(([key, values]) =>
     values.map((value) => ({ key: key as keyof Filters, value })),
@@ -54,60 +64,60 @@ export default async function ProjectsPage({ searchParams }: Props) {
     projects.find((p) => key === 'location' && p.location?.slug === value)?.location?.displayName ??
     value.replace(/-/g, ' ')
 
+  // The category line: All, each category in the old menu's order, then On the Boards.
+  const noCategory = filters.typology.length === 0 && filters.status.length === 0
+  const categories: CategoryLink[] = [
+    { label: 'All', href: setHref(filters, { typology: [], status: [] }), current: noCategory },
+    ...typologies
+      .filter((t) => t.slug && usedTypologies.has(t.slug))
+      .map((t) => ({
+        label: t.name,
+        href: setHref(filters, { typology: [t.slug!], status: [] }),
+        current: filters.typology.includes(t.slug!) && filters.status.length === 0,
+      })),
+    ...(usedStatuses.has('in-progress')
+      ? [
+          {
+            label: 'On the Boards',
+            href: setHref(filters, { typology: [], status: ['in-progress'] }),
+            current: filters.status.length === 1 && filters.status[0] === 'in-progress' && !filters.typology.length,
+          },
+        ]
+      : []),
+  ]
+  // Chips for what the line doesn't show: places, architects, and filters reached from project pages.
+  const chips = active.filter(({ key }) => key !== 'typology' && !(key === 'status' && filters.status.join() === 'in-progress'))
+
   return (
     <div className="portfolio">
       <h1 className="page-title">Portfolio</h1>
 
-      <details className="filters-toggle" open={active.length > 0}>
-        <summary>Filter{active.length > 0 ? ` (${active.length})` : ''}</summary>
-        <form className="filters" action="/projects" method="get" aria-label="Filter projects">
-          <FilterGroup legend="Category">
-            {typologies
-              .filter((t) => t.slug && usedTypologies.has(t.slug))
-              .map((t) => (
-                <Checkbox key={t.slug} name="typology" value={t.slug!} label={t.name} filters={filters} />
-              ))}
-            {STATUS_OPTIONS.filter((o) => usedStatuses.has(o.value)).map((o) => (
-              <Checkbox key={o.value} name="status" value={o.value} label={o.label} filters={filters} />
-            ))}
-          </FilterGroup>
-
-          <FilterGroup legend="Location">
+      <div className="portfolio-filters">
+        <CategoryNav items={categories} />
+        <div className="filter-menus">
+          <FilterMenu label="Location" filters={filters} name="region">
             {REGION_OPTIONS.filter((o) => usedRegions.has(o.value)).map((o) => (
               <Checkbox key={o.value} name="region" value={o.value} label={o.label} filters={filters} />
             ))}
-          </FilterGroup>
+          </FilterMenu>
+          <FilterMenu label="Architect" filters={filters} name="architect" scroll>
+            {architects.map((a) => (
+              <Checkbox key={a.slug} name="architect" value={a.slug ?? ''} label={a.name} filters={filters} />
+            ))}
+          </FilterMenu>
+        </div>
+      </div>
 
-          <FilterGroup legend="Architect">
-            <div className="filters-scroll">
-              {architects.map((a) => (
-                <Checkbox key={a.slug} name="architect" value={a.slug ?? ''} label={a.name} filters={filters} />
-              ))}
-            </div>
-          </FilterGroup>
-
-          {/* Filters reached from links on project pages (a city, a consultant, an owner) survive Apply. */}
-          {LINK_ONLY_KEYS.flatMap((key) =>
-            filters[key].map((v) => <input key={`${key}:${v}`} type="hidden" name={key} value={v} />),
-          )}
-
-          <div className="filters-actions">
-            <button type="submit">Apply</button>
-            {active.length > 0 && <Link href="/projects">Clear</Link>}
-          </div>
-        </form>
-      </details>
-
-      {active.length > 0 && (
+      {chips.length > 0 && (
         <p className="active-filters">
-          {active.map(({ key, value }, i) => (
-            <span key={`${key}:${value}`}>
-              {i > 0 && <span aria-hidden="true"> | </span>}
-              <Link href={toggleHref(filters, key, value)} aria-label={`Remove filter ${labelFor(key, value)}`}>
-                {labelFor(key, value)} ×
-              </Link>
-            </span>
+          {chips.map(({ key, value }) => (
+            <Link key={`${key}:${value}`} href={toggleHref(filters, key, value)} className="chip" aria-label={`Remove filter ${labelFor(key, value)}`}>
+              {labelFor(key, value)} <span aria-hidden="true">×</span>
+            </Link>
           ))}
+          <Link href={setHref(filters, Object.fromEntries(chips.map(({ key }) => [key, []])))} className="chip-clear">
+            Clear
+          </Link>
         </p>
       )}
 
@@ -136,12 +146,44 @@ export default async function ProjectsPage({ searchParams }: Props) {
   )
 }
 
-function FilterGroup({ legend, children }: { legend: string; children: React.ReactNode }) {
+/**
+ * A small menu of checkboxes (Location, Architect). It works without JavaScript: Apply sends
+ * the form, which keeps every other filter as hidden fields.
+ */
+function FilterMenu({
+  label,
+  name,
+  filters,
+  scroll,
+  children,
+}: {
+  label: string
+  name: keyof Filters
+  filters: Filters
+  scroll?: boolean
+  children: React.ReactNode
+}) {
+  const chosen = filters[name].length
   return (
-    <fieldset>
-      <legend>{legend}</legend>
-      {children}
-    </fieldset>
+    <details className="filter-menu">
+      <summary>
+        {label}
+        {chosen > 0 && <span className="filter-count"> ({chosen})</span>}
+      </summary>
+      <form action="/projects" method="get" className="filter-panel" aria-label={`Filter by ${label.toLowerCase()}`}>
+        <fieldset>
+          <legend className="visually-hidden">{label}</legend>
+          <div className={scroll ? 'filters-scroll' : undefined}>{children}</div>
+        </fieldset>
+        {FILTER_KEYS.filter((k) => k !== name).flatMap((k) =>
+          filters[k].map((v) => <input key={`${k}:${v}`} type="hidden" name={k} value={v} />),
+        )}
+        <div className="filters-actions">
+          <button type="submit">Apply</button>
+          {chosen > 0 && <Link href={setHref(filters, { [name]: [] })}>Clear</Link>}
+        </div>
+      </form>
+    </details>
   )
 }
 

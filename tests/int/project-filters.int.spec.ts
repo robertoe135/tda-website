@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { filterHref, matches, parseFilters, type ProjectCard, toggleHref } from '@/lib/projects'
+import { filterHref, matches, parseFilters, type ProjectCard, setHref, toggleHref } from '@/lib/projects'
 
 const project: ProjectCard = {
   id: 1,
@@ -43,5 +43,14 @@ describe('project filters', () => {
     expect(toggleHref(f, 'typology', 'museums')).toBe('/projects?region=europe')
     expect(toggleHref(parseFilters({ region: 'europe' }), 'region', 'europe')).toBe('/projects')
     expect(filterHref('architect', 'kohn-pedersen-fox')).toBe('/projects?architect=kohn-pedersen-fox')
+  })
+})
+
+describe('category links', () => {
+  it('replace the category and keep every other filter', () => {
+    const f = parseFilters({ typology: ['museums', 'libraries'], region: 'europe', status: 'in-progress' })
+    expect(setHref(f, { typology: ['retail'], status: [] })).toBe('/projects?typology=retail&region=europe')
+    expect(setHref(f, { typology: [], status: [] })).toBe('/projects?region=europe')
+    expect(setHref(parseFilters({}), {})).toBe('/projects')
   })
 })
