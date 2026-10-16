@@ -26,8 +26,10 @@ a:hover { text-decoration: underline; }
 .skip-link { position: absolute; left: -9999px; }
 .skip-link:focus { left: var(--gutter); top: var(--gutter); background: var(--bg); padding: 0.5rem; z-index: 1; }
 
-/* Header and menu: logo left, small lowercase menu right, current page underlined, thin rule */
+/* Header and menu: logo left, small lowercase menu right, current page underlined, thin rule.
+   Sticky at the top while scrolling, as on the current site. */
 .site-header {
+  position: sticky; top: 0; z-index: 10; background: var(--bg);
   display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem;
   padding: var(--gutter) var(--gutter) 0.75rem; border-bottom: 1px solid var(--line);
 }
