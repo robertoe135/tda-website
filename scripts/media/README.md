@@ -128,8 +128,15 @@ pnpm projects:add "/Volumes/T7/Website" --write    # create drafts and upload ph
   `--new "113 Spring (ready)"` (it really is a new one).
 - **Left for marketing in review.csv:** categories (always: the document has none), press
   without a link, a web address with no title, "courtesy …" credits, and unknown labels.
-- **Not read:** PDFs, videos (add them under Videos), PSDs, and folders without a Word
-  document (Timeline 2025).
+- **A folder with photos and no Word document** (Cornell CIS Building) becomes a draft named
+  after the folder, with its photos. Set its real name, facts, text and photographer before
+  publishing.
+- **A finished project that is already on the site** (270 Park): `--as "270 Park=270-park-ave"
+  --update "270 Park"` reads its document into it. The status and year follow the document, the
+  document's text replaces the site's (the old text stays under Versions), and other fields are
+  filled only where the site has none. Add `--publish "270 Park"` to publish it in the same run.
+  A new project is never published by the command, because it needs its categories first.
+- **Not read:** PDFs, videos (add them under Videos), PSDs, and Timeline folders.
 
 Photo descriptions start as "<Project>, photograph N", the same as the photo import. Write
 better ones in the admin before publishing.
