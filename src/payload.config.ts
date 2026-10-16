@@ -77,7 +77,8 @@ export default buildConfig({
       token: process.env.BLOB_READ_WRITE_TOKEN,
       enabled: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
       alwaysInsertFields: true,
-      collections: { media: true },
+      // Public photos load straight from Blob's CDN, not through a server function on every view.
+      collections: { media: { disablePayloadAccessControl: true } },
     }),
     // Videos are uploaded from the browser straight to Blob, past Vercel's 4.5 MB request
     // limit. Images must not be: they go through the server, which renames them and strips
@@ -88,7 +89,7 @@ export default buildConfig({
       alwaysInsertFields: true,
       clientUploads: true,
       addRandomSuffix: true,
-      collections: { videos: { prefix: 'videos' } },
+      collections: { videos: { prefix: 'videos', disablePayloadAccessControl: true } },
     }),
   ],
 })
