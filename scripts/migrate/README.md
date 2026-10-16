@@ -169,3 +169,18 @@ of the names are merged, the result carries the main name (its web address stays
 other name becomes an alias. Run it again any time; rows already applied change nothing.
 Decided in October 2026: SOM; Foster + Partners; Kohn Pedersen Fox; Adjaye Associates;
 OMA - Office for Metropolitan Architecture.
+
+## In-progress copies of finished projects (`pnpm migrate:drop-in-progress`)
+
+The old "on the boards" page left some projects on the site twice: once in progress and once
+completed (Loyola University Chapel, Princeton Art Museum). TDA's rule: when a completed copy
+exists, the in-progress one goes.
+
+```bash
+pnpm migrate:drop-in-progress            # list the pairs
+pnpm migrate:drop-in-progress --write    # delete them (--confirm-backup if not local)
+```
+
+Before deleting, its old web addresses, press, awards and homepage places move to the completed
+project, so old links keep working. A pair needs the in-progress name (three words or more) to sit
+inside exactly one completed project's name; anything less certain is listed and left alone.

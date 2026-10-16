@@ -78,6 +78,11 @@ const LABELS: Record<string, Role> = {
   'associate architect': 'associateArchitect',
   'collaborating architect': 'collaboratingArchitect',
   'original architect': 'originalArchitect',
+  // As written in marketing's new-project documents (Projects to Add).
+  'architecture company': 'architect',
+  'architecture firm': 'architect',
+  'interior design company': 'interiorDesigner',
+  'interior design firm': 'interiorDesigner',
   'interior designer': 'interiorDesigner',
   'interior design': 'interiorDesigner',
   'interior architect': 'interiorDesigner',

@@ -10,7 +10,7 @@
  *   pnpm migrate:photographers               # list what would change
  *   pnpm migrate:photographers --write       # change it (--confirm-backup if not local)
  */
-import 'dotenv/config'
+import '../env'
 
 import { readFile } from 'fs/promises'
 import path from 'path'

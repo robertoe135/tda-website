@@ -13,7 +13,7 @@
  *
  * Squarespace stays the source of truth for text and facts; this only brings in photographs.
  */
-import 'dotenv/config'
+import '../env'
 
 import { mkdir, readdir, writeFile } from 'fs/promises'
 import path from 'path'
@@ -24,7 +24,8 @@ import { getPayload } from 'payload'
 import config from '../../src/payload.config'
 import { csv } from '../migrate/lib'
 
-import { matchProject, parsePhotoPath, type PhotoPath, slideOrder } from './lib'
+import { redactor } from './inventory-lib'
+import { matchProject, parsePhotoPath, type PhotoPath, photosRoot, skipReason, slideOrder } from './lib'
 
 export const mediaDir = path.dirname(fileURLToPath(import.meta.url))
 export const PHOTOS_CSV = path.join(mediaDir, 'cache', 'photos.csv')
@@ -43,12 +44,14 @@ async function walk(root: string, dir = ''): Promise<string[]> {
 }
 
 async function main() {
-  const root = process.argv[2]
-  if (!root) {
-    console.error('Usage: pnpm media:scan <path to Marketing/Website/Photos>')
+  const given = process.argv[2]
+  if (!given) {
+    console.error('Usage: pnpm media:scan <path to the Website folder or its Photos folder>')
     process.exit(1)
   }
 
+  const root = await photosRoot(given)
+  if (root !== given) console.log(`Reading ${root} (project photos only).`)
   const files = await walk(root)
   const photos = files.map((f) => ({ rel: f, photo: parsePhotoPath(f) }))
   const skipped = photos.filter((p) => !p.photo && /\.(jpe?g|png|tiff?|webp)$/i.test(p.rel))
@@ -62,6 +65,11 @@ async function main() {
     select: { name: true, slug: true, typologies: true, heroImage: true, photographers: true },
   })
   const candidates = projects.docs.map((p) => ({ slug: p.slug ?? '', name: p.name }))
+  const typologies = await payload.find({ collection: 'typologies', pagination: false, depth: 0, select: { name: true } })
+  const categoryNames = typologies.docs.map((t) => t.name)
+
+  // Folders never imported, with the reason, listed at the end (private names hidden).
+  const skippedFolders = new Map<string, { reason: string; count: number }>()
 
   // Group by folder. A project filed under several categories uses the folder with the most
   // photos (the first of those, alphabetically, on a tie).
@@ -69,6 +77,13 @@ async function main() {
   for (const { photo } of photos) {
     if (!photo) continue
     const key = `${photo.category}/${photo.folder}`
+    const reason = skipReason(photo.category, photo.folder, categoryNames)
+    if (reason) {
+      const s = skippedFolders.get(key) ?? { reason, count: 0 }
+      s.count++
+      skippedFolders.set(key, s)
+      continue
+    }
     byFolder.set(key, [...(byFolder.get(key) ?? []), photo])
   }
 
@@ -135,7 +150,13 @@ async function main() {
   await writeFile(PHOTOS_CSV, csv(rows, COLUMNS))
   console.log(`${rows.length} photos in ${byFolder.size} folders.`)
   console.log(`Folders: ${exact} matched exactly, ${suggested} need a check, ${unmatched} not matched.`)
-  if (skipped.length) console.log(`${skipped.length} images not in a <Category>/<Project>/ folder were left out.`)
+  if (skipped.length) console.log(`${skipped.length} images not in a <Category>/<Project>/ folder (or in a subfolder of one) were left out.`)
+  if (skippedFolders.size) {
+    const redact = redactor()
+    console.log('\nNot imported:')
+    for (const [key, { reason, count }] of [...skippedFolders].sort(([a], [b]) => a.localeCompare(b, 'en', { numeric: true })))
+      console.log(`  ${redact(key)} (${count}): ${reason}`)
+  }
   console.log(`Wrote ${path.relative(process.cwd(), PHOTOS_CSV)}. Check it, then run pnpm media:import.`)
   process.exit(0)
 }

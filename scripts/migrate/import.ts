@@ -16,7 +16,7 @@
  * Refuses to run against a database that is not on this machine unless --confirm-backup is
  * passed (the skill: never import into production without a fresh backup).
  */
-import 'dotenv/config'
+import '../env'
 
 import { readFile } from 'fs/promises'
 import path from 'path'
@@ -53,7 +53,7 @@ const TYPOLOGIES: [slug: string, name: string][] = [
 ]
 
 // Countries as written on the old site → world region. Unlisted countries are flagged.
-const WORLD_REGION: Record<string, LocationDoc['worldRegion']> = {
+export const WORLD_REGION: Record<string, LocationDoc['worldRegion']> = {
   'United States': 'north-america',
   Canada: 'north-america',
   China: 'asia-pacific',
@@ -63,7 +63,7 @@ const WORLD_REGION: Record<string, LocationDoc['worldRegion']> = {
 }
 
 // Display names for credit roles that have several spellings on the old site.
-const ROLE_NAMES: Partial<Record<Role, string>> = {
+export const ROLE_NAMES: Partial<Record<Role, string>> = {
   designArchitect: 'Design Architect',
   architect: 'Architect',
   collaboratingArchitect: 'Collaborating Architect',
@@ -77,7 +77,7 @@ const ROLE_NAMES: Partial<Record<Role, string>> = {
   ownerRepresentative: 'Owner Representative',
 }
 // Architects and designers first, then owner side, then engineers and consultants.
-const ROLE_ORDER: Partial<Record<Role, number>> = {
+export const ROLE_ORDER: Partial<Record<Role, number>> = {
   designArchitect: 10,
   architect: 11,
   collaboratingArchitect: 12,
@@ -146,7 +146,7 @@ const isWebAddress = (value: string) => {
 const yearOf = (value?: string) => (value && /^\d{4}$/.test(value.trim()) ? Number(value) : undefined)
 
 /** Finds a record by normalized name or creates it; never renames an existing record. */
-function finder(payload: Payload) {
+export function finder(payload: Payload) {
   const cache = new Map<string, number>()
   return async function findOrCreate(
     collection: 'firms' | 'photographers' | 'creditRoles' | 'typologies',
@@ -170,6 +170,38 @@ function finder(payload: Payload) {
     const id = (found.docs[0]?.id ??
       (await payload.create({ collection, data: { name, ...extra } as never })).id) as number
     cache.set(key, id)
+    return id
+  }
+}
+
+/**
+ * Finds a location by its display name ("New York, NY") or creates it; a location that cannot
+ * be read as city and country is flagged instead.
+ */
+export function locationFinder(payload: Payload, flag: (where: string, field: string, asWritten: string, note: string) => void) {
+  const locationIds = new Map<string, number>()
+  return async function locationId(loc: Location | undefined, where: string): Promise<number | undefined> {
+    if (!loc?.city || !loc.country) {
+      if (loc) flag(where, 'location', loc.asWritten, 'Not imported: could not tell city and country apart. Set the location by hand.')
+      return undefined
+    }
+    const display = [loc.city, loc.region || loc.country].join(', ')
+    const key = normalizeName(display)
+    if (locationIds.has(key)) return locationIds.get(key)
+    const found = await payload.find({ collection: 'locations', where: { normalizedName: { equals: key } }, limit: 1, depth: 0 })
+    const worldRegion = WORLD_REGION[loc.country]
+    if (!worldRegion && !found.docs[0]) {
+      flag(where, 'world region', loc.country, `No world region set for this country. Choose one on the location ${display}.`)
+    }
+    const id =
+      found.docs[0]?.id ??
+      (
+        await payload.create({
+          collection: 'locations',
+          data: { city: loc.city, region: loc.region, country: loc.country, worldRegion },
+        })
+      ).id
+    locationIds.set(key, id)
     return id
   }
 }
@@ -230,32 +262,7 @@ async function main() {
     }
   }
 
-  // Locations
-  const locationIds = new Map<string, number>()
-  async function locationId(loc: Location | undefined, where: string): Promise<number | undefined> {
-    if (!loc?.city || !loc.country) {
-      if (loc) flag(where, 'location', loc.asWritten, 'Not imported: could not tell city and country apart. Set the location by hand.')
-      return undefined
-    }
-    const display = [loc.city, loc.region || loc.country].join(', ')
-    const key = normalizeName(display)
-    if (locationIds.has(key)) return locationIds.get(key)
-    const found = await payload.find({ collection: 'locations', where: { normalizedName: { equals: key } }, limit: 1, depth: 0 })
-    const worldRegion = WORLD_REGION[loc.country]
-    if (!worldRegion && !found.docs[0]) {
-      flag(where, 'world region', loc.country, `No world region set for this country. Choose one on the location ${display}.`)
-    }
-    const id =
-      found.docs[0]?.id ??
-      (
-        await payload.create({
-          collection: 'locations',
-          data: { city: loc.city, region: loc.region, country: loc.country, worldRegion },
-        })
-      ).id
-    locationIds.set(key, id)
-    return id
-  }
+  const locationId = locationFinder(payload, flag)
 
   // Splits "Gensler, Studio Paolo Ferrari" into two firms only when the part before the comma
   // is a firm seen elsewhere on the site; "Skidmore, Owings & Merrill" stays one firm.

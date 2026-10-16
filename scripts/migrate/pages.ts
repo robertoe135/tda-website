@@ -15,7 +15,7 @@
  * The timeline page itself is not stored: /timeline lists published projects by year.
  * Refuses a database that is not on this machine unless --confirm-backup is passed.
  */
-import 'dotenv/config'
+import '../env'
 
 import { readFile } from 'fs/promises'
 import path from 'path'

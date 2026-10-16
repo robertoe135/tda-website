@@ -646,7 +646,7 @@ export interface Press {
   createdAt: string;
 }
 /**
- * Short loops for the homepage. Export as MP4 (H.264), about 1920 px wide, no sound, under 40 MB (aim for 10–20 MB). The file name is public: name it after the project, never after a private client.
+ * Short loops for the homepage. Export as MP4 (H.264), about 1920 px wide, no sound, under 15 MB (aim for 5–8 MB: a 10–15 second loop at about 4 Mbps). The file name is public: name it after the project, never after a private client.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "videos".

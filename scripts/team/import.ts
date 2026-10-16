@@ -19,7 +19,7 @@
  * Future source: a manual, one-way export from the internal TDA app into this same CSV.
  * This script never connects to that app.
  */
-import 'dotenv/config'
+import '../env'
 
 import { readFile } from 'fs/promises'
 

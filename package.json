@@ -24,10 +24,13 @@
     "migrate:photographers": "tsx scripts/migrate/photographers.ts",
     "migrate:merge-firms": "tsx scripts/migrate/merge-firms.ts",
     "migrate:firm-names": "tsx scripts/migrate/firm-names.ts",
+    "migrate:drop-in-progress": "tsx scripts/migrate/drop-in-progress.ts",
     "migrate:check-redirects": "tsx scripts/migrate/check-redirects.ts",
     "team:import": "tsx scripts/team/import.ts",
+    "media:inventory": "tsx scripts/media/inventory.ts",
     "media:scan": "tsx scripts/media/scan.ts",
-    "media:import": "tsx scripts/media/import.ts"
+    "media:import": "tsx scripts/media/import.ts",
+    "projects:add": "tsx scripts/media/projects-to-add.ts"
   },
   "dependencies": {
     "@fontsource-variable/dm-sans": "5.3.0",
@@ -57,6 +60,7 @@
     "eslint-config-next": "16.3.3",
     "fast-xml-parser": "^5.11.2",
     "jsdom": "28.0.0",
+    "mammoth": "1.8.0",
     "node-html-parser": "9.0.4",
     "prettier": "^3.4.2",
     "tsx": "4.23.15",
@@ -67,12 +71,5 @@
   "engines": {
     "node": ">=20.18.1",
     "pnpm": "^9 || ^10 || ^11"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "sharp",
-      "esbuild",
-      "unrs-resolver"
-    ]
   }
 }

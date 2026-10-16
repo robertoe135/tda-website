@@ -3,3 +3,7 @@ allowBuilds:
   sharp: true
   unrs-resolver: true
   workerd: true
+
+# Held back from a release a few hours old, so installs pass the 24-hour minimum release age.
+overrides:
+  nodemailer: 10.1.1

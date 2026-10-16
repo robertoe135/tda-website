@@ -28,7 +28,12 @@ a row of three shows one wide tile and two side by side.
 
 Add videos under **Videos** first, then pick them on a project tile.
 
-- MP4 (H.264), about 1920 px wide, no sound, under 40 MB (aim for 10–20 MB).
+- MP4 (H.264), about 1920 px wide, no sound, under 15 MB. Aim for 5–8 MB: a 10–15 second
+  loop. In Adobe Media Encoder or Premiere: H.264, "Match Source – Adaptive High Bitrate"
+  or a target bitrate of about 4 Mbps, audio off. In HandBrake: the "Vimeo YouTube HQ 1080p"
+  preset, with Audio removed.
+- Why the limit: videos play on their own, so every visitor to the homepage downloads each one
+  in full. Smaller loops look the same and keep the hosting bill near zero.
 - A **still image** is required: it shows while the video loads, and instead of the video for
   visitors who turn off motion in their device settings.
 - Videos play muted on a loop, with a pause button.

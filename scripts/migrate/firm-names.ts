@@ -9,7 +9,7 @@
  *
  * Edit firm-names.csv to add decisions; names in it are written exactly as TDA wants them.
  */
-import 'dotenv/config'
+import '../env'
 
 import { readFile } from 'fs/promises'
 import path from 'path'

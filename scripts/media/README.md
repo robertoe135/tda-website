@@ -26,10 +26,37 @@ are ignored. Licenses for web use were confirmed in October 2026 (`docs/decision
   Beyer, Iwan Baan") and credits each project with the photographers its old credits page
   lists. TDA credits photography per project, so most photos need no credit of their own.
 
+## 0. Inventory: what is on the drive (`pnpm media:inventory`)
+
+Before uploading anything, see what the website folder holds:
+
+```
+pnpm media:inventory "/Volumes/T7/Website"
+pnpm media:inventory "/Volumes/T7/Website" --match    # also match folders to website projects
+```
+
+Reads only, and only what the import would use: `Photos/<portfolio category>/<project>/`.
+Archive, Website Text and other top-level folders are never read; folders marked NO RIGHTS or
+Removed, non-portfolio categories (Lifestyle Photos, Firm Profile) and PSDs are left out and
+counted. A **Projects to add** folder (at the top or inside Photos) is listed per project:
+photos, videos, documents and subfolders, and with `--match` whether each is already on the
+website. Prints:
+
+- counts and sizes: photos, images to export first (HEIC, PSD, RAW), videos, documents;
+- the folders three levels deep, with how many photos, videos and documents each holds;
+- roughly how much would go into Blob if every photo went on the site;
+- what needs attention: images to export, videos to convert or shorten (over 15 MB), small
+  photos that would look soft, the same photo filed twice.
+
+Folder names under any Residential or Private folder are hidden in the printed summary, so it
+can be pasted into a chat or email. Every file, with real names, goes to
+`scripts/media/cache/inventory.csv` (kept out of git). `--match` needs `DATABASE_URL`
+(local or production; it only reads).
+
 ## 1. Scan
 
 ```
-pnpm media:scan "/Volumes/<share>/Marketing/Website/Photos"
+pnpm media:scan "/Volumes/T7/Website"     # or the Photos folder itself
 ```
 
 Reads only. Writes `scripts/media/cache/photos.csv` (kept out of git: file names can name
@@ -67,3 +94,49 @@ pnpm media:import "/Volumes/<share>/Marketing/Website/Photos" --write --confirm-
 - Projects that already have photos are skipped unless `--replace` is added.
 - Projects are saved as drafts. Publish them in the admin to show the photos.
 - Safe to run again after an interruption: photos already uploaded are reused, not duplicated.
+
+## 4. Projects to Add (`pnpm projects:add`)
+
+Marketing prepares new projects in `Website/Projects to Add`. Each one is a folder with a Word
+document and an `Images` folder:
+
+```
+Projects to Add/Bonhams (ready)/Bonhams.docx      name, Location, Project Completed, Area,
+                                                  Architecture Company, Interior Design Company,
+                                                  Owner, Photography, Press, Text
+Projects to Add/Bonhams (ready)/Images/…jpg       the slideshow, in file-name order
+Projects to Add/0 - Archive/Holt Renfrew (ready)/ photos for a project already on the site
+```
+
+```bash
+pnpm projects:add "/Volumes/T7/Website"            # check: what would be created or added
+pnpm projects:add "/Volumes/T7/Website" --write    # create drafts and upload photos
+```
+
+- **A folder with a Word document** becomes a new project, saved as a draft. Its fields and text
+  are copied exactly as written. Firms are matched on their name and other names (aliases).
+  A firm or photographer the site doesn't have yet is created as written and listed in
+  review.csv. "(ready)" is not required, but a folder without it gets a review row.
+- **A folder of folders** (`0 - Archive`) holds photos for projects already on the site. A
+  project gets them only if it has no photos yet. Its documents are not read, because the site's
+  text wins. Its photographer must already be set on the project.
+- **Nothing is overwritten.** A project that already exists keeps its fields. A project that
+  already has photos is skipped, so running the command again is safe.
+- **Close names are held, not guessed.** If "FIT" looks like "Fashion Institute of Technology",
+  the command stops on that folder and prints the option to rerun with:
+  `--as "FIT (ready)=fashion-institute-of-technology"` (it is that project), or
+  `--new "113 Spring (ready)"` (it really is a new one).
+- **Left for marketing in review.csv:** categories (always: the document has none), press
+  without a link, a web address with no title, "courtesy …" credits, and unknown labels.
+- **A folder with photos and no Word document** (Cornell CIS Building) becomes a draft named
+  after the folder, with its photos. Set its real name, facts, text and photographer before
+  publishing.
+- **A finished project that is already on the site** (270 Park): `--as "270 Park=270-park-ave"
+  --update "270 Park"` reads its document into it. The status and year follow the document, the
+  document's text replaces the site's (the old text stays under Versions), and other fields are
+  filled only where the site has none. Add `--publish "270 Park"` to publish it in the same run.
+  A new project is never published by the command, because it needs its categories first.
+- **Not read:** PDFs, videos (add them under Videos), PSDs, and Timeline folders.
+
+Photo descriptions start as "<Project>, photograph N", the same as the photo import. Write
+better ones in the admin before publishing.
