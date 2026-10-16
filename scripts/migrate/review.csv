@@ -39,7 +39,6 @@ https://www.tillotsondesign.com/performing-arts/nyu-paulson-center,project name,
 https://www.tillotsondesign.com/restaurants/rainbow-room,project name,Rainbow Room | Rainbow Room at Rockefeller Center,,"Same project, named differently under two categories."
 https://www.tillotsondesign.com/retail/knoll-flagship-offices-showroom-and-shop,project name,"Knoll Flagship: Offices, Showroom, and Shop | Knoll Flagship Offices, Showroom, and Shop",,"Same project, named differently under two categories."
 https://www.tillotsondesign.com/sitepublicrealm/dee-and-charles-wyly-theater,project name,Dee & Charles Wyly Theatre | Dee & Charles Wyly Theater,,"Same project, named differently under two categories."
-https://www.tillotsondesign.com/712-fifth-avenue-full-project-credits,credits page,712 Fifth Avenue Atrium | 712 Fifth Avenue Lobby,,Two different projects share one credits page. Both keep these credits; the old credits address redirects to the first. Split the credits if they differ.
 https://www.tillotsondesign.com/corporate/foundation-in-the-midwest,credits page,Foundation in the Midwest,,"Project page has no ""Full Project Stats"" link."
 https://www.tillotsondesign.com/historic/nanotronicssmartfactory,project,/corporate/nanotronics-smart-factory | /historic/nanotronicssmartfactory,,Same project (Nanotronics Smart Factory) under two addresses; merged into one. Images and text come from the first.
 https://www.tillotsondesign.com/rainbow-room-full-project-credits,credits page,Rainbow Room at Rockefeller Center | Rainbow Room,,Two different projects share one credits page. Both keep these credits; the old credits address redirects to the first. Split the credits if they differ.
@@ -86,9 +85,8 @@ https://www.tillotsondesign.com/academic/temple-charles-library,project name,Tem
 https://www.tillotsondesign.com/academic/temple-charles-library,firm,Snohetta | Snøhetta,,Same firm spelled differently on the project page and the credits page. Check the firm’s own spelling.
 https://www.tillotsondesign.com/academic/the-roy-and-diana-vagelos-education-center,project name,The Roy and Diana Vagelos Education Center | Roy and Diana Vagelos Education Center,,Project page and credits page name the project differently. Which is right?
 https://www.tillotsondesign.com/corporate/599-lexington,project name,599 Lexington Avenue Ground Floor Upgrades | 599 Lexington Avenue,,Project page and credits page name the project differently. Which is right?
-https://www.tillotsondesign.com/corporate/712-fifth-avenue-atrium,project name,712 Fifth Avenue Atrium | 712 Fifth Avenue,,Project page and credits page name the project differently. Which is right?
+https://www.tillotsondesign.com/corporate/712-fifth-avenue-atrium,project name,712 Fifth Avenue Lobby & Atrium | 712 Fifth Avenue,,Project page and credits page name the project differently. Which is right?
 https://www.tillotsondesign.com/corporate/712-fifth-avenue-atrium,firm,Kohn Pedersen Fox | Kohn Pederson Fox,,Same firm spelled differently on the project page and the credits page. Check the firm’s own spelling.
-https://www.tillotsondesign.com/corporate/712-fifth-avenue-lobby,project name,712 Fifth Avenue Lobby | 712 Fifth Avenue,,Project page and credits page name the project differently. Which is right?
 https://www.tillotsondesign.com/corporate/bloomberg-european-hq,location,"London, England | London, UK",,Project page and credits page give different locations.
 https://www.tillotsondesign.com/corporate/bloomberg-european-hq,firm,Fosters + Partners | Foster + Partner,,Same firm spelled differently on the project page and the credits page. Check the firm’s own spelling.
 https://www.tillotsondesign.com/corporate/cai-studio,firm,OMA - Office for Metropolitan Architecture | Office For Metropolitan Architecture,,Same firm spelled differently on the project page and the credits page. Check the firm’s own spelling.
@@ -245,6 +243,7 @@ https://www.tillotsondesign.com/oxman-studios-full-credits,certification,Pending
 https://www.tillotsondesign.com/exhibitions/about-time,press,'About Time' Fashion and Duration,,Press item has no web link; not imported. Add the link by hand.
 https://www.tillotsondesign.com/gabrielle-chanel-fashion-manifesto-full-credits,credit,Curators: …,,"Curators and artists are people, not firms; not imported into credits. Add by hand if they should be credited."
 https://www.tillotsondesign.com/edition-hotel-full-project-credits,lighting design,Tillotson Design Associate,,"Lighting design credit is not ""Tillotson Design Associates"". Typo, or a predecessor-firm project?"
+https://www.tillotsondesign.com/hospitality/edition-hotel-istanbul,world region,Turkey,,"No world region set for this country. Choose one on the location Istanbul, Turkey."
 https://www.tillotsondesign.com/the-knickerbocker-hotel-full-project-credits,area,"100,000 SF - 300,000 SF (175,000 SF)",,"Area not in ""N SF"" form; not imported. Enter it by hand."
 https://www.tillotsondesign.com/folger-shakespeare-library-full-credits,credit,Sculpture Artist: …,,"Curators and artists are people, not firms; not imported into credits. Add by hand if they should be credited."
 https://www.tillotsondesign.com/tel-aviv-museum-of-art-full-project-credits,area,"195,000 SF (Rounded up)",,"Area not in ""N SF"" form; not imported. Enter it by hand."

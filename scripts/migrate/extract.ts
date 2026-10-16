@@ -24,6 +24,7 @@ import { HTMLElement, parse } from 'node-html-parser'
 import { normalizeName } from '../../src/hooks/preventNearDuplicates'
 
 import { ARCHITECT_ROLES, FIRM_ROLES, type Role, roleFor } from './credit-labels'
+import { MANUAL_MERGES } from './merges'
 import { cacheDir, outDir, type ReviewRow, similarity, SITE, writeReview } from './lib'
 
 const siteDir = path.join(cacheDir, new URL(SITE).host)
@@ -340,9 +341,28 @@ async function main() {
       first.featured ||= project.featured
       projects.delete(key)
       flag(project.legacyPaths[0], 'project', `${first.legacyPaths[0]} | ${project.legacyPaths[0]}`, `Same project (${project.name}) under two addresses; merged into one. Images and text come from the first.`)
-    } else {
+    } else if (!MANUAL_MERGES.some((m) => m.slugs.includes(first.key) && m.slugs.includes(project.key))) {
       flag(project.creditsPath, 'credits page', `${first.name} | ${project.name}`, 'Two different projects share one credits page. Both keep these credits; the old credits address redirects to the first. Split the credits if they differ.')
     }
+  }
+
+  // Merges TDA confirmed by hand (scripts/migrate/merges.ts).
+  for (const merge of MANUAL_MERGES) {
+    const [into, ...others] = merge.slugs.map((slug) => projects.get(slug))
+    if (!into || others.some((o) => !o)) {
+      flag('/', 'project', merge.slugs.join(' | '), 'Listed in merges.ts but not found among the extracted projects.')
+      continue
+    }
+    for (const other of others as ProjectRecord[]) {
+      into.legacyPaths.push(...other.legacyPaths.filter((x) => !into.legacyPaths.includes(x)))
+      into.typologies.push(...other.typologies.filter((t) => !into.typologies.includes(t)))
+      into.featured ||= other.featured
+      into.description.push(...other.description)
+      into.gallery.push(...[other.heroImage, ...other.gallery].filter((i): i is Image => Boolean(i)))
+      into.press.push(...other.press.filter((x) => !into.press.some((y) => y.url === x.url)))
+      projects.delete(other.key)
+    }
+    into.name = merge.name
   }
 
   // Credits pages no project links to: projects that exist only as credits, or stale copies.
