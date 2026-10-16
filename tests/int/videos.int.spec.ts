@@ -81,3 +81,11 @@ describe('videos', () => {
     expect(call(big, { operation: 'update', originalDoc: { filename: 'loop.mp4' } })).toEqual({ filesize: big })
   })
 })
+
+describe('photo addresses', () => {
+  it('points at the public Blob store named by the token, or at Payload locally', async () => {
+    const { blobFileURL } = await import('@/lib/blob')
+    expect(blobFileURL('tda-1 a.jpg', 'vercel_blob_rw_AbC123_secretpart')).toBe('https://abc123.public.blob.vercel-storage.com/tda-1%20a.jpg')
+    expect(blobFileURL('tda-1.jpg', '')).toBe('/api/media/file/tda-1.jpg')
+  })
+})

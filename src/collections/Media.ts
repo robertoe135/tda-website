@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
 import { sanitizeUpload } from '../hooks/sanitizeUpload'
+import { blobFileURL } from '../lib/blob'
 
 export const Media: CollectionConfig = {
   slug: 'media',
@@ -66,6 +67,12 @@ export const Media: CollectionConfig = {
       // Open Graph / social preview, cropped around the focal point.
       { name: 'og', width: 1200, height: 630, position: 'centre' },
     ],
-    adminThumbnail: 'card',
+    // Built from the file name, not the address saved at upload: photos load straight from Blob,
+    // and addresses saved before that change (/api/media/file/…) no longer lead anywhere.
+    adminThumbnail: ({ doc }) => {
+      const sizes = doc.sizes as { card?: { filename?: string | null } } | undefined
+      const filename = sizes?.card?.filename || (doc.filename as string | undefined)
+      return filename ? blobFileURL(filename) : null
+    },
   },
 }
