@@ -6,6 +6,7 @@ import { cache } from 'react'
 
 import { AboutNav } from '@/components/AboutNav'
 import { getPayloadClient } from '@/lib/projects'
+import type { Media } from '@/payload-types'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -50,6 +51,7 @@ export default async function PersonPage({ params }: Props) {
   const data = await getPerson((await params).slug)
   if (!data) notFound()
   const { person, projects } = data
+  const headshot = typeof person.headshot === 'object' && person.headshot?.url ? (person.headshot as Media) : undefined
 
   return (
     <article className="person">
@@ -58,7 +60,13 @@ export default async function PersonPage({ params }: Props) {
         <h1 className="project-title">{person.name}</h1>
         {person.title && <p className="project-line">{person.title}</p>}
       </header>
-      {/* Headshot here once uploaded; bio only when the person has approved one. */}
+      {headshot && (
+        <div className="person-headshot">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={headshot.sizes?.gallery?.url ?? headshot.url!} alt={headshot.alt} width={headshot.width ?? undefined} height={headshot.height ?? undefined} />
+        </div>
+      )}
+      {/* The bio only when the person has approved one; never written for them. */}
       {person.bio && (
         <div className="project-description">
           <RichText data={person.bio} />

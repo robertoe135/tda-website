@@ -129,6 +129,8 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .project-info-body > div > .project-info-heading:first-child { margin-top: 0; }
 
 /* Team pages */
+.person-headshot { max-width: 20rem; margin: 0 auto 2.5rem; }
+.person-headshot img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; }
 .person-projects { max-width: 38rem; margin: 0 auto; }
 .person-projects ul { list-style: none; margin: 0; padding: 0; font-weight: 300; }
 .person-projects li { display: flex; justify-content: space-between; gap: 1rem; padding: 0.5rem 0; border-bottom: 1px solid var(--line); }
