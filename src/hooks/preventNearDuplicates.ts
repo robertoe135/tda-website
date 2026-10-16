@@ -29,7 +29,7 @@ export const normalizedNameField: Field = {
  * punctuation, capitalization or accents, and tells the editor which record already exists.
  */
 export const preventNearDuplicates =
-  (collection: CollectionSlug, field = 'name'): CollectionBeforeValidateHook =>
+  (collection: CollectionSlug, field = 'name', { aliases = false } = {}): CollectionBeforeValidateHook =>
   async ({ data, originalDoc, req }) => {
     const value = data?.[field] ?? originalDoc?.[field]
     if (!data || typeof value !== 'string') return data
@@ -45,7 +45,9 @@ export const preventNearDuplicates =
       req,
       where: {
         and: [
-          { normalizedName: { equals: normalizedName } },
+          aliases
+            ? { or: [{ normalizedName: { equals: normalizedName } }, { 'aliases.normalizedName': { equals: normalizedName } }] }
+            : { normalizedName: { equals: normalizedName } },
           ...(originalDoc?.id ? [{ id: { not_equals: originalDoc.id } }] : []),
         ],
       },
@@ -58,7 +60,10 @@ export const preventNearDuplicates =
         errors: [
           {
             path: field,
-            message: `"${String(match[field])}" already exists. Use that record instead of creating a second one.`,
+            message:
+              normalizeName(String(match[field])) === normalizedName
+                ? `"${String(match[field])}" already exists. Use that record instead of creating a second one.`
+                : `"${value}" is another name for "${String(match[field])}". Use that record instead of creating a second one.`,
           },
         ],
         req,

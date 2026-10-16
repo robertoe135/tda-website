@@ -143,14 +143,20 @@ Old addresses keep working, from the data rather than a hand-kept list:
 `pnpm migrate:check-redirects` lists any old address without a destination; add `--live` to
 check only what redirects today. Two are open in `review-notes.csv` (`/loyola-chapel`, `/new-page`).
 
-## 8. Duplicate firms (`pnpm migrate:merge-firms`)
+## 8. Duplicate firms and other names (`pnpm migrate:merge-firms`)
 
-When `review.csv` shows one firm under two spellings, a person picks the right one, then:
+A firm has one main record; its abbreviations and other spellings are **Other names**
+(aliases) on that record: SOM for Skidmore, Owings & Merrill, or a misspelling found in the
+old site. The site always shows the main name. Old filter links, imports and the admin's
+duplicate check all treat an alias as the main firm.
+
+When `review.csv` shows one firm as two records, a person picks the main one, then:
 
 ```
 pnpm migrate:merge-firms --keep "Foster + Partners" --merge "Fosters + Partners"          # list
 pnpm migrate:merge-firms --keep "Foster + Partners" --merge "Fosters + Partners" --write  # merge
 ```
 
-Projects naming the second firm (architect, client or credits) move to the first, and the
-second is deleted. Names must match exactly.
+Projects naming the second record (architect, client or credits) move to the main one, the
+second record is deleted, and its name becomes an alias. Names must match exactly. For a name
+that never had its own record (an abbreviation), add it under Other names in the admin.

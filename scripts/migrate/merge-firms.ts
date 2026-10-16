@@ -5,8 +5,9 @@
  *   pnpm migrate:merge-firms --keep "Foster + Partners" --merge "Fosters + Partners" --write   # merge
  *
  * Every project that names the merged firm as architect, client or in its credits is pointed
- * at the kept firm instead (no repeats), then the merged firm is deleted. Names must match
- * exactly; nothing is guessed. A project saved as a draft stays a draft; a published one is
+ * at the kept (main) firm instead (no repeats). The merged record is deleted and its name, with
+ * any aliases it had, becomes an alias of the main firm: never shown, but old links, filters
+ * and imports using it land on the main firm. Names must match exactly; nothing is guessed. A project saved as a draft stays a draft; a published one is
  * republished with only this change. Refuses a database that is not on this machine unless
  * --confirm-backup is passed.
  */
@@ -17,6 +18,7 @@ import { fileURLToPath } from 'url'
 import { getPayload, type Payload } from 'payload'
 
 import config from '../../src/payload.config'
+import { normalizeName } from '../../src/hooks/preventNearDuplicates'
 import type { Project } from '../../src/payload-types'
 
 type Ref = number | { id: number } | null | undefined
@@ -61,8 +63,18 @@ export async function mergeFirms(payload: Payload, keepName: string, mergeName: 
       draft: p._status !== 'published',
     })
   }
-  if (write) await payload.delete({ collection: 'firms', id: merge.id })
-  return { keep: keep.name, merge: merge.name, projects: changed }
+  // The merged name joins the main firm's aliases, after the record is gone (a name may not be
+  // both a firm and another firm's alias).
+  const aliases = [
+    ...(keep.aliases ?? []).map((a) => ({ name: a.name })),
+    { name: merge.name },
+    ...(merge.aliases ?? []).map((a) => ({ name: a.name })),
+  ].filter((a, i, all) => all.findIndex((b) => normalizeName(b.name) === normalizeName(a.name)) === i)
+  if (write) {
+    await payload.delete({ collection: 'firms', id: merge.id })
+    await payload.update({ collection: 'firms', id: keep.id, data: { aliases } })
+  }
+  return { keep: keep.name, merge: merge.name, projects: changed, aliases: aliases.map((a) => a.name) }
 }
 
 function assertLocalDatabase() {
@@ -92,7 +104,7 @@ async function main() {
   for (const name of result.projects) console.log(`  ${name}`)
   console.log(
     write
-      ? `Merged "${result.merge}" into "${result.keep}" on ${result.projects.length} project(s) and deleted it.`
+      ? `Merged "${result.merge}" into "${result.keep}" on ${result.projects.length} project(s). Other names of "${result.keep}": ${result.aliases.join(', ')}.`
       : `${result.projects.length} project(s) would move from "${result.merge}" to "${result.keep}". Rerun with --write.`,
   )
   process.exit(0)

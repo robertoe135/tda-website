@@ -156,9 +156,14 @@ function finder(payload: Payload) {
     const key = `${collection}:${normalizeName(name)}`
     const hit = cache.get(key)
     if (hit) return hit
+    const normalized = normalizeName(name)
     const found = await payload.find({
       collection,
-      where: { normalizedName: { equals: normalizeName(name) } },
+      // A firm also answers to its other names (aliases), so a merged spelling is not recreated.
+      where:
+        collection === 'firms'
+          ? { or: [{ normalizedName: { equals: normalized } }, { 'aliases.normalizedName': { equals: normalized } }] }
+          : { normalizedName: { equals: normalized } },
       limit: 1,
       depth: 0,
     })

@@ -386,6 +386,16 @@ export interface Firm {
    */
   name: string;
   /**
+   * Abbreviations and other spellings of this firm, e.g. SOM. Never shown on the site: old links, filters and imports using them land on this firm.
+   */
+  aliases?:
+    | {
+        name: string;
+        normalizedName?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
    * Full address, starting with https://
    */
   website?: string | null;
@@ -1047,6 +1057,13 @@ export interface LocationsSelect<T extends boolean = true> {
  */
 export interface FirmsSelect<T extends boolean = true> {
   name?: T;
+  aliases?:
+    | T
+    | {
+        name?: T;
+        normalizedName?: T;
+        id?: T;
+      };
   website?: T;
   projects?: T;
   normalizedName?: T;

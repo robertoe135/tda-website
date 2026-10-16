@@ -1,6 +1,8 @@
 import config from '@payload-config'
 import { getPayload } from 'payload'
 
+import { toSlug } from '@/fields/slug'
+
 import type { Firm, Location, Media, Photographer, Project, Typology } from '@/payload-types'
 
 /**
@@ -152,6 +154,37 @@ export const filterHref = (key: FilterKey, value: string) =>
   `/projects?${new URLSearchParams({ [key]: value }).toString()}`
 
 /** Link that adds or removes one value from the current filters. */
+const FIRM_KEYS = ['architect', 'collaborator', 'client'] as const
+
+/**
+ * Firm filters written with another name of a firm (an alias, e.g. an old link to
+ * ?architect=skidmore-owings-merrill) rewritten to the main firm. Returns the canonical
+ * portfolio address when anything changed, so the page can redirect to it.
+ */
+export async function canonicalFirmFilters(filters: Filters): Promise<string | undefined> {
+  if (!FIRM_KEYS.some((k) => filters[k].length)) return undefined
+  const payload = await getPayloadClient()
+  const firms = await payload.find({
+    collection: 'firms',
+    overrideAccess: false,
+    pagination: false,
+    depth: 0,
+    where: { 'aliases.name': { exists: true } },
+    select: { slug: true, aliases: true },
+  })
+  const main = new Map<string, string>()
+  for (const f of firms.docs) for (const a of f.aliases ?? []) if (f.slug && toSlug(a.name)) main.set(toSlug(a.name)!, f.slug)
+  let changed = false
+  const next = { ...filters }
+  for (const k of FIRM_KEYS) {
+    next[k] = [...new Set(filters[k].map((v) => (main.has(v) ? ((changed = true), main.get(v)!) : v)))]
+  }
+  if (!changed) return undefined
+  const params = new URLSearchParams()
+  for (const k of FILTER_KEYS) for (const v of next[k]) params.append(k, v)
+  return `/projects?${params.toString()}`
+}
+
 export function toggleHref(filters: Filters, key: FilterKey, value: string): string {
   const params = new URLSearchParams()
   for (const k of FILTER_KEYS) {

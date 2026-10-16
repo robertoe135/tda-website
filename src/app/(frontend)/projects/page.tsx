@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { permanentRedirect } from 'next/navigation'
 
 import {
+  canonicalFirmFilters,
   type Filters,
   getPublishedProjects,
   getTypologies,
@@ -27,6 +29,9 @@ export const metadata: Metadata = {
  */
 export default async function ProjectsPage({ searchParams }: Props) {
   const filters = parseFilters(await searchParams)
+  // A firm filter using another name of a firm goes to the main firm's address.
+  const canonical = await canonicalFirmFilters(filters)
+  if (canonical) permanentRedirect(canonical)
   const [projects, typologies] = await Promise.all([getPublishedProjects(), getTypologies()])
   const shown = projects.filter((p) => matches(p, filters))
 
