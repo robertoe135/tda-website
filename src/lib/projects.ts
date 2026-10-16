@@ -21,14 +21,19 @@ export type ProjectCard = {
   location?: Pick<Location, 'displayName' | 'slug' | 'worldRegion'>
   typologies: Pick<Typology, 'name' | 'slug'>[]
   architects: Pick<Firm, 'name' | 'slug'>[]
-  /** Card-sized hero image, when one has been uploaded. */
-  image?: { src: string; alt: string }
+  /** The main image, card-sized with larger sizes in srcSet, when one has been uploaded. */
+  image?: { src: string; srcSet?: string; alt: string }
   /** Slugs of firms in the credits list and of clients, for the collaborator/client filters. */
   collaboratorSlugs: string[]
   clientSlugs: string[]
 }
 
 const isObject = <T>(value: unknown): value is T => typeof value === 'object' && value !== null
+
+const cardImage = (m: Media) => {
+  const sizes = [m.sizes?.card, m.sizes?.gallery].filter((x): x is { url: string; width: number } => Boolean(x?.url && x?.width))
+  return { src: m.sizes?.card?.url ?? m.url!, srcSet: sizes.map((x) => `${x.url} ${x.width}w`).join(', ') || undefined, alt: m.alt }
+}
 
 /** All published projects, newest first, with only the fields cards and filters need. */
 export async function getPublishedProjects(): Promise<ProjectCard[]> {
@@ -69,9 +74,7 @@ export async function getPublishedProjects(): Promise<ProjectCard[]> {
     location: isObject<Location>(p.location) ? p.location : undefined,
     typologies: (p.typologies ?? []).filter(isObject<Typology>),
     architects: (p.architects ?? []).filter(isObject<Firm>),
-    image: isObject<Media>(p.heroImage) && p.heroImage.url
-      ? { src: p.heroImage.sizes?.card?.url ?? p.heroImage.url, alt: p.heroImage.alt }
-      : undefined,
+    image: isObject<Media>(p.heroImage) && p.heroImage.url ? cardImage(p.heroImage) : undefined,
     collaboratorSlugs: (p.credits ?? []).flatMap((c) =>
       c.firms.filter(isObject<Firm>).map((f) => f.slug ?? ''),
     ),

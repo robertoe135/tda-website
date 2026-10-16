@@ -15,6 +15,7 @@ import * as migration_20261016_035226_media_blob_prefix from './20261016_035226_
 import * as migration_20261016_043020_team_roles from './20261016_043020_team_roles';
 import * as migration_20261016_050937_media_source_hash from './20261016_050937_media_source_hash';
 import * as migration_20261016_052641_pages_home_about_contact from './20261016_052641_pages_home_about_contact';
+import * as migration_20261016_123730_home_rows_videos from './20261016_123730_home_rows_videos';
 
 export const migrations = [
   {
@@ -100,6 +101,11 @@ export const migrations = [
   {
     up: migration_20261016_052641_pages_home_about_contact.up,
     down: migration_20261016_052641_pages_home_about_contact.down,
-    name: '20261016_052641_pages_home_about_contact'
+    name: '20261016_052641_pages_home_about_contact',
+  },
+  {
+    up: migration_20261016_123730_home_rows_videos.up,
+    down: migration_20261016_123730_home_rows_videos.down,
+    name: '20261016_123730_home_rows_videos'
   },
 ];

@@ -70,6 +70,7 @@ export interface Config {
     projects: Project;
     people: Person;
     media: Media;
+    videos: Video;
     awards: Award;
     press: Press;
     typologies: Typology;
@@ -99,6 +100,7 @@ export interface Config {
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     people: PeopleSelect<false> | PeopleSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    videos: VideosSelect<false> | VideosSelect<true>;
     awards: AwardsSelect<false> | AwardsSelect<true>;
     press: PressSelect<false> | PressSelect<true>;
     typologies: TypologiesSelect<false> | TypologiesSelect<true>;
@@ -632,6 +634,40 @@ export interface Press {
   createdAt: string;
 }
 /**
+ * Short loops for the homepage. Export as MP4 (H.264), about 1920 px wide, no sound, under 40 MB (aim for 10–20 MB). The file name is public: name it after the project, never after a private client.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "videos".
+ */
+export interface Video {
+  id: number;
+  /**
+   * What the video shows, in a few words. Do not name private clients.
+   */
+  alt: string;
+  /**
+   * Shown while the video loads, and instead of it for visitors who turn off motion. Usually the first frame.
+   */
+  poster: number | Media;
+  /**
+   * Only if the video needs its own credit, e.g. a filmmaker.
+   */
+  credit?: string | null;
+  prefix?: string | null;
+  _objectKey?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
  * People who can log in to this admin. Only admins can add or remove them.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -696,6 +732,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'videos';
+        value: number | Video;
       } | null)
     | ({
         relationTo: 'awards';
@@ -925,6 +965,28 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "videos_select".
+ */
+export interface VideosSelect<T extends boolean = true> {
+  alt?: T;
+  poster?: T;
+  credit?: T;
+  prefix?: T;
+  _objectKey?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "awards_select".
  */
 export interface AwardsSelect<T extends boolean = true> {
@@ -1081,35 +1143,50 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
- * Drag rows to reorder. Only published projects appear.
+ * Rows from top to bottom. Drag to reorder. Only published projects appear.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "home".
  */
 export interface Home {
   id: number;
-  items?:
-    | (
-        | {
-            project: number | Project;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'project';
-          }
-        | {
-            /**
-             * Exactly as said. No quotation marks; the site adds them.
-             */
-            text: string;
-            /**
-             * e.g. Suzan Tillotson
-             */
-            attribution: string;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'quote';
-          }
-      )[]
+  rows?:
+    | {
+        /**
+         * One, two or three items side by side. On phones they stack.
+         */
+        layout: 'one' | 'two' | 'wide-narrow' | 'narrow-wide' | 'three';
+        items: (
+          | {
+              project: number | Project;
+              /**
+               * Optional. Another photograph of the project instead of its main image.
+               */
+              image?: (number | null) | Media;
+              /**
+               * Optional. Plays muted, on a loop, in place of the photograph.
+               */
+              video?: (number | null) | Video;
+              id?: string | null;
+              blockName?: string | null;
+              blockType: 'project';
+            }
+          | {
+              /**
+               * Exactly as said. No quotation marks; the site adds them.
+               */
+              text: string;
+              /**
+               * e.g. Suzan Tillotson
+               */
+              attribution: string;
+              id?: string | null;
+              blockName?: string | null;
+              blockType: 'quote';
+            }
+        )[];
+        id?: string | null;
+      }[]
     | null;
   _status?: ('draft' | 'published') | null;
   updatedAt?: string | null;
@@ -1220,24 +1297,32 @@ export interface SiteSetting {
  * via the `definition` "home_select".
  */
 export interface HomeSelect<T extends boolean = true> {
-  items?:
+  rows?:
     | T
     | {
-        project?:
+        layout?: T;
+        items?:
           | T
           | {
-              project?: T;
-              id?: T;
-              blockName?: T;
+              project?:
+                | T
+                | {
+                    project?: T;
+                    image?: T;
+                    video?: T;
+                    id?: T;
+                    blockName?: T;
+                  };
+              quote?:
+                | T
+                | {
+                    text?: T;
+                    attribution?: T;
+                    id?: T;
+                    blockName?: T;
+                  };
             };
-        quote?:
-          | T
-          | {
-              text?: T;
-              attribution?: T;
-              id?: T;
-              blockName?: T;
-            };
+        id?: T;
       };
   _status?: T;
   updatedAt?: T;

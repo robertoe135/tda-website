@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 
-import { ProjectTile } from '@/components/ProjectTile'
-import { getHomeItems } from '@/lib/site'
+import { VideoTile } from '@/components/VideoTile'
+import { getHomeRows, type HomeTile } from '@/lib/site'
 
 export const metadata: Metadata = {
   title: 'Tillotson Design Associates',
@@ -9,32 +10,60 @@ export const metadata: Metadata = {
   alternates: { canonical: '/' },
 }
 
-/** The homepage: projects in marketing's order, with quotes between them (Homepage in the admin). */
+/** The homepage: rows of project photographs, looping videos and quotes (Homepage in the admin). */
 export default async function HomePage() {
-  const items = await getHomeItems()
+  const rows = await getHomeRows()
   return (
     <div className="home">
       <h1 className="visually-hidden">Tillotson Design Associates</h1>
-      {items.length === 0 ? (
+      {rows.length === 0 ? (
         <p className="empty">Projects are on their way.</p>
       ) : (
-        <ul className="tile-grid">
-          {items.map((item, i) =>
-            item.kind === 'quote' ? (
-              <li key={item.id ?? i} className="home-quote">
-                <figure>
+        rows.map((row, r) => (
+          <div key={row.id ?? r} className="home-row" data-layout={row.layout}>
+            {row.items.map((item, i) =>
+              item.kind === 'quote' ? (
+                <figure key={item.id ?? i} className="home-quote">
                   <blockquote>&ldquo;{item.text}&rdquo;</blockquote>
                   <figcaption>{item.attribution}</figcaption>
                 </figure>
-              </li>
-            ) : (
-              <li key={item.id ?? i}>
-                <ProjectTile project={item.project} priority={i < 3} />
-              </li>
-            ),
-          )}
-        </ul>
+              ) : (
+                <Tile key={item.id ?? i} item={item} eager={r === 0} />
+              ),
+            )}
+          </div>
+        ))
       )}
+      {rows.length > 0 && (
+        <p className="home-more">
+          <Link href="/projects">See all projects</Link>
+        </p>
+      )}
+    </div>
+  )
+}
+
+function Tile({ item, eager }: { item: HomeTile; eager: boolean }) {
+  const { project, image, video } = item
+  const href = `/projects/${project.slug}`
+  if (video) return <VideoTile href={href} name={project.name} src={video.src} type={video.type} poster={video.poster ?? image?.src} />
+  return (
+    <div className="home-tile">
+      <Link href={href} className="tile">
+        <div className="tile-image">
+          {image && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={image.src}
+              srcSet={image.srcSet}
+              sizes="(min-width: 1080px) 600px, (min-width: 720px) 50vw, 100vw"
+              alt=""
+              loading={eager ? 'eager' : 'lazy'}
+            />
+          )}
+        </div>
+        <span className="tile-name">{project.name}</span>
+      </Link>
     </div>
   )
 }

@@ -30,7 +30,13 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'], channel: 'chromium' },
+      use: {
+        ...devices['Desktop Chrome'],
+        channel: 'chromium',
+        // A machine with a different Chromium build than this Playwright version expects (e.g. a
+        // cloud container) can point at it: PW_CHROMIUM_PATH=/path/to/chrome pnpm test:e2e
+        ...(process.env.PW_CHROMIUM_PATH ? { launchOptions: { executablePath: process.env.PW_CHROMIUM_PATH } } : {}),
+      },
     },
   ],
   webServer: {

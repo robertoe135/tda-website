@@ -8,6 +8,7 @@ import sharp from 'sharp'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
+import { Videos } from './collections/Videos'
 import { Typologies } from './collections/Typologies'
 import { Locations } from './collections/Locations'
 import { Firms } from './collections/Firms'
@@ -31,7 +32,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Projects, People, Media, Awards, Press, Typologies, Locations, Firms, Photographers, CreditRoles, Users],
+  collections: [Projects, People, Media, Videos, Awards, Press, Typologies, Locations, Firms, Photographers, CreditRoles, Users],
   globals: [Home, About, SiteSettings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
@@ -60,6 +61,17 @@ export default buildConfig({
       enabled: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
       alwaysInsertFields: true,
       collections: { media: true },
+    }),
+    // Videos are uploaded from the browser straight to Blob, past Vercel's 4.5 MB request
+    // limit. Images must not be: they go through the server, which renames them and strips
+    // camera data (src/hooks/sanitizeUpload.ts). Hence a second, video-only instance.
+    vercelBlobStorage({
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+      enabled: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
+      alwaysInsertFields: true,
+      clientUploads: true,
+      addRandomSuffix: true,
+      collections: { videos: { prefix: 'videos' } },
     }),
   ],
 })

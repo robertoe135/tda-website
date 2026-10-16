@@ -108,7 +108,9 @@ pnpm migrate:import --update   # also overwrite imported fields on existing proj
 
 Copies the homepage, About, contact and timeline content, word for word:
 
-- Homepage (draft): the old order of projects, with the two quotes where they stood.
+- Homepage (draft): rows as laid out on the old site (its 24-column grid gives each row's
+  layout), with the two quotes in place. The four videos it played are listed in `review.csv`
+  with their old addresses; upload the originals under Videos (`docs/editing-the-homepage.md`).
 - About page (draft): one section per heading.
 - Site settings: address, phone, emails, contact intro and careers text, only where empty.
 - Timeline: the year from `/timeline` on projects that have none. Where the timeline and the

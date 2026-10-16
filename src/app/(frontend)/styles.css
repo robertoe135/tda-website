@@ -144,11 +144,25 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .tile-name { display: block; margin-top: 0.4rem; font-weight: 300; font-size: 0.85rem; }
 .tile:hover .tile-name { text-decoration: underline; }
 
-/* Homepage quotes span the grid, as on the current site. */
-.home-quote { grid-column: 1 / -1; padding: 2.5rem 0; }
-.home-quote figure { margin: 0 auto; max-width: 42rem; text-align: center; }
-.home-quote blockquote { margin: 0; font-weight: 300; font-size: 1.3rem; line-height: 1.4; }
-.home-quote figcaption { margin-top: 0.75rem; font-weight: 300; font-size: 0.8rem; color: var(--muted); }
+/* Homepage: rows of tiles and quotes (Homepage in the admin). On phones a row is two columns:
+   items stack full width, except a row of three, which shows one wide and two side by side. */
+.home { display: flex; flex-direction: column; gap: 2.5rem; padding-top: 0.5rem; }
+.home-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem 0.75rem; align-items: center; }
+.home-row > * { grid-column: 1 / -1; min-width: 0; }
+.home-row[data-layout='three'] > :nth-child(n + 2) { grid-column: auto; }
+.home-row[data-layout='three'] > :nth-child(n + 2) .tile-image { aspect-ratio: 1; }
+.home-tile { position: relative; align-self: start; }
+.home-tile .tile-image { aspect-ratio: 4 / 3; }
+.tile-image video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.video-toggle {
+  position: absolute; left: 0.6rem; top: 0.6rem; width: 44px; height: 44px; border: 0; border-radius: 50%;
+  display: grid; place-items: center; background: rgb(255 255 255 / 0.9); color: var(--text); cursor: pointer;
+}
+.home-quote { margin: 0; padding: 0.5rem 0; }
+.home-quote blockquote { margin: 0; font-weight: 300; font-size: 1.35rem; line-height: 1.38; }
+.home-quote figcaption { margin-top: 0.9rem; font-weight: 400; font-size: 0.8rem; color: var(--muted); }
+.home-more { text-align: center; margin: 0.5rem 0 0; }
+.home-more a { text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--line); }
 
 /* Timeline */
 .timeline-year { margin-bottom: 2.5rem; }
@@ -197,7 +211,24 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   .team-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .collaborator-list { columns: 3; }
   .contact-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .home-quote blockquote { font-size: 1.6rem; }
+  .home { gap: 4.5rem; padding-top: 1.5rem; }
+  .home-row { gap: 2rem; }
+  .home-row > *, .home-row[data-layout='three'] > :nth-child(n + 2) { grid-column: auto; }
+  .home-row[data-layout='one'] { grid-template-columns: minmax(0, 1fr); }
+  .home-row[data-layout='one'] .tile-image { aspect-ratio: 16 / 9; }
+  .home-row[data-layout='two'] .tile-image { aspect-ratio: 3 / 2; }
+  .home-row[data-layout='three'] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .home-row[data-layout='three'] .tile-image,
+  .home-row[data-layout='three'] > :nth-child(n + 2) .tile-image { aspect-ratio: 4 / 3; }
+  /* 13 + 9 columns; aspect ratios chosen so both items end at the same height. */
+  .home-row[data-layout='wide-narrow'] { grid-template-columns: 13fr 9fr; }
+  .home-row[data-layout='narrow-wide'] { grid-template-columns: 9fr 13fr; }
+  .home-row[data-layout='wide-narrow'] > :first-child .tile-image,
+  .home-row[data-layout='narrow-wide'] > :last-child .tile-image { aspect-ratio: 16 / 9; }
+  .home-row[data-layout='wide-narrow'] > :last-child .tile-image,
+  .home-row[data-layout='narrow-wide'] > :first-child .tile-image { aspect-ratio: 16 / 13; }
+  .home-quote { padding: 0 1.5rem; }
+  .home-quote blockquote { font-size: 1.85rem; line-height: 1.34; }
   .press ul { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .other-projects ul { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .slideshow { margin: 0; }
