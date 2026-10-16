@@ -30,7 +30,7 @@ import type { Location as LocationDoc, Project } from '../../src/payload-types'
 
 import { ARCHITECT_ROLES, FIRM_ROLES, type Role } from './credit-labels'
 import type { Location, ProjectRecord } from './extract'
-import { cacheDir, type ReviewRow, SITE, writeReview } from './lib'
+import { cacheDir, type ReviewRow, richText, SITE, splitCredit, writeReview } from './lib'
 
 const extractedDir = path.join(cacheDir, new URL(SITE).host, 'extracted')
 const update = process.argv.includes('--update')
@@ -110,27 +110,6 @@ function assertLocalDatabase() {
 }
 
 // ── helpers ──────────────────────────────────────────────────────────────────
-
-/** Lexical rich text from plain paragraphs, copied exactly. */
-const richText = (paragraphs: string[]) => ({
-  root: {
-    type: 'root',
-    format: '' as const,
-    indent: 0,
-    version: 1,
-    direction: 'ltr' as const,
-    children: paragraphs.map((text) => ({
-      type: 'paragraph',
-      format: '' as const,
-      indent: 0,
-      version: 1,
-      direction: 'ltr' as const,
-      textFormat: 0,
-      textStyle: '',
-      children: [{ type: 'text', text, format: 0, style: '', mode: 'normal', detail: 0, version: 1 }],
-    })),
-  },
-})
 
 export function parseArea(value?: string): { areaSqFt?: number; areaNote?: string } | undefined {
   if (!value) return undefined
@@ -382,7 +361,7 @@ async function main() {
     }
 
     // Photographers (credited on images later), awards and press.
-    for (const name of c?.photography ?? []) await findOrCreate('photographers', name)
+    for (const name of (c?.photography ?? []).flatMap(splitCredit)) await findOrCreate('photographers', name)
     for (const award of c?.awards ?? []) {
       const dup = await payload.find({
         collection: 'awards',

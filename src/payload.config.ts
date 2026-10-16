@@ -18,6 +18,7 @@ import { Projects } from './collections/Projects'
 import { Awards } from './collections/Awards'
 import { Press } from './collections/Press'
 import { About } from './globals/About'
+import { Home } from './globals/Home'
 import { SiteSettings } from './globals/SiteSettings'
 
 const filename = fileURLToPath(import.meta.url)
@@ -31,7 +32,7 @@ export default buildConfig({
     },
   },
   collections: [Projects, People, Media, Awards, Press, Typologies, Locations, Firms, Photographers, CreditRoles, Users],
-  globals: [SiteSettings, About],
+  globals: [Home, About, SiteSettings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

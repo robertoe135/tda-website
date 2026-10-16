@@ -50,10 +50,19 @@ export const SiteSettings: GlobalConfig = {
       ],
     },
     {
+      name: 'intro',
+      type: 'textarea',
+      admin: { description: 'One line at the top of the contact page.' },
+    },
+    {
       name: 'careersText',
       label: 'Careers text',
       type: 'richText',
       admin: { description: 'Shown on the contact page. Leave empty if TDA is not hiring.' },
+    },
+    {
+      ...urlField('careersLink', 'Careers link'),
+      admin: { description: 'Where applications go: a form or job board. Leave empty to hide the button.' },
     },
     {
       name: 'socialLinks',

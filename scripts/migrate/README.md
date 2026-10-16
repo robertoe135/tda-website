@@ -103,3 +103,24 @@ pnpm migrate:import --update   # also overwrite imported fields on existing proj
   Console before generating redirects.
 - The inventory's address-based credits matching is superseded by the extract step, which
   follows each project page's own credits link.
+
+## 5. Pages (`pnpm migrate:pages`)
+
+Copies the homepage, About, contact and timeline content, word for word:
+
+- Homepage (draft): the old order of projects, with the two quotes where they stood.
+- About page (draft): one section per heading.
+- Site settings: address, phone, emails, contact intro and careers text, only where empty.
+- Timeline: the year from `/timeline` on projects that have none. Where the timeline and the
+  project page disagree, nothing changes and the pair goes to `review.csv`. The new
+  `/timeline` page is built from each project's year, so the two can no longer drift apart.
+
+Publish the homepage and About page in the admin after review. `--update` replaces existing
+homepage and About drafts.
+
+## 6. Photographers (`pnpm migrate:photographers`)
+
+Splits comma-separated photo credits the first import stored as one photographer, and
+credits each project (as a draft) with the photographers its old credits page lists. Run it
+before importing photos (`scripts/media/README.md`).
+

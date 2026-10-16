@@ -14,6 +14,13 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Old Squarespace addresses of the menu pages. Project addresses are handled separately.
+  redirects: async () => [
+    { source: '/about-5', destination: '/about', permanent: true },
+    { source: '/team', destination: '/about/team', permanent: true },
+    { source: '/team/:slug', destination: '/about/team/:slug', permanent: true },
+    { source: '/collaborators', destination: '/about/collaborators', permanent: true },
+  ],
   webpack: (webpackConfig) => {
     webpackConfig.resolve.extensionAlias = {
       '.cjs': ['.cts', '.cjs'],

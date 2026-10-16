@@ -2,8 +2,14 @@ import Link from 'next/link'
 import React from 'react'
 
 import { NavLink } from '@/components/NavLink'
+import { SiteFooter } from '@/components/SiteFooter'
 import '@fontsource-variable/dm-sans'
 import './styles.css'
+
+// Every public page reads the database when it is requested, so publishing in the admin shows
+// on the site at once, with no redeploy. Without this, pages with no URL parameters (home,
+// timeline, About, contact) would be frozen at build time.
+export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: 'Tillotson Design Associates',
@@ -24,13 +30,16 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
           <Link href="/" className="site-name">
             Tillotson Design Associates
           </Link>
-          {/* Menu as on tillotsondesign.com. Timeline, About and Contact are added as those
-              pages are built, so the menu never links to a page that does not exist. */}
+          {/* Menu as on tillotsondesign.com. */}
           <nav aria-label="Main" className="site-nav">
             <NavLink href="/projects">Portfolio</NavLink>
+            <NavLink href="/timeline">Timeline</NavLink>
+            <NavLink href="/about">About</NavLink>
+            <NavLink href="/contact">Contact</NavLink>
           </nav>
         </header>
         <main id="main">{children}</main>
+        <SiteFooter />
       </body>
     </html>
   )

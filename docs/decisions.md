@@ -84,6 +84,8 @@ deploy and restore.
 4. Final typology list.
 5. Which projects are confidential (client hidden, city-level location only)?
 6. Do photography licenses cover web use at larger sizes and social sharing?
+   Answered October 2026 by Roberto Esquenazi-Alkabes: yes. Every image is still credited.
+   Source for web photographs and copy: the "Website" folder in Marketing on the F: drive.
 7. Do TDA's brand typefaces have web licenses? Where are the brand files?
    Typeface answered: DM Sans (open source, OFL). Colors and logo files still needed.
 8. Where is the domain registered and who controls DNS? What email records exist?

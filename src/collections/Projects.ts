@@ -175,13 +175,36 @@ export const Projects: CollectionConfig = {
             {
               name: 'team',
               label: 'TDA team',
-              type: 'relationship',
-              relationTo: 'people',
-              hasMany: true,
-              filterOptions: { showOnSite: { equals: true } },
+              type: 'array',
+              labels: { singular: 'Team member', plural: 'TDA team' },
               admin: {
-                description: 'Only people with "Show on site" turned on can be picked.',
+                description:
+                  'Who worked on the project and in what role. Only people with "Show on site" on can be picked; former staff appear without a link.',
               },
+              fields: [
+                {
+                  type: 'row',
+                  fields: [
+                    {
+                      name: 'person',
+                      type: 'relationship',
+                      relationTo: 'people',
+                      required: true,
+                      filterOptions: { showOnSite: { equals: true } },
+                    },
+                    {
+                      name: 'role',
+                      type: 'select',
+                      required: true,
+                      options: [
+                        { label: 'Principal in Charge', value: 'principal' },
+                        { label: 'Project Manager', value: 'project-manager' },
+                        { label: 'Designer', value: 'designer' },
+                      ],
+                    },
+                  ],
+                },
+              ],
             },
             {
               type: 'row',
@@ -263,6 +286,16 @@ export const Projects: CollectionConfig = {
                   admin: { description: 'Optional. Never paste the file name here.' },
                 },
               ],
+            },
+            {
+              name: 'photographers',
+              type: 'relationship',
+              relationTo: 'photographers',
+              hasMany: true,
+              admin: {
+                description:
+                  'Credited as "Photography" on the project page, for all its images. Set a photographer on a single image only when it differs.',
+              },
             },
           ],
         },
