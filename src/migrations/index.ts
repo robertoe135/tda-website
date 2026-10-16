@@ -16,6 +16,7 @@ import * as migration_20261016_043020_team_roles from './20261016_043020_team_ro
 import * as migration_20261016_050937_media_source_hash from './20261016_050937_media_source_hash';
 import * as migration_20261016_052641_pages_home_about_contact from './20261016_052641_pages_home_about_contact';
 import * as migration_20261016_123730_home_rows_videos from './20261016_123730_home_rows_videos';
+import * as migration_20261016_130037_about_lede_facts from './20261016_130037_about_lede_facts';
 
 export const migrations = [
   {
@@ -106,6 +107,11 @@ export const migrations = [
   {
     up: migration_20261016_123730_home_rows_videos.up,
     down: migration_20261016_123730_home_rows_videos.down,
-    name: '20261016_123730_home_rows_videos'
+    name: '20261016_123730_home_rows_videos',
+  },
+  {
+    up: migration_20261016_130037_about_lede_facts.up,
+    down: migration_20261016_130037_about_lede_facts.down,
+    name: '20261016_130037_about_lede_facts'
   },
 ];

@@ -134,3 +134,6 @@ export function formatAddress(address: NonNullable<Awaited<ReturnType<typeof get
     directions: query ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(query)}` : undefined,
   }
 }
+
+/** tel: link for a US number as written ("212-675-7760"). */
+export const telHref = (phone: string) => `tel:+1${phone.replace(/\D/g, '').replace(/^1(?=\d{10}$)/, '')}`

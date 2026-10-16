@@ -274,10 +274,21 @@ async function main() {
     const sections = parseAbout(await loadMain('about-5.html'))
     await payload.updateGlobal({
       slug: 'about',
-      data: { sections: sections.map((s) => ({ heading: s.heading, body: richText(s.paragraphs) as never })) },
+      data: {
+        // The opening line is the page's own first sentence; the facts restate figures the copy
+        // gives (founded in 2004; WBE Certified; "over one hundred LEED certified projects").
+        lede: sections[0]?.paragraphs[0]?.match(/^[^.]+\./)?.[0],
+        facts: [
+          { value: '2004', label: 'Founded' },
+          { value: 'WBE Certified', label: 'Women owned' },
+          { value: '100+', label: 'LEED certified projects' },
+        ],
+        sections: sections.map((s) => ({ heading: s.heading, body: richText(s.paragraphs) as never })),
+      },
       draft: true,
     })
     console.log(`about: ${sections.length} sections (draft)`)
+    flag('/about-5', 'About facts', '2004 Founded; WBE Certified; 100+ LEED certified projects', 'Restated from the copy for the facts row. Confirm before publishing.')
     flag('/about-5', 'Background', 'staff of twenty-three; over 100 years of lighting expertise', 'Figures copied as written. Confirm them before publishing (Archinect differs).')
   } else console.log('about: already has sections, left as is')
 

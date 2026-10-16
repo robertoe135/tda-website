@@ -1200,6 +1200,26 @@ export interface Home {
  */
 export interface About {
   id: number;
+  /**
+   * Shown large at the top of the page. One sentence, from the text below.
+   */
+  lede?: string | null;
+  /**
+   * Up to four short facts under the opening line, e.g. 2004 / Founded. Only confirmed figures.
+   */
+  facts?:
+    | {
+        /**
+         * e.g. 2004
+         */
+        value: string;
+        /**
+         * e.g. Founded
+         */
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
   sections?:
     | {
         heading: string;
@@ -1334,6 +1354,14 @@ export interface HomeSelect<T extends boolean = true> {
  * via the `definition` "about_select".
  */
 export interface AboutSelect<T extends boolean = true> {
+  lede?: T;
+  facts?:
+    | T
+    | {
+        value?: T;
+        label?: T;
+        id?: T;
+      };
   sections?:
     | T
     | {
