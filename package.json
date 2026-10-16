@@ -17,7 +17,8 @@
     "test:e2e": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" playwright test --config=playwright.config.ts",
     "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts",
     "migrate:inventory": "tsx scripts/migrate/inventory.ts",
-    "migrate:fetch": "tsx scripts/migrate/fetch.ts"
+    "migrate:fetch": "tsx scripts/migrate/fetch.ts",
+    "migrate:extract": "tsx scripts/migrate/extract.ts"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "3.91.0",
@@ -44,6 +45,7 @@
     "eslint-config-next": "16.3.3",
     "fast-xml-parser": "^5.11.2",
     "jsdom": "28.0.0",
+    "node-html-parser": "9.0.4",
     "prettier": "^3.4.2",
     "tsx": "4.23.15",
     "typescript": "5.7.3",

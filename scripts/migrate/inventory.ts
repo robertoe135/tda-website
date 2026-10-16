@@ -7,7 +7,7 @@
  * Reads only the sitemap. Writes:
  *   scripts/migrate/out/url-inventory.csv  every old URL, what kind of page it is, and for
  *                                          project pages the matching "full project credits" page
- *   scripts/migrate/review.csv             anomalies for marketing to resolve (never auto-fixed)
+ *   scripts/migrate/out/review-inventory.csv anomalies for marketing, merged into review.csv
  *   scripts/migrate/cache/                 gitignored: sitemap snapshot and the image report,
  *                                          which contains raw filenames (some name private clients)
  *
@@ -15,19 +15,14 @@
  */
 import { mkdir, readFile, writeFile } from 'fs/promises'
 import path from 'path'
-import { fileURLToPath } from 'url'
 
 import { XMLParser } from 'fast-xml-parser'
 
-const SITE = 'https://www.tillotsondesign.com'
-const here = path.dirname(fileURLToPath(import.meta.url))
-const outDir = path.join(here, 'out')
-const cacheDir = path.join(here, 'cache')
+import { cacheDir, csv, jaccard, outDir, type ReviewRow, similarity, SITE, tokens, writeReview } from './lib'
 
 type SitemapImage = { loc: string; title?: string; caption?: string }
 type Page = { path: string; lastmod?: string; images: SitemapImage[] }
 type Kind = 'typology-index' | 'project' | 'credits' | 'page'
-type ReviewRow = { url: string; field: string; asWritten: string; suggested: string; note: string }
 
 const CREDITS_SUFFIX = /-(full-)?(project-|projects-)?credits$/
 
@@ -66,47 +61,6 @@ function parseSitemap(xml: string): Page[] {
 }
 
 // ── helpers ──────────────────────────────────────────────────────────────────
-
-const STOP = new Set(['the', 'and', 'of', 'at', 'a', 'for', 'new', 'york', 'full'])
-const tokens = (s: string): Set<string> =>
-  new Set(
-    decodeURIComponent(s.replace(/\+/g, ' '))
-      .toLowerCase()
-      .split(/[^a-z0-9]+/)
-      .filter((t) => t && !STOP.has(t)),
-  )
-
-const jaccard = (a: Set<string>, b: Set<string>): number => {
-  if (!a.size || !b.size) return 0
-  let shared = 0
-  for (const t of a) if (b.has(t)) shared++
-  return shared / (a.size + b.size - shared)
-}
-
-const levenshtein = (a: string, b: string): number => {
-  const row = Array.from({ length: b.length + 1 }, (_, i) => i)
-  for (let i = 1; i <= a.length; i++) {
-    let prev = row[0]
-    row[0] = i
-    for (let j = 1; j <= b.length; j++) {
-      const tmp = row[j]
-      row[j] = Math.min(row[j] + 1, row[j - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1))
-      prev = tmp
-    }
-  }
-  return row[b.length]
-}
-
-const similarity = (a: string, b: string): number =>
-  1 - levenshtein(a, b) / Math.max(a.length, b.length, 1)
-
-const csv = (rows: Record<string, string | number>[], columns: string[]): string => {
-  const cell = (v: unknown) => {
-    const s = v === undefined || v === null ? '' : String(v)
-    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
-  }
-  return [columns.join(','), ...rows.map((r) => columns.map((c) => cell(r[c])).join(','))].join('\n') + '\n'
-}
 
 const fileName = (loc: string) => decodeURIComponent(loc.split('/').pop() ?? '').replace(/\+/g, ' ')
 
@@ -296,21 +250,12 @@ async function main() {
     })
   }
 
-  // Hand-written observations (spelling, naming) kept alongside the generated rows.
-  const notesFile = path.join(here, 'review-notes.csv')
-  const notes = await readFile(notesFile, 'utf8').catch(() => '')
-
   await mkdir(outDir, { recursive: true })
   await writeFile(
     path.join(outDir, 'url-inventory.csv'),
     csv(inventory, ['path', 'kind', 'typology', 'projectSlug', 'alsoListedUnder', 'creditsPage', 'images', 'lastmod']),
   )
-  const generated = csv(
-    review.map((r) => ({ 'source URL': r.url, field: r.field, 'as written': r.asWritten, suggested: r.suggested, note: r.note })),
-    ['source URL', 'field', 'as written', 'suggested', 'note'],
-  )
-  const noteRows = notes.split('\n').slice(1).filter(Boolean).join('\n')
-  await writeFile(path.join(here, 'review.csv'), generated + (noteRows ? noteRows + '\n' : ''))
+  const totalReview = await writeReview('inventory', review)
   await writeFile(
     path.join(cacheDir, 'image-report.csv'),
     csv(suspicious, ['path', 'file', 'title']) +
@@ -322,7 +267,7 @@ async function main() {
   console.log(`${pages.length} URLs:`, counts)
   console.log(`${projectSlugs.length} unique project slugs across ${typologySlugs.length} typologies: ${typologySlugs.join(', ')}`)
   console.log(`${pairs.filter((p) => p.confident).length}/${pairs.length} credits pages confidently matched to a project`)
-  console.log(`${review.length} generated review rows, ${noteRows ? noteRows.split('\n').length : 0} hand-written`)
+  console.log(`${review.length} inventory review rows; review.csv now has ${totalReview}`)
   console.log(`${suspicious.length} suspicious image filenames on ${suspiciousByPage.size} pages, ${sharedFiles.length} site-wide images (cache/image-report.csv)`)
 }
 

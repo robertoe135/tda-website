@@ -37,6 +37,10 @@ pnpm migrate:fetch             # everything; about 15 minutes at the default 2 s
 pnpm migrate:fetch --delay 4000
 ```
 
+The script uses only Node's built-in modules, so on Node 23.6 or newer it also runs without
+installing the project: `node scripts/migrate/fetch.ts --limit 5`. Squarespace ignores
+`?format=json` on this site, so every page is saved as HTML.
+
 - One request at a time with a 2 s pause. On HTTP 429/503 it waits (honouring
   `Retry-After`, otherwise 30 s, 60 s, ...) and stops after five refusals. Rerun later:
   saved pages are skipped.
@@ -46,10 +50,29 @@ pnpm migrate:fetch --delay 4000
 - Run it from a normal connection. Squarespace blocks many cloud servers. Behind a proxy
   (e.g. a Claude Code cloud session), Node's fetch needs `NODE_USE_ENV_PROXY=1`.
 
+## 3. Extract (`pnpm migrate:extract`)
+
+Parses the fetched HTML into `cache/www.tillotsondesign.com/extracted/` (gitignored: it holds
+owner/client names and raw image filenames):
+
+- `projects.json`: one record per project, merged across the categories it is listed under:
+  name, the old label line, location, label firms, description paragraphs (verbatim), hero
+  and gallery images with their alt text, press items, every old address, and the credits page
+  (facts, roles, photographers, awards). Credits pages are attached through the project page's
+  own "Full Project Stats" link. Credits pages no project links to become credits-only
+  projects; `/on-the-boards` entries become in-progress projects.
+- `people.json` (team page), `firms.json` (every firm spelling, grouped, with the collaborators
+  page spelling as the preferred one), `site.json` (contact details and About text).
+
+Conflicts go to `out/review-extract.csv` and `review.csv`: names or firm spellings that
+differ between a project page and its credits page, unknown credit labels, locations that
+are not "City, ST", and more. That file never contains owner names or image filenames.
+Credit label variants live in `credit-labels.ts`; unknown labels are flagged, not guessed.
+
 ## Known gaps
 
 - The sitemap is not the full list of old URLs: pages the audit found indexed
   (`/nyu-steinhardt`, `/upper-east-side-townhouse`) are missing. Add URLs from Google Search
   Console before generating redirects.
-- Credits pages are matched to projects by their addresses. 44 of 138 could not be matched
-  with confidence; the page fetch step will read each project page's credits link instead.
+- The inventory's address-based credits matching is superseded by the extract step, which
+  follows each project page's own credits link.
