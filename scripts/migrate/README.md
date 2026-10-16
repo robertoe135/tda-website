@@ -126,3 +126,31 @@ Splits comma-separated photo credits the first import stored as one photographer
 credits each project (as a draft) with the photographers its old credits page lists. Run it
 before importing photos (`scripts/media/README.md`).
 
+
+## 7. Redirects (`pnpm migrate:check-redirects`)
+
+Old addresses keep working, from the data rather than a hand-kept list:
+
+- Project and "full project credits" pages: each project stores its old addresses
+  (`legacyUrls`); `src/app/(frontend)/[...legacy]` sends them to the project with a permanent
+  redirect, in any letter case, once the project is published. Unpublished projects 404 until
+  then, so nobody is sent to a page that does not exist yet.
+- Category pages (`/museums`, `/sitepublicrealm`, ...) open the portfolio filtered to that
+  category; `/on-the-boards` opens On the Boards.
+- Menu pages (`/about-5`, `/team`, `/collaborators`) are in `next.config.ts`; a few one-off
+  pages are in `src/lib/legacy.ts`.
+
+`pnpm migrate:check-redirects` lists any old address without a destination; add `--live` to
+check only what redirects today. Two are open in `review-notes.csv` (`/loyola-chapel`, `/new-page`).
+
+## 8. Duplicate firms (`pnpm migrate:merge-firms`)
+
+When `review.csv` shows one firm under two spellings, a person picks the right one, then:
+
+```
+pnpm migrate:merge-firms --keep "Foster + Partners" --merge "Fosters + Partners"          # list
+pnpm migrate:merge-firms --keep "Foster + Partners" --merge "Fosters + Partners" --write  # merge
+```
+
+Projects naming the second firm (architect, client or credits) move to the first, and the
+second is deleted. Names must match exactly.
