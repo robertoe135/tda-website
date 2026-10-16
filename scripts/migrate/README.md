@@ -28,8 +28,8 @@ servers; if it does, save the sitemap from a browser and pass the file.
 ## 2. Fetch (`pnpm migrate:fetch`)
 
 Downloads each URL in `out/url-inventory.csv` (plus `/` and two indexed legacy pages) once,
-as Squarespace JSON (`?format=json`), falling back to HTML. Saves to `cache/pages/` and logs
-to `cache/fetch-log.csv`. No database needed; images are not downloaded.
+as Squarespace JSON (`?format=json`), falling back to HTML. Saves to
+`cache/www.tillotsondesign.com/pages/` and logs to `fetch-log.csv` beside it. No database needed; images are not downloaded.
 
 ```
 pnpm migrate:fetch --limit 5   # try a few first
@@ -43,7 +43,8 @@ pnpm migrate:fetch --delay 4000
 - Respects robots.txt. If it disallows `?format=json`, the HTML is fetched instead; if a page
   is disallowed entirely it is skipped and counted. `--ignore-robots` overrides this. It is
   TDA's own site, but agree that with marketing first.
-- Run it from a normal connection. Squarespace blocks many cloud servers.
+- Run it from a normal connection. Squarespace blocks many cloud servers. Behind a proxy
+  (e.g. a Claude Code cloud session), Node's fetch needs `NODE_USE_ENV_PROXY=1`.
 
 ## Known gaps
 

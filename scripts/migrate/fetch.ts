@@ -8,7 +8,7 @@
  * Run on a normal internet connection (a laptop, not a cloud server: Squarespace blocks
  * many cloud IPs). Needs no database. Safe to stop and rerun: pages already saved are skipped.
  *
- * Saves each page's Squarespace JSON (`?format=json`) to cache/pages/, and falls back to the
+ * Saves each page's Squarespace JSON (`?format=json`) to cache/<site>/pages/, and falls back to the
  * page's HTML when JSON is unavailable. Does not download images; originals come from TDA's
  * file server. Everything goes to the gitignored cache because page data includes raw image
  * filenames, some of which name private clients.
@@ -24,8 +24,10 @@ const UA_TOKEN = 'tda-website-migration'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 const cacheDir = path.join(here, 'cache')
-const pagesDir = path.join(cacheDir, 'pages')
-const logFile = path.join(cacheDir, 'fetch-log.csv')
+// One folder per site, so a test run against a local server can never pass for real pages.
+const siteDir = path.join(cacheDir, new URL(SITE).host.replace(/[^a-z0-9.-]/gi, '_'))
+const pagesDir = path.join(siteDir, 'pages')
+const logFile = path.join(siteDir, 'fetch-log.csv')
 
 // Pages search engines know about that the sitemap leaves out (site-audit.md, section 2).
 const EXTRA_PATHS = ['/', '/nyu-steinhardt', '/upper-east-side-townhouse']
@@ -151,7 +153,7 @@ async function main() {
 
   const robotsRes = await politeGet(`${SITE}/robots.txt`)
   const robotsText = robotsRes.ok ? await robotsRes.text() : ''
-  await writeFile(path.join(cacheDir, 'robots.txt'), robotsText)
+  await writeFile(path.join(siteDir, 'robots.txt'), robotsText)
   const rules = parseRobots(robotsText)
 
   let fetched = 0
