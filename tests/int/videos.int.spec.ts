@@ -66,14 +66,18 @@ describe('videos', () => {
   })
 
   it(`refuses videos over ${MAX_VIDEO_MB} MB`, () => {
-    const call = (filesize: number) => (checkVideoSize as (args: unknown) => unknown)({ data: { filesize } })
+    const call = (filesize: number, extra: Record<string, unknown> = { operation: 'create' }) =>
+      (checkVideoSize as (args: unknown) => unknown)({ data: { filesize }, ...extra })
     let message = ''
     try {
       call(MAX_VIDEO_MB * 1024 * 1024 + 1)
     } catch (e) {
       message = (e as { data?: { errors?: { message: string }[] } }).data?.errors?.[0]?.message ?? ''
     }
-    expect(message).toMatch(/under 40 MB/)
+    expect(message).toMatch(/under 15 MB/)
     expect(call(5 * 1024 * 1024)).toEqual({ filesize: 5 * 1024 * 1024 })
+    // A video uploaded under the old 40 MB limit can still have its description edited.
+    const big = 30 * 1024 * 1024
+    expect(call(big, { operation: 'update', originalDoc: { filename: 'loop.mp4' } })).toEqual({ filesize: big })
   })
 })

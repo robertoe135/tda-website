@@ -7,11 +7,14 @@ import { authenticated } from '../access/authenticated'
 // Short muted loops for the homepage. Videos go from the browser straight to Vercel Blob
 // (payload.config.ts), so they are not limited by Vercel's 4.5 MB request size, but they also
 // skip the server: no renaming or metadata stripping as for images. Hence the size check and
-// the file-name warning below.
-export const MAX_VIDEO_MB = 40
+// the file-name warning below. Every homepage visitor downloads each video in full (they
+// autoplay), so the limit keeps Blob data transfer low: a 10–15 second loop fits in 5–8 MB.
+export const MAX_VIDEO_MB = 15
 
-export const checkVideoSize: CollectionBeforeValidateHook = ({ data }) => {
-  if (data?.filesize && data.filesize > MAX_VIDEO_MB * 1024 * 1024) {
+/** Checks a newly uploaded file only, so a video uploaded under an older limit stays editable. */
+export const checkVideoSize: CollectionBeforeValidateHook = ({ data, operation, originalDoc }) => {
+  const newFile = operation !== 'update' || (data?.filename && data.filename !== originalDoc?.filename)
+  if (newFile && data?.filesize && data.filesize > MAX_VIDEO_MB * 1024 * 1024) {
     throw new ValidationError({
       errors: [{ path: 'filesize', message: `Videos must be under ${MAX_VIDEO_MB} MB. Export a shorter or smaller loop.` }],
     })
@@ -25,7 +28,7 @@ export const Videos: CollectionConfig = {
   admin: {
     useAsTitle: 'alt',
     defaultColumns: ['filename', 'alt', 'updatedAt'],
-    description: `Short loops for the homepage. Export as MP4 (H.264), about 1920 px wide, no sound, under ${MAX_VIDEO_MB} MB (aim for 10–20 MB). The file name is public: name it after the project, never after a private client.`,
+    description: `Short loops for the homepage. Export as MP4 (H.264), about 1920 px wide, no sound, under ${MAX_VIDEO_MB} MB (aim for 5–8 MB: a 10–15 second loop at about 4 Mbps). The file name is public: name it after the project, never after a private client.`,
   },
   access: {
     read: anyone,

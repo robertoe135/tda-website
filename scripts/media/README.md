@@ -45,7 +45,7 @@ website. Prints:
 - counts and sizes: photos, images to export first (HEIC, PSD, RAW), videos, documents;
 - the folders three levels deep, with how many photos, videos and documents each holds;
 - roughly how much would go into Blob if every photo went on the site;
-- what needs attention: images to export, videos to convert or shorten (over 40 MB), small
+- what needs attention: images to export, videos to convert or shorten (over 15 MB), small
   photos that would look soft, the same photo filed twice.
 
 Folder names under any Residential or Private folder are hidden in the printed summary, so it

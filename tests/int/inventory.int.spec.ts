@@ -17,9 +17,9 @@ describe('website files inventory', () => {
   })
 
   it('flags what to fix before upload', () => {
-    expect(flagsFor({ path: 'v/loop.mov', kind: 'video', bytes: 41 * 1024 * 1024 })).toEqual([
+    expect(flagsFor({ path: 'v/loop.mov', kind: 'video', bytes: 16 * 1024 * 1024 })).toEqual([
       'convert to MP4 (H.264)',
-      'video over 40 MB: export a shorter or smaller loop',
+      'video over 15 MB: export a shorter or smaller loop',
     ])
     expect(flagsFor({ path: 'p/a.jpg', kind: 'photo', bytes: 1, width: 1000, height: 667 })).toEqual(['small (1000 px): may look soft'])
     expect(flagsFor({ path: 'p/a.jpg', kind: 'photo', bytes: 1, width: 4500, height: 3000 })).toEqual([])
