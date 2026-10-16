@@ -21,9 +21,10 @@ are ignored. Licenses for web use were confirmed in October 2026 (`docs/decision
 - Never through the internal TDA app or its file-server tunnel.
 - For the live site, `.env` needs `DATABASE_URL` (Neon) and `BLOB_READ_WRITE_TOKEN`
   (Vercel → Storage → tda-website-storage → Tokens). Make a Neon branch as a backup first.
-- Once only, before the first photo import: `pnpm migrate:split-photographers --write
-  --confirm-backup`. The first import stored lines like "Brett Beyer, Iwan Baan" as one
-  photographer; this splits them into people, keeping every spelling as written.
+- Once only, before the first photo import: `pnpm migrate:photographers --write
+  --confirm-backup`. It splits credits the first import stored as one photographer ("Brett
+  Beyer, Iwan Baan") and credits each project with the photographers its old credits page
+  lists. TDA credits photography per project, so most photos need no credit of their own.
 
 ## 1. Scan
 
@@ -39,9 +40,9 @@ private clients). One row per photo:
 | `include` | `yes` to import. Filled in only when the folder name matches a project exactly. |
 | `project` | The website project's slug. A best guess when the match was not exact: check it. |
 | `slide` | Order in the slideshow; 1 is the main image. Change the numbers to reorder. |
-| `photographer` | Filled in when the old site credits exactly one photographer for the project. |
+| `photographer` | Leave empty: the project's Photography credit covers its photos. Fill in only for a photo by someone else. |
 | `alt` | Description for screen readers. Starts as "<Project>, photograph N"; better ones welcome. |
-| `note` | Why a row needs a look: a guessed match, several photographers, a category that differs. |
+| `note` | Why a row needs a look: a guessed match, a project without a photographer, a category that differs. |
 
 A project filed under several categories uses the folder with the most photos.
 
@@ -49,7 +50,8 @@ A project filed under several categories uses the folder with the most photos.
 
 Open it in Excel, fix what the notes point at, write `yes` where a guess is right, clear
 `include` for photos that should not go on the site, and save as CSV in the same place.
-Every included photo needs a photographer who exists under Photographers in the admin.
+A project with no photographer stops the import: add one to the project (Images →
+Photographers) or to its photos.
 
 ## 3. Import
 
@@ -58,7 +60,7 @@ pnpm media:import "/Volumes/<share>/Marketing/Website/Photos"            # check
 pnpm media:import "/Volumes/<share>/Marketing/Website/Photos" --write --confirm-backup
 ```
 
-- All or nothing: any problem (missing file, unknown photographer, no description) stops it
+- All or nothing: any problem (missing file, no credit, no description) stops it
   before the first upload, with the CSV line of each problem.
 - Photos are scaled to 3000 px and stripped of camera data on your computer; originals stay
   on F:.

@@ -20,7 +20,8 @@
     "migrate:fetch": "tsx scripts/migrate/fetch.ts",
     "migrate:extract": "tsx scripts/migrate/extract.ts",
     "migrate:import": "tsx scripts/migrate/import.ts",
-    "migrate:split-photographers": "tsx scripts/migrate/split-photographers.ts",
+    "migrate:pages": "tsx scripts/migrate/pages.ts",
+    "migrate:photographers": "tsx scripts/migrate/photographers.ts",
     "team:import": "tsx scripts/team/import.ts",
     "media:scan": "tsx scripts/media/scan.ts",
     "media:import": "tsx scripts/media/import.ts"

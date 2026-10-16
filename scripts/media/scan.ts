@@ -8,21 +8,21 @@
  * Writes scripts/media/cache/photos.csv (gitignored: folder and file names can name private
  * clients). One row per photo. `include` is "yes" only where the folder name matches a
  * project exactly; every other row needs a person to fill in the project and say yes.
- * The photographer is filled in only when the old site credits exactly one for the project.
+ * Photographers are credited on the project; the photographer column is only for a photo
+ * whose credit differs.
  *
  * Squarespace stays the source of truth for text and facts; this only brings in photographs.
  */
 import 'dotenv/config'
 
-import { mkdir, readdir, readFile, writeFile } from 'fs/promises'
+import { mkdir, readdir, writeFile } from 'fs/promises'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
 import { getPayload } from 'payload'
 
 import config from '../../src/payload.config'
-import type { ProjectRecord } from '../migrate/extract'
-import { cacheDir as migrateCache, csv, SITE, splitCredit } from '../migrate/lib'
+import { csv } from '../migrate/lib'
 
 import { matchProject, parsePhotoPath, type PhotoPath, slideOrder } from './lib'
 
@@ -59,14 +59,9 @@ async function main() {
     draft: true,
     pagination: false,
     depth: 1,
-    select: { name: true, slug: true, typologies: true, legacyUrls: true, heroImage: true },
+    select: { name: true, slug: true, typologies: true, heroImage: true, photographers: true },
   })
   const candidates = projects.docs.map((p) => ({ slug: p.slug ?? '', name: p.name }))
-
-  // Photographers credited on the old site, by old address.
-  const extracted = path.join(migrateCache, new URL(SITE).host, 'extracted', 'projects.json')
-  const records: ProjectRecord[] = JSON.parse(await readFile(extracted, 'utf8').catch(() => '[]'))
-  const photographersByPath = new Map(records.flatMap((r) => r.legacyPaths.map((p) => [p, (r.credits?.photography ?? []).flatMap(splitCredit)] as const)))
 
   // Group by folder. A project filed under several categories uses the folder with the most
   // photos (the first of those, alphabetically, on a tie).
@@ -117,11 +112,8 @@ async function main() {
       if (project.heroImage) notes.push('Project already has photos; the import skips it unless run with --replace.')
     }
 
-    const credited = project
-      ? [...new Set((project.legacyUrls ?? []).flatMap((u) => photographersByPath.get(u.path) ?? []))]
-      : []
-    if (credited.length > 1) notes.push(`Old site credits several photographers: ${credited.join(' / ')}. Fill in each photo.`)
-    if (project && credited.length === 0) notes.push('No photographer credited on the old site. Fill in each photo.')
+    if (project && !project.photographers?.length)
+      notes.push('Project has no photographer. Run pnpm migrate:photographers, or add one to the project.')
 
     slideOrder(list).forEach((photo, i) =>
       rows.push({
@@ -132,7 +124,7 @@ async function main() {
         folder,
         file: photo.file,
         slide: i + 1,
-        photographer: credited.length === 1 ? credited[0] : '',
+        photographer: '', // only when this photo's credit differs from the project's
         alt: project ? `${project.name}, photograph ${i + 1}` : '',
         note: i === 0 ? notes.join(' ') : '',
       }),

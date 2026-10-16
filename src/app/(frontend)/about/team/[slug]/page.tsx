@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { cache } from 'react'
 
+import { AboutNav } from '@/components/AboutNav'
 import { getPayloadClient } from '@/lib/projects'
 
 type Props = { params: Promise<{ slug: string }> }
@@ -41,7 +42,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${person.name} — Tillotson Design Associates`,
     description: [person.name, person.title, 'Tillotson Design Associates'].filter(Boolean).join(', '),
-    alternates: { canonical: `/team/${person.slug}` },
+    alternates: { canonical: `/about/team/${person.slug}` },
   }
 }
 
@@ -52,6 +53,7 @@ export default async function PersonPage({ params }: Props) {
 
   return (
     <article className="person">
+      <AboutNav />
       <header className="project-header">
         <h1 className="project-title">{person.name}</h1>
         {person.title && <p className="project-line">{person.title}</p>}

@@ -57,7 +57,7 @@ const certification = (c: NonNullable<Project['certifications']>[number]) =>
 
 /** A person's name: linked to their team page if they are current staff, plain text if not. */
 function PersonName({ person }: { person: Person }) {
-  return person.isCurrent && person.slug ? <Link href={`/team/${person.slug}`}>{person.name}</Link> : <>{person.name}</>
+  return person.isCurrent && person.slug ? <Link href={`/about/team/${person.slug}`}>{person.name}</Link> : <>{person.name}</>
 }
 
 /**

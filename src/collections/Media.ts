@@ -11,7 +11,7 @@ export const Media: CollectionConfig = {
     useAsTitle: 'alt',
     defaultColumns: ['filename', 'alt', 'photographer', 'updatedAt'],
     description:
-      'Photographs and headshots. Every image needs a description for screen readers and a credit; crediting the photographer is part of the license. Upload JPEGs exported at about 3000 px on the long side and under 4 MB; larger files are refused by the server.',
+      'Photographs and headshots. Every image needs a description for screen readers. Every image must be credited, on the image or, for project photos, on the project; crediting the photographer is part of the license. Upload JPEGs exported at about 3000 px on the long side and under 4 MB; larger files are refused by the server.',
   },
   access: {
     read: anyone,
@@ -44,12 +44,8 @@ export const Media: CollectionConfig = {
       type: 'text',
       admin: {
         description:
-          'Only when the credit is not a photographer in the list, or must read differently, e.g. "Courtesy of the architect".',
+          'Only when the credit is not a photographer in the list, or must read differently, e.g. "Courtesy of the architect". Project photos are credited on the project (Images → Photographers); leave both empty when that covers this image.',
       },
-      validate: (value: null | string | undefined, { siblingData }: { siblingData: { photographer?: unknown } }) =>
-        value || siblingData?.photographer
-          ? true
-          : 'Choose a photographer or write a credit. Every image must be credited.',
     },
     {
       // Set by scripts/media/import.ts so a second run reuses the upload instead of

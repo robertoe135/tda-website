@@ -287,6 +287,16 @@ export const Projects: CollectionConfig = {
                 },
               ],
             },
+            {
+              name: 'photographers',
+              type: 'relationship',
+              relationTo: 'photographers',
+              hasMany: true,
+              admin: {
+                description:
+                  'Credited as "Photography" on the project page, for all its images. Set a photographer on a single image only when it differs.',
+              },
+            },
           ],
         },
         {

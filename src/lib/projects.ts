@@ -208,11 +208,15 @@ export function projectSlides(project: Project) {
     })
 }
 
-/** Photographers credited on a project's images, in order, without repeats. */
+/**
+ * The project's Photography credit: the photographers set on the project, then any credited
+ * on a single image that are not already listed. In order, without repeats.
+ */
 export function projectPhotographers(project: Project): string[] {
+  const onProject = (project.photographers ?? []).filter(isObject<Photographer>).map((p) => p.name)
   const media = [project.heroImage, ...(project.gallery ?? []).map((g) => g.image)].filter(isObject<Media>)
-  const names = media.map((m) => (isObject<Photographer>(m.photographer) ? m.photographer.name : m.credit)).filter(
+  const onImages = media.map((m) => (isObject<Photographer>(m.photographer) ? m.photographer.name : m.credit)).filter(
     (n): n is string => Boolean(n),
   )
-  return [...new Set(names)]
+  return [...new Set([...onProject, ...onImages])]
 }

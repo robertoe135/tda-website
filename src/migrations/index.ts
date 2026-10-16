@@ -14,6 +14,7 @@ import * as migration_20261016_022300_location_world_region from './20261016_022
 import * as migration_20261016_035226_media_blob_prefix from './20261016_035226_media_blob_prefix';
 import * as migration_20261016_043020_team_roles from './20261016_043020_team_roles';
 import * as migration_20261016_050937_media_source_hash from './20261016_050937_media_source_hash';
+import * as migration_20261016_052641_pages_home_about_contact from './20261016_052641_pages_home_about_contact';
 
 export const migrations = [
   {
@@ -94,6 +95,11 @@ export const migrations = [
   {
     up: migration_20261016_050937_media_source_hash.up,
     down: migration_20261016_050937_media_source_hash.down,
-    name: '20261016_050937_media_source_hash'
+    name: '20261016_050937_media_source_hash',
+  },
+  {
+    up: migration_20261016_052641_pages_home_about_contact.up,
+    down: migration_20261016_052641_pages_home_about_contact.down,
+    name: '20261016_052641_pages_home_about_contact'
   },
 ];

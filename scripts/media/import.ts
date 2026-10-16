@@ -8,7 +8,7 @@
  *     --csv <file>       a different CSV than scripts/media/cache/photos.csv
  *     --confirm-backup   required when DATABASE_URL is not this machine
  *
- * All or nothing: every row is checked (file exists, photographer known, description present)
+ * All or nothing: every row is checked (file exists, credit known, description present)
  * before anything is uploaded. Photos are scaled to 3000 px and stripped of metadata on this
  * computer, so Vercel's upload limit does not apply and the originals never leave the office.
  * Projects are saved as drafts. Re-running reuses photos already uploaded (matched on a hash
@@ -99,8 +99,7 @@ async function main() {
     const at = `line ${row.line}`
     if (!row.project) problems.push(`${at}: no project.`)
     if (!row.alt) problems.push(`${at}: no description (alt).`)
-    if (!row.photographer) problems.push(`${at}: no photographer.`)
-    else if (!photographerId.has(normalizeName(row.photographer)))
+    if (row.photographer && !photographerId.has(normalizeName(row.photographer)))
       problems.push(`${at}: photographer "${row.photographer}" is not in the admin. Add them under Photographers, or fix the spelling.`)
     const source = path.join(root, row.category, row.folder, row.file)
     if (!(await stat(source).catch(() => undefined))?.isFile()) problems.push(`${at}: file not found: ${row.category}/${row.folder}/${row.file}`)
@@ -114,6 +113,10 @@ async function main() {
     const project = found.docs[0]
     if (!project) {
       problems.push(`line ${list[0].line}: no project with slug "${slug}".`)
+      continue
+    }
+    if (!project.photographers?.length && list.some((r) => !r.photographer)) {
+      problems.push(`line ${list[0].line}: ${project.name} has no photographer. Add one to the project (Images → Photographers) or to each photo.`)
       continue
     }
     if ((project.heroImage || project.gallery?.length) && !replace) {
@@ -157,7 +160,7 @@ async function main() {
         .toBuffer()
       const media = await payload.create({
         collection: 'media',
-        data: { alt: row.alt, photographer: photographerId.get(normalizeName(row.photographer)), sourceHash },
+        data: { alt: row.alt, photographer: row.photographer ? photographerId.get(normalizeName(row.photographer)) : undefined, sourceHash },
         file: { data, mimetype: 'image/jpeg', name: 'photo.jpg', size: data.length },
       })
       ids.push(media.id)

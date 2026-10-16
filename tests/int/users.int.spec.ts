@@ -84,6 +84,6 @@ describe('users and roles', () => {
       payload.updateGlobal({ slug: 'siteSettings', data: { phone: 'x' }, ...as(editor) }),
     ).rejects.toThrow()
     const before = await payload.findGlobal({ slug: 'about' })
-    await payload.updateGlobal({ slug: 'about', data: { philosophy: before.philosophy }, ...as(editor) })
+    await payload.updateGlobal({ slug: 'about', data: { sections: before.sections }, ...as(editor) })
   })
 })

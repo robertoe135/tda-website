@@ -37,6 +37,12 @@ a:hover { text-decoration: underline; }
 .site-name { font-weight: 400; color: var(--muted); }
 .site-nav { display: flex; gap: 1.5rem; text-transform: lowercase; font-weight: 300; font-size: 0.8rem; }
 .site-nav a[aria-current='page'] { text-decoration: underline; }
+/* Phones: name on the first line, the menu on the second, so neither wraps. */
+@media (max-width: 559px) {
+  .site-header { flex-wrap: wrap; row-gap: 0.4rem; padding-top: 0.75rem; padding-bottom: 0.6rem; }
+  .site-name { flex: 1 0 100%; }
+  .site-nav { gap: 1.25rem; }
+}
 
 main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .page-title { font-weight: 300; font-size: 1.5rem; margin: 0 0 1rem; }
@@ -128,7 +134,70 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .person-projects li { display: flex; justify-content: space-between; gap: 1rem; padding: 0.5rem 0; border-bottom: 1px solid var(--line); }
 .person-project-meta { color: var(--muted); font-size: 0.8rem; text-align: right; }
 
+/* Project tiles: homepage and timeline. Grey frame until photographs are uploaded. */
+.tile-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.5rem 1rem; }
+.tile { display: block; }
+.tile-image { aspect-ratio: 3 / 2; background: #f4f4f4; overflow: hidden; }
+.tile-image img { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity 0.2s; }
+.tile:hover .tile-image img { opacity: 0.85; }
+.tile:hover { text-decoration: none; }
+.tile-name { display: block; margin-top: 0.4rem; font-weight: 300; font-size: 0.85rem; }
+.tile:hover .tile-name { text-decoration: underline; }
+
+/* Homepage quotes span the grid, as on the current site. */
+.home-quote { grid-column: 1 / -1; padding: 2.5rem 0; }
+.home-quote figure { margin: 0 auto; max-width: 42rem; text-align: center; }
+.home-quote blockquote { margin: 0; font-weight: 300; font-size: 1.3rem; line-height: 1.4; }
+.home-quote figcaption { margin-top: 0.75rem; font-weight: 300; font-size: 0.8rem; color: var(--muted); }
+
+/* Timeline */
+.timeline-year { margin-bottom: 2.5rem; }
+.timeline-heading { font-weight: 400; font-size: 1rem; margin: 0 0 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--line); }
+
+/* About: sub-menu, profile sections, team, collaborators */
+.sub-nav { display: flex; gap: 1.5rem; font-weight: 300; font-size: 0.85rem; margin: 0 0 2rem; }
+.sub-nav a[aria-current='page'] { text-decoration: underline; }
+.about-section { margin: 0 auto 3rem; max-width: 38rem; }
+.about-image { width: 100%; display: block; margin-bottom: 1.25rem; }
+.about-heading { text-align: center; font-weight: 400; font-size: 1.1rem; margin: 0 0 1rem; }
+.about-section .project-description { margin-top: 0; }
+.team-grid { list-style: none; margin: 0 0 1rem; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem 1rem; }
+.team-member { display: block; }
+.team-member:hover { text-decoration: none; }
+.team-photo { aspect-ratio: 4 / 5; background: #f4f4f4; overflow: hidden; }
+.team-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.team-name { display: block; margin-top: 0.4rem; font-weight: 400; font-size: 0.85rem; }
+.team-member:hover .team-name { text-decoration: underline; }
+.team-title { display: block; font-weight: 300; font-size: 0.75rem; color: var(--muted); }
+.collaborator-list { columns: 1; column-gap: 2rem; }
+.collaborator-list section { break-inside: avoid; margin-bottom: 1.25rem; }
+.collaborator-letter { font-weight: 400; font-size: 0.8rem; color: var(--muted); margin: 0 0 0.25rem; }
+.collaborator-list ul { list-style: none; margin: 0; padding: 0; font-weight: 300; }
+.collaborator-list li { padding: 0.15rem 0; }
+
+/* Contact */
+.contact-intro { font-weight: 300; max-width: 38rem; margin: 0 0 2rem; }
+.contact-list { margin: 0; display: grid; gap: 1.5rem; }
+.contact-list dt { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.04em; }
+.contact-list dd { margin: 0.2rem 0 0; font-weight: 300; }
+.contact-list address { font-style: normal; }
+.contact-line { display: block; }
+.contact-list dd a, .site-footer a { text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
+.contact-action { display: inline-block; margin-top: 0.4rem; font-size: 0.8rem; text-decoration: underline; }
+.contact-careers { max-width: 38rem; }
+.contact-careers .project-description { margin: 0; }
+
+/* Footer: contact details in place of the old broken newsletter block */
+.site-footer { border-top: 1px solid var(--line); margin-top: 4rem; padding: 1.5rem var(--gutter) 2rem; font-weight: 300; font-size: 0.75rem; color: var(--muted); }
+.site-footer p { margin: 0 0 0.25rem; }
+.footer-social { list-style: none; display: flex; gap: 1rem; margin: 0.5rem 0 0; padding: 0; }
+
 @media (min-width: 720px) {
+  .tile-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .team-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .collaborator-list { columns: 3; }
+  .contact-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .home-quote blockquote { font-size: 1.6rem; }
   .press ul { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .other-projects ul { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .slideshow { margin: 0; }
@@ -140,5 +209,6 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   .portfolio-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (min-width: 1080px) {
+  .tile-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .portfolio-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }

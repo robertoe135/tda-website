@@ -117,12 +117,14 @@ export interface Config {
   };
   fallbackLocale: null;
   globals: {
-    siteSettings: SiteSetting;
+    home: Home;
     about: About;
+    siteSettings: SiteSetting;
   };
   globalsSelect: {
-    siteSettings: SiteSettingsSelect<false> | SiteSettingsSelect<true>;
+    home: HomeSelect<false> | HomeSelect<true>;
     about: AboutSelect<false> | AboutSelect<true>;
+    siteSettings: SiteSettingsSelect<false> | SiteSettingsSelect<true>;
   };
   locale: null;
   widgets: {
@@ -266,6 +268,10 @@ export interface Project {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Credited as "Photography" on the project page, for all its images. Set a photographer on a single image only when it differs.
+   */
+  photographers?: (number | Photographer)[] | null;
   /**
    * Add awards under Awards and pick this project.
    */
@@ -491,7 +497,7 @@ export interface Person {
   _status?: ('draft' | 'published') | null;
 }
 /**
- * Photographs and headshots. Every image needs a description for screen readers and a credit; crediting the photographer is part of the license. Upload JPEGs exported at about 3000 px on the long side and under 4 MB; larger files are refused by the server.
+ * Photographs and headshots. Every image needs a description for screen readers. Every image must be credited, on the image or, for project photos, on the project; crediting the photographer is part of the license. Upload JPEGs exported at about 3000 px on the long side and under 4 MB; larger files are refused by the server.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
@@ -504,7 +510,7 @@ export interface Media {
   alt: string;
   photographer?: (number | null) | Photographer;
   /**
-   * Only when the credit is not a photographer in the list, or must read differently, e.g. "Courtesy of the architect".
+   * Only when the credit is not a photographer in the list, or must read differently, e.g. "Courtesy of the architect". Project photos are credited on the project (Images → Photographers); leave both empty when that covers this image.
    */
   credit?: string | null;
   sourceHash?: string | null;
@@ -813,6 +819,7 @@ export interface ProjectsSelect<T extends boolean = true> {
         caption?: T;
         id?: T;
       };
+  photographers?: T;
   awards?: T;
   press?: T;
   legacyUrls?:
@@ -1074,6 +1081,78 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
+ * Drag rows to reorder. Only published projects appear.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home".
+ */
+export interface Home {
+  id: number;
+  items?:
+    | (
+        | {
+            project: number | Project;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'project';
+          }
+        | {
+            /**
+             * Exactly as said. No quotation marks; the site adds them.
+             */
+            text: string;
+            /**
+             * e.g. Suzan Tillotson
+             */
+            attribution: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'quote';
+          }
+      )[]
+    | null;
+  _status?: ('draft' | 'published') | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * The Profile page: one section per heading (Philosophy, Background, …).
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "about".
+ */
+export interface About {
+  id: number;
+  sections?:
+    | {
+        heading: string;
+        body: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        };
+        /**
+         * Optional. Shown above the section.
+         */
+        image?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  _status?: ('draft' | 'published') | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * Contact details and social links used across the site. Admins only.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1098,6 +1177,10 @@ export interface SiteSetting {
   generalEmail?: string | null;
   pressEmail?: string | null;
   /**
+   * One line at the top of the contact page.
+   */
+  intro?: string | null;
+  /**
    * Shown on the contact page. Leave empty if TDA is not hiring.
    */
   careersText?: {
@@ -1115,6 +1198,10 @@ export interface SiteSetting {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * Where applications go: a form or job board. Leave empty to hide the button.
+   */
+  careersLink?: string | null;
   socialLinks?:
     | {
         platform: 'instagram' | 'linkedin' | 'facebook' | 'vimeo' | 'youtube' | 'x' | 'other';
@@ -1130,42 +1217,50 @@ export interface SiteSetting {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "about".
+ * via the `definition` "home_select".
  */
-export interface About {
-  id: number;
-  philosophy?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  background?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  updatedAt?: string | null;
-  createdAt?: string | null;
+export interface HomeSelect<T extends boolean = true> {
+  items?:
+    | T
+    | {
+        project?:
+          | T
+          | {
+              project?: T;
+              id?: T;
+              blockName?: T;
+            };
+        quote?:
+          | T
+          | {
+              text?: T;
+              attribution?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
+  _status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "about_select".
+ */
+export interface AboutSelect<T extends boolean = true> {
+  sections?:
+    | T
+    | {
+        heading?: T;
+        body?: T;
+        image?: T;
+        id?: T;
+      };
+  _status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1184,7 +1279,9 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   phone?: T;
   generalEmail?: T;
   pressEmail?: T;
+  intro?: T;
   careersText?: T;
+  careersLink?: T;
   socialLinks?:
     | T
     | {
@@ -1192,17 +1289,6 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         url?: T;
         id?: T;
       };
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "about_select".
- */
-export interface AboutSelect<T extends boolean = true> {
-  philosophy?: T;
-  background?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

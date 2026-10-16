@@ -48,15 +48,14 @@ describe('media uploads', () => {
     expect(stored.exif).toBeUndefined()
   })
 
-  it('requires a photographer or a credit', async () => {
+  it('accepts an image credited on its project, and keeps a credit override', async () => {
     const data = await jpegWithExif()
-    await expect(
-      payload.create({
-        collection: 'media',
-        data: { alt: 'Uncredited' },
-        file: { data, mimetype: 'image/jpeg', name: 'x.jpg', size: data.length },
-      }),
-    ).rejects.toThrow()
+    const uncredited = await payload.create({
+      collection: 'media',
+      data: { alt: 'Credited on the project' },
+      file: { data, mimetype: 'image/jpeg', name: 'x.jpg', size: data.length },
+    })
+    ids.push(uncredited.id)
 
     const credited = await payload.create({
       collection: 'media',
