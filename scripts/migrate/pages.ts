@@ -235,8 +235,10 @@ async function main() {
     review.push({ url: `${SITE}${url}`, field, asWritten, suggested: '', note })
 
   // Homepage: rows as laid out on the old site
+  // Review rows are always collected; only the writing is skipped when content exists, so a
+  // second run never drops them from review.csv.
   const home = await payload.findGlobal({ slug: 'home', draft: true })
-  if (!home.rows?.length || update) {
+  {
     const html = await readFile(path.join(pagesDir, 'index.html'), 'utf8')
     const rows = []
     for (const row of parseHomeRows(html)) {
@@ -264,12 +266,16 @@ async function main() {
       const layout = items.length === 1 ? 'one' : items.length === 2 && row.layout === 'three' ? 'two' : row.layout
       rows.push({ layout, items })
     }
-    await payload.updateGlobal({ slug: 'home', data: { rows }, draft: true })
-    console.log(`homepage: ${rows.length} rows (draft)`)
-  } else console.log('homepage: already has rows, left as is')
+    if (!home.rows?.length || update) {
+      await payload.updateGlobal({ slug: 'home', data: { rows }, draft: true })
+      console.log(`homepage: ${rows.length} rows (draft)`)
+    } else console.log('homepage: already has rows, left as is')
+  }
 
   // About
   const about = await payload.findGlobal({ slug: 'about', draft: true })
+  flag('/about-5', 'Background', 'staff of twenty-three; over 100 years of lighting expertise', 'Figures copied as written. Confirm them before publishing (Archinect differs).')
+  flag('/about-5', 'About facts', '2004 Founded; WBE Certified; 100+ LEED certified projects', 'Restated from the copy for the facts row. Confirm before publishing.')
   if (!about.sections?.length || update) {
     const sections = parseAbout(await loadMain('about-5.html'))
     await payload.updateGlobal({
@@ -288,8 +294,6 @@ async function main() {
       draft: true,
     })
     console.log(`about: ${sections.length} sections (draft)`)
-    flag('/about-5', 'About facts', '2004 Founded; WBE Certified; 100+ LEED certified projects', 'Restated from the copy for the facts row. Confirm before publishing.')
-    flag('/about-5', 'Background', 'staff of twenty-three; over 100 years of lighting expertise', 'Figures copied as written. Confirm them before publishing (Archinect differs).')
   } else console.log('about: already has sections, left as is')
 
   // Contact details: only empty fields
