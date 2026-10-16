@@ -92,6 +92,8 @@ pnpm media:import "/Volumes/<share>/Marketing/Website/Photos" --write --confirm-
 - Photos are scaled to 3000 px and stripped of camera data on your computer; originals stay
   on F:.
 - Projects that already have photos are skipped unless `--replace` is added.
+- `--skip-uncredited` leaves out projects with no photographer, lists them, and imports the
+  rest. Run it again once their credits are in: what's already uploaded is skipped.
 - Projects are saved as drafts. Publish them in the admin to show the photos.
 - Safe to run again after an interruption: photos already uploaded are reused, not duplicated.
 
