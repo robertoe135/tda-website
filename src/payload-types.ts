@@ -209,9 +209,15 @@ export interface Project {
       }[]
     | null;
   /**
-   * Only people with "Show on site" turned on can be picked.
+   * Who worked on the project and in what role. Only people with "Show on site" on can be picked; former staff appear without a link.
    */
-  team?: (number | Person)[] | null;
+  team?:
+    | {
+        person: number | Person;
+        role: 'principal' | 'project-manager' | 'designer';
+        id?: string | null;
+      }[]
+    | null;
   /**
    * The owner. Can be the same firm as the architect. Add missing clients under Firms & clients.
    */
@@ -464,11 +470,11 @@ export interface Person {
     totalDocs?: number;
   };
   /**
-   * Off: hidden from the team page and from project credits.
+   * On: may be named on the site. Off: hidden everywhere, including project credits.
    */
   showOnSite?: boolean | null;
   /**
-   * Turn off when someone leaves TDA.
+   * Turn off when someone leaves TDA. Former staff keep their project credits but lose their team page.
    */
   isCurrent?: boolean | null;
   /**
@@ -786,7 +792,13 @@ export interface ProjectsSelect<T extends boolean = true> {
         firms?: T;
         id?: T;
       };
-  team?: T;
+  team?:
+    | T
+    | {
+        person?: T;
+        role?: T;
+        id?: T;
+      };
   clients?: T;
   confidential?: T;
   predecessorFirm?: T;

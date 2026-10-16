@@ -112,13 +112,13 @@ describe('projects', () => {
     await expect(
       payload.create({
         collection: 'projects',
-        data: { name: `${prefix} Bad Team`, status: 'completed', team: [hidden.id] },
+        data: { name: `${prefix} Bad Team`, status: 'completed', team: [{ person: hidden.id, role: 'designer' }] },
       }),
     ).rejects.toThrow()
 
     const ok = await payload.create({
       collection: 'projects',
-      data: { name: `${prefix} Good Team`, status: 'completed', team: [shown.id], _status: 'published' },
+      data: { name: `${prefix} Good Team`, status: 'completed', team: [{ person: shown.id, role: 'principal' }], _status: 'published' },
     })
     const person = await payload.findByID({ collection: 'people', id: shown.id, ...anon })
     expect(person.projects?.docs?.map((d) => (typeof d === 'object' ? d.id : d))).toContain(ok.id)

@@ -7,8 +7,9 @@ import { urlField } from '../fields/website'
 
 // Bios and headshots come from each person, approved by them, via marketing. Never write or
 // "improve" bio text here or in scripts: leave it empty and the page renders without it.
-// Who is credited on the site is undecided (docs/decisions.md, question 2), so showOnSite
-// defaults to off.
+// Credit policy (decided October 2026): current and former staff can be credited on projects.
+// showOnSite = may be named publicly; isCurrent = has a team page. Former staff (showOnSite on,
+// isCurrent off) appear in project credits without a link.
 export const People: CollectionConfig = {
   slug: 'people',
   labels: { singular: 'Person', plural: 'People' },
@@ -75,7 +76,7 @@ export const People: CollectionConfig = {
       name: 'projects',
       type: 'join',
       collection: 'projects',
-      on: 'team',
+      on: 'team.person',
       admin: { description: 'Projects crediting this person. Edit the project to change this.' },
     },
     {
@@ -85,7 +86,7 @@ export const People: CollectionConfig = {
       defaultValue: false,
       admin: {
         position: 'sidebar',
-        description: 'Off: hidden from the team page and from project credits.',
+        description: 'On: may be named on the site. Off: hidden everywhere, including project credits.',
       },
     },
     {
@@ -93,7 +94,10 @@ export const People: CollectionConfig = {
       label: 'Current staff',
       type: 'checkbox',
       defaultValue: true,
-      admin: { position: 'sidebar', description: 'Turn off when someone leaves TDA.' },
+      admin: {
+        position: 'sidebar',
+        description: 'Turn off when someone leaves TDA. Former staff keep their project credits but lose their team page.',
+      },
     },
     {
       name: 'order',
