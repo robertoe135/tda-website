@@ -1,0 +1,16 @@
+# Local development database only. Run the app itself with `pnpm dev`.
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: tda
+      POSTGRES_PASSWORD: tda
+      POSTGRES_DB: tda_website
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

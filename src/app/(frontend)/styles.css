@@ -1,0 +1,9 @@
+/* Brand typefaces and colors come from TDA marketing's brand files. Until then, keep this neutral. */
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+}
+
+main {
+  padding: 1rem;
+}
