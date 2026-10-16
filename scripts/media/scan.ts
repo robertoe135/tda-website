@@ -4,10 +4,13 @@
  *
  *   pnpm media:scan "/Volumes/<share>/Marketing/Website/Photos"     # Mac, share mounted
  *   pnpm media:scan "F:\Marketing\Website\Photos"                   # Windows
+ *   pnpm media:scan "/Volumes/T7/Website" --accept-guesses             # also say yes to clear best guesses
  *
  * Writes scripts/media/cache/photos.csv (gitignored: folder and file names can name private
- * clients). One row per photo. `include` is "yes" only where the folder name matches a
- * project exactly; every other row needs a person to fill in the project and say yes.
+ * clients). One row per photo. `include` is "yes" where the folder name matches a project
+ * exactly, and, with --accept-guesses, where the best guess is clear (typos and shortened names
+ * allowed, well ahead of the next project). Every other row needs a person. A folder-by-folder
+ * list of the matches is written to cache/photo-matches.csv, to check at a glance.
  * Photographers are credited on the project; the photographer column is only for a photo
  * whose credit differs.
  *
@@ -15,7 +18,7 @@
  */
 import '../env'
 
-import { mkdir, readdir, writeFile } from 'fs/promises'
+import { copyFile, mkdir, readdir, stat, writeFile } from 'fs/promises'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -25,10 +28,11 @@ import config from '../../src/payload.config'
 import { csv } from '../migrate/lib'
 
 import { redactor } from './inventory-lib'
-import { matchProject, parsePhotoPath, type PhotoPath, photosRoot, skipReason, slideOrder } from './lib'
+import { guessProject, parsePhotoPath, type PhotoPath, photosRoot, skipReason, slideOrder } from './lib'
 
 export const mediaDir = path.dirname(fileURLToPath(import.meta.url))
 export const PHOTOS_CSV = path.join(mediaDir, 'cache', 'photos.csv')
+export const MATCHES_CSV = path.join(mediaDir, 'cache', 'photo-matches.csv')
 export const COLUMNS = ['include', 'project', 'website name', 'category', 'folder', 'file', 'slide', 'photographer', 'alt', 'note']
 
 async function walk(root: string, dir = ''): Promise<string[]> {
@@ -44,7 +48,8 @@ async function walk(root: string, dir = ''): Promise<string[]> {
 }
 
 async function main() {
-  const given = process.argv[2]
+  const given = process.argv.slice(2).find((a) => !a.startsWith('--'))
+  const acceptGuesses = process.argv.includes('--accept-guesses')
   if (!given) {
     console.error('Usage: pnpm media:scan <path to the Website folder or its Photos folder>')
     process.exit(1)
@@ -64,7 +69,11 @@ async function main() {
     depth: 1,
     select: { name: true, slug: true, typologies: true, heroImage: true, photographers: true },
   })
-  const candidates = projects.docs.map((p) => ({ slug: p.slug ?? '', name: p.name }))
+  const candidates = projects.docs.map((p) => ({
+    slug: p.slug ?? '',
+    name: p.name,
+    categories: (p.typologies ?? []).map((t) => (typeof t === 'object' ? t.name : '')).filter(Boolean),
+  }))
   const typologies = await payload.find({ collection: 'typologies', pagination: false, depth: 0, select: { name: true } })
   const categoryNames = typologies.docs.map((t) => t.name)
 
@@ -88,37 +97,67 @@ async function main() {
   }
 
   const folders = [...byFolder].sort(([a], [b]) => a.localeCompare(b, 'en', { numeric: true }))
+  // One guess per folder; a folder is used when it matches exactly, or (--accept-guesses) when
+  // its guess is clear. Two folders on one project: exact beats a guess, then the closer guess,
+  // then the one with more photos.
+  const guesses = new Map(folders.map(([key, list]) => [key, guessProject(list[0].folderName, list[0].category, candidates)]))
+  const used = (key: string) => {
+    const g = guesses.get(key)
+    return Boolean(g && (g.exact || (acceptGuesses && g.accepted)))
+  }
+  const rank = (key: string) => [guesses.get(key)!.exact ? 1 : 0, guesses.get(key)!.score, byFolder.get(key)!.length]
+  const ahead = (a: string, b: string) => {
+    const [x, y] = [rank(a), rank(b)]
+    const i = x.findIndex((v, n) => v !== y[n])
+    return i >= 0 && x[i] > y[i]
+  }
   const chosenFolderFor = new Map<string, string>()
-  for (const [key, list] of folders) {
-    const match = matchProject(list[0].folderName, candidates)
-    if (!match?.exact) continue
-    const current = chosenFolderFor.get(match.candidate.slug)
-    if (!current || byFolder.get(current)!.length < list.length) chosenFolderFor.set(match.candidate.slug, key)
+  for (const [key] of folders) {
+    if (!used(key)) continue
+    const slug = guesses.get(key)!.candidate.slug
+    const current = chosenFolderFor.get(slug)
+    if (!current || ahead(key, current)) chosenFolderFor.set(slug, key)
   }
 
   const rows: Record<string, unknown>[] = []
   let exact = 0
+  let guessed = 0
   let suggested = 0
   let unmatched = 0
+  const matchRows: Record<string, unknown>[] = []
+  const redactFolder = redactor()
   for (const [key, list] of folders) {
-    const { category, folder, folderName } = list[0]
-    const match = matchProject(folderName, candidates)
+    const { category, folder } = list[0]
+    const match = guesses.get(key)
     const project = match && projects.docs.find((p) => p.slug === match.candidate.slug)
     const notes: string[] = []
-    let include = match?.exact ? 'yes' : ''
+    let include = used(key) ? 'yes' : ''
+    let status = ''
     if (!match) {
       unmatched++
+      status = 'no match'
       notes.push('No matching project. Fill in the project slug, or leave this folder out.')
-    } else if (!match.exact) {
+    } else if (match.exact) {
+      exact++
+      status = 'exact'
+    } else if (include) {
+      guessed++
+      status = 'best guess, used'
+      notes.push(`Best guess (${Math.round(match.score * 100)}%), used. Clear include if it is the wrong project.`)
+    } else {
       suggested++
-      notes.push(`Closest project (${Math.round(match.score * 100)}% similar). Check it, then write yes.`)
-    } else exact++
+      status = match.accepted ? 'best guess (run with --accept-guesses)' : 'unsure: check'
+      notes.push(
+        `Closest project (${Math.round(match.score * 100)}%)${match.runnerUp ? `, or perhaps ${match.runnerUp.name}` : ''}. Check it, then write yes.`,
+      )
+    }
 
     if (project) {
       const chosen = chosenFolderFor.get(project.slug ?? '')
-      if (chosen && chosen !== key) {
+      if (include && chosen && chosen !== key) {
         include = ''
-        notes.push(`Same project as ${chosen}, which has more photos and is used.`)
+        status = `same project as ${chosen}, which is used`
+        notes.push(`Same project as ${chosen}, which is a closer match or has more photos and is used.`)
       }
       const typologyNames = (project.typologies ?? []).map((t) => (typeof t === 'object' ? t.name : '')).filter(Boolean)
       if (typologyNames.length && !typologyNames.some((n) => n.toLowerCase() === category.toLowerCase())) {
@@ -129,6 +168,17 @@ async function main() {
 
     if (project && !project.photographers?.length)
       notes.push('Project has no photographer. Run pnpm migrate:photographers, or add one to the project.')
+
+    matchRows.push({
+      folder: `${category}/${folder}`,
+      photos: list.length,
+      project: match?.candidate.name ?? '',
+      slug: match?.candidate.slug ?? '',
+      score: match ? Math.round(match.score * 100) : '',
+      status,
+      'next closest': match && !match.exact ? (match.runnerUp?.name ?? '') : '',
+    })
+    if (include && match && !match.exact) console.log(`  guess: ${redactFolder(`${category}/${folder}`)} → ${match.candidate.name} (${Math.round(match.score * 100)}%)`)
 
     slideOrder(list).forEach((photo, i) =>
       rows.push({
@@ -147,9 +197,21 @@ async function main() {
   }
 
   await mkdir(path.dirname(PHOTOS_CSV), { recursive: true })
+  // A CSV someone has edited is kept: the scan writes a fresh one.
+  if (await stat(PHOTOS_CSV).catch(() => undefined)) {
+    const backup = PHOTOS_CSV.replace(/\.csv$/, `.before-${new Date().toISOString().replace(/[:.]/g, '-')}.csv`)
+    await copyFile(PHOTOS_CSV, backup)
+    console.log(`Previous CSV kept as ${path.relative(process.cwd(), backup)}.`)
+  }
   await writeFile(PHOTOS_CSV, csv(rows, COLUMNS))
-  console.log(`${rows.length} photos in ${byFolder.size} folders.`)
-  console.log(`Folders: ${exact} matched exactly, ${suggested} need a check, ${unmatched} not matched.`)
+  await writeFile(MATCHES_CSV, csv(matchRows, ['folder', 'photos', 'project', 'slug', 'score', 'status', 'next closest']))
+  const usedPhotos = rows.filter((r) => r.include === 'yes').length
+  console.log(`${rows.length} photos in ${byFolder.size} folders; ${usedPhotos} photos marked yes.`)
+  console.log(
+    `Folders: ${exact} matched exactly, ${guessed} by best guess, ${suggested} need a check, ${unmatched} not matched.` +
+      (!acceptGuesses && suggested ? ' Add --accept-guesses to use the clear guesses.' : ''),
+  )
+  console.log(`Folder-by-folder list: ${path.relative(process.cwd(), MATCHES_CSV)}`)
   if (skipped.length) console.log(`${skipped.length} images not in a <Category>/<Project>/ folder (or in a subfolder of one) were left out.`)
   if (skippedFolders.size) {
     const redact = redactor()

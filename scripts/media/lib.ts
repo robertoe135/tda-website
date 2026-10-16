@@ -11,7 +11,7 @@
  * slideshow. The same project can sit under several categories.
  */
 import { normalizeName } from '../../src/hooks/preventNearDuplicates'
-import { jaccard, similarity, tokens } from '../migrate/lib'
+import { jaccard, levenshtein, similarity, tokens } from '../migrate/lib'
 
 export const IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'tif', 'tiff', 'webp'])
 
@@ -123,4 +123,51 @@ export async function findProjectsToAdd(given: string, photos: string): Promise<
     } catch {}
   }
   return found
+}
+
+export type GuessCandidate = Candidate & { categories?: string[] }
+export type Guess = { candidate: GuessCandidate; score: number; exact: boolean; accepted: boolean; runnerUp?: GuessCandidate }
+
+/** Two words are the same despite a typo: "Rubenstien"/"Rubenstein", "Cente"/"Center". Numbers must match. */
+export function sameWord(a: string, b: string): boolean {
+  if (a === b) return true
+  if (/\d/.test(a) || /\d/.test(b)) return false
+  const short = Math.min(a.length, b.length)
+  if (short >= 4 && (a.startsWith(b) || b.startsWith(a))) return true // a cut-off word
+  if (short < 4) return false
+  return levenshtein(a, b) <= (short >= 7 ? 2 : 1)
+}
+
+/**
+ * A best guess at the project a folder belongs to, for --accept-guesses. Scores how many of the
+ * folder's words appear in the project's name (typos allowed) and how much of the name they
+ * cover, plus a little when the folder's category is one of the project's categories. A guess
+ * is accepted only when every word of the folder is found, or the score is high, and it is
+ * clearly ahead of the next project; otherwise it stays a suggestion for a person.
+ */
+export function guessProject(folderName: string, category: string, candidates: GuessCandidate[]): Guess | undefined {
+  const exact = matchProject(folderName, candidates)
+  if (exact?.exact) return { candidate: exact.candidate as GuessCandidate, score: 1, exact: true, accepted: true }
+  const words = [...tokens(folderName)]
+  if (!words.length) return undefined
+  const sameCategory = (c: GuessCandidate) =>
+    (c.categories ?? []).some((n) => normalizeName(n).replace(/s$/, '') === normalizeName(category).replace(/s$/, ''))
+  const scored = candidates
+    .map((candidate) => {
+      const theirs = [...tokens(candidate.name)]
+      if (!theirs.length) return { candidate, score: 0, coverage: 0 }
+      const found = words.filter((w) => theirs.some((t) => sameWord(w, t))).length
+      const used = theirs.filter((t) => words.some((w) => sameWord(w, t))).length
+      const coverage = found / words.length
+      const wordScore = 0.7 * coverage + 0.3 * (used / theirs.length)
+      const spelling = similarity(normalizeName(folderName), normalizeName(candidate.name))
+      const score = Math.min(1, Math.max(wordScore, spelling) + (sameCategory(candidate) ? 0.05 : 0))
+      return { candidate, score, coverage }
+    })
+    .sort((a, b) => b.score - a.score)
+  const [best, second] = scored
+  if (!best || best.score < 0.6) return undefined
+  const clear = !second || best.score - second.score >= 0.1
+  const accepted = clear && ((best.coverage === 1 && best.score >= 0.75) || best.score >= 0.85)
+  return { candidate: best.candidate, score: best.score, exact: false, accepted, runnerUp: second?.candidate }
 }

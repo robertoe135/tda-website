@@ -197,6 +197,14 @@ export function toggleHref(filters: Filters, key: FilterKey, value: string): str
   return query ? `/projects?${query}` : '/projects'
 }
 
+/** The portfolio address with some filter groups replaced and the rest kept: a category link. */
+export function setHref(filters: Filters, changes: Partial<Filters>): string {
+  const params = new URLSearchParams()
+  for (const k of FILTER_KEYS) for (const v of changes[k] ?? filters[k]) params.append(k, v)
+  const query = params.toString()
+  return query ? `/projects?${query}` : '/projects'
+}
+
 export const SQ_FT_TO_M2 = 0.09290304
 
 /** One published project with its relationships, as an anonymous visitor may see it. */
