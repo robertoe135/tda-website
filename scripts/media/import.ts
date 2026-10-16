@@ -28,12 +28,13 @@ import { MAX_IMAGE_EDGE } from '../../src/hooks/sanitizeUpload'
 import { normalizeName } from '../../src/hooks/preventNearDuplicates'
 import { parseCsv } from '../team/lib'
 
+import { photosRoot } from './lib'
 import { PHOTOS_CSV } from './scan'
 
 const args = process.argv.slice(2)
 const flag = (name: string) => args.includes(name)
 const option = (name: string) => (args.includes(name) ? args[args.indexOf(name) + 1] : undefined)
-const root = args.find((a, i) => !a.startsWith('--') && args[i - 1] !== '--csv')
+const rootArg = args.find((a, i) => !a.startsWith('--') && args[i - 1] !== '--csv')
 const write = flag('--write')
 const replace = flag('--replace')
 
@@ -64,11 +65,12 @@ function assertSafeTarget() {
 }
 
 async function main() {
-  if (!root) {
+  if (!rootArg) {
     console.error('Usage: pnpm media:import <path to Marketing/Website/Photos> [--write] [--replace] [--csv file] [--confirm-backup]')
     process.exit(1)
   }
   if (write) assertSafeTarget()
+  const root = await photosRoot(rootArg)
 
   const csvFile = option('--csv') ?? PHOTOS_CSV
   const [header, ...body] = parseCsv(await readFile(csvFile, 'utf8'))
@@ -121,6 +123,12 @@ async function main() {
     }
     if ((project.heroImage || project.gallery?.length) && !replace) {
       console.log(`skip ${project.name}: already has photos (use --replace).`)
+      continue
+    }
+    // The same project filed under two categories, both marked yes, would upload its photos twice.
+    const sources = [...new Set(list.map((r) => `${r.category}/${r.folder}`))]
+    if (sources.length > 1) {
+      problems.push(`line ${list[0].line}: photos for ${project.name} come from ${sources.length} folders (${sources.join('; ')}). Keep yes on one folder only.`)
       continue
     }
     targets.push({ id: project.id, name: project.name, rows: [...list].sort((a, b) => a.slide - b.slide) })

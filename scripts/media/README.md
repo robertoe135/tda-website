@@ -35,7 +35,12 @@ pnpm media:inventory "/Volumes/T7/Website"
 pnpm media:inventory "/Volumes/T7/Website" --match    # also match folders to website projects
 ```
 
-Reads only. Prints:
+Reads only, and only what the import would use: `Photos/<portfolio category>/<project>/`.
+Archive, Website Text and other top-level folders are never read; folders marked NO RIGHTS or
+Removed, non-portfolio categories (Lifestyle Photos, Firm Profile) and PSDs are left out and
+counted. A **Projects to add** folder (at the top or inside Photos) is listed per project:
+photos, videos, documents and subfolders, and with `--match` whether each is already on the
+website. Prints:
 
 - counts and sizes: photos, images to export first (HEIC, PSD, RAW), videos, documents;
 - the folders three levels deep, with how many photos, videos and documents each holds;
@@ -51,7 +56,7 @@ can be pasted into a chat or email. Every file, with real names, goes to
 ## 1. Scan
 
 ```
-pnpm media:scan "/Volumes/<share>/Marketing/Website/Photos"
+pnpm media:scan "/Volumes/T7/Website"     # or the Photos folder itself
 ```
 
 Reads only. Writes `scripts/media/cache/photos.csv` (kept out of git: file names can name

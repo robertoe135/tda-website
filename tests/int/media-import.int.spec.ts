@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { matchProject, parsePhotoPath, slideOrder } from '../../scripts/media/lib'
+import { matchProject, parsePhotoPath, skipReason, slideOrder } from '../../scripts/media/lib'
 import { splitCredit } from '../../scripts/migrate/lib'
 
 describe('photo folders', () => {
@@ -41,5 +41,19 @@ describe('photo folders', () => {
   it('splits photo credits on commas only, keeping studio names and spellings', () => {
     expect(splitCredit('Floto + Warner, Agaton Strom,')).toEqual(['Floto + Warner', 'Agaton Strom'])
     expect(splitCredit('FG+SG Architectural Photography')).toEqual(['FG+SG Architectural Photography'])
+  })
+
+  it('never imports folders without rights, removed or working folders, or non-project categories', () => {
+    const cats = ['Academic', 'Corporate', 'Museums', 'Performing Arts', 'Places of Worship']
+    expect(skipReason('Academic', 'Madison Square Boy & Girls Club - NO RIGHTS', cats)).toMatch(/NO RIGHTS/)
+    expect(skipReason('Academic', 'The Brearley School - no right', cats)).toMatch(/NO RIGHTS/)
+    expect(skipReason('Corporate', 'ST Removed', cats)).toMatch(/removed/)
+    expect(skipReason('!Temp Edits', 'Anything', cats)).toMatch(/removed|temporary/)
+    expect(skipReason('Lifestyle Photos', 'New Headshots + Office', cats)).toMatch(/not a portfolio category/)
+    expect(skipReason('Firm Profile', 'OBS', cats)).toMatch(/not a portfolio category/)
+    // Real projects pass, including the singular "Museum" folder and names that contain "temp"/"old".
+    expect(skipReason('Museum', '4. The Shed', cats)).toBeUndefined()
+    expect(skipReason('Academic', '3. Charles Library at Temple University', cats)).toBeUndefined()
+    expect(skipReason('Places of Worship', '2. Old Stone Church', cats)).toBeUndefined()
   })
 })

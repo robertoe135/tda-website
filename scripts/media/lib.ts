@@ -71,3 +71,42 @@ export const slideOrder = <T extends { slide?: number; file: string }>(photos: T
       (a.slide ?? Number.MAX_SAFE_INTEGER) - (b.slide ?? Number.MAX_SAFE_INTEGER) ||
       a.file.localeCompare(b.file, 'en', { numeric: true }),
   )
+
+/**
+ * Why a folder on the drive must not be imported, or undefined if it may be. Never imports a
+ * folder marked as having no image rights, or one marked as removed, unused or temporary
+ * (names starting with "!" are working folders). The category folder must be one of the
+ * portfolio's categories ("Museum" matches "Museums"); anything else (Lifestyle Photos,
+ * Firm Profile, Archive) is not project photography.
+ */
+export function skipReason(category: string, folder: string, categories: string[]): string | undefined {
+  const both = `${category} / ${folder}`
+  if (/no\s*rights?/i.test(both)) return 'marked NO RIGHTS: never imported'
+  if (/^\s*!/.test(category) || /^\s*!/.test(folder) || /\b(removed|not used)\b/i.test(both))
+    return 'marked removed, unused or temporary'
+  const key = normalizeName(category).replace(/s$/, '')
+  if (!categories.some((c) => normalizeName(c).replace(/s$/, '') === key)) return 'not a portfolio category'
+  return undefined
+}
+
+/** The portfolio's categories, for when the database is not used (the inventory). */
+export const PORTFOLIO_CATEGORIES = [
+  'Academic', 'Corporate', 'Exhibitions', 'Historic', 'Hospitality', 'Libraries', 'Museums',
+  'Places of Worship', 'Performing Arts', 'Residential', 'Restaurants', 'Retail', 'Site | Public Realm',
+]
+
+/** Working files that are never website photos, even inside a project folder. */
+export const IGNORED_EXTENSIONS = new Set(['psd', 'psb'])
+
+/**
+ * Both commands accept the website folder or its Photos folder: given the website folder,
+ * they look only in Photos, so Archive, Website Text and the rest are never read.
+ */
+export async function photosRoot(root: string): Promise<string> {
+  const { readdir } = await import('fs/promises')
+  const path = await import('path')
+  if (/^photos$/i.test(path.basename(root.replace(/[\\/]+$/, '')))) return root
+  const entries = await readdir(root, { withFileTypes: true })
+  const photos = entries.find((e) => e.isDirectory() && /^photos$/i.test(e.name))
+  return photos ? path.join(root, photos.name) : root
+}

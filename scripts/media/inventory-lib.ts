@@ -10,7 +10,7 @@ export type Kind = 'photo' | 'needs-export' | 'video' | 'document' | 'other'
 
 const KINDS: Record<string, Kind> = {}
 for (const e of ['jpg', 'jpeg', 'png', 'webp', 'gif', 'tif', 'tiff']) KINDS[e] = 'photo'
-for (const e of ['heic', 'heif', 'psd', 'psb', 'ai', 'eps', 'cr2', 'cr3', 'nef', 'arw', 'dng', 'raf', 'orf', 'rw2']) KINDS[e] = 'needs-export'
+for (const e of ['heic', 'heif', 'ai', 'eps', 'cr2', 'cr3', 'nef', 'arw', 'dng', 'raf', 'orf', 'rw2']) KINDS[e] = 'needs-export'
 for (const e of ['mp4', 'm4v', 'mov', 'webm', 'avi', 'mkv', 'wmv']) KINDS[e] = 'video'
 for (const e of ['pdf', 'doc', 'docx', 'txt', 'rtf', 'pages', 'key', 'indd', 'idml', 'xls', 'xlsx', 'csv', 'md', 'ppt', 'pptx']) KINDS[e] = 'document'
 

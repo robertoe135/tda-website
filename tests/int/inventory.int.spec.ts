@@ -7,7 +7,7 @@ describe('website files inventory', () => {
     expect(kindOf('A/B/Shed_01.JPG')).toBe('photo')
     expect(kindOf('A/B/Shed_01.tif')).toBe('photo')
     expect(kindOf('A/B/Shed_02.HEIC')).toBe('needs-export')
-    expect(kindOf('A/B/layout.psd')).toBe('needs-export')
+    expect(kindOf('A/B/raw.CR2')).toBe('needs-export')
     expect(kindOf('Videos/loop.mov')).toBe('video')
     expect(kindOf('Copy/Shed.docx')).toBe('document')
     expect(isClutter('._Shed_01.jpg')).toBe(true)
