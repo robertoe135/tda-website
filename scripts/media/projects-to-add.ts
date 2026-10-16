@@ -99,7 +99,7 @@ async function planFolder(base: string, folder: string, mode: FolderPlan['mode']
   if (psds.length) plan.notes.push(`${psds.length} PSD(s) not read.`)
   const videos = [...own.files, ...(imagesName ? inPhotos.files : [])].filter((f) => kindOf(f) === 'video')
   if (videos.length) plan.notes.push(`${videos.length} video(s) not read: add them under Videos in the admin.`)
-  const others = own.files.filter((f) => kindOf(f) === 'document' && !isDocx(f))
+  const others = own.files.filter((f) => kindOf(f) === 'document' && !isDocx(f) && !f.startsWith('~$'))
   if (others.length) plan.notes.push(`Not read: ${others.join(', ')}.`)
   const deeper = (imagesName ? inPhotos.dirs : own.dirs.filter((d) => !isPhotosFolder(d)))
   if (deeper.length) plan.notes.push(`Subfolders not read: ${deeper.join(', ')}.`)
