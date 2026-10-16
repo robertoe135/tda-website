@@ -33,7 +33,7 @@ import {
   redactor,
   scaledOnUpload,
 } from './inventory-lib'
-import { IGNORED_EXTENSIONS, matchProject, photosRoot, PORTFOLIO_CATEGORIES, skipReason } from './lib'
+import { findProjectsToAdd, IGNORED_EXTENSIONS, matchProject, photosRoot, PORTFOLIO_CATEGORIES, skipReason } from './lib'
 
 const OUT = path.join(path.dirname(new URL(import.meta.url).pathname), 'cache', 'inventory.csv')
 
@@ -55,17 +55,6 @@ async function walk(root: string, dir = '', out: string[] = [], skipped: string[
 }
 
 /** "Projects to add": projects marketing has ready that are not on the website yet. */
-async function findProjectsToAdd(given: string, photos: string): Promise<string[]> {
-  const found: string[] = []
-  for (const dir of [...new Set([given, photos])]) {
-    try {
-      for (const e of await readdir(dir, { withFileTypes: true }))
-        if (e.isDirectory() && /^projects?\s+to\s+add$/i.test(e.name.trim())) found.push(path.join(dir, e.name))
-    } catch {}
-  }
-  return found
-}
-
 async function main() {
   const given = process.argv[2]
   const match = process.argv.includes('--match')

@@ -110,3 +110,17 @@ export async function photosRoot(root: string): Promise<string> {
   const photos = entries.find((e) => e.isDirectory() && /^photos$/i.test(e.name))
   return photos ? path.join(root, photos.name) : root
 }
+
+/** "Projects to Add" folders, at the top of the website folder or inside Photos. */
+export async function findProjectsToAdd(given: string, photos: string): Promise<string[]> {
+  const { readdir } = await import('fs/promises')
+  const path = await import('path')
+  const found: string[] = []
+  for (const dir of [...new Set([given, photos])]) {
+    try {
+      for (const e of await readdir(dir, { withFileTypes: true }))
+        if (e.isDirectory() && /^projects?\s+to\s+add$/i.test(e.name.trim())) found.push(path.join(dir, e.name))
+    } catch {}
+  }
+  return found
+}
