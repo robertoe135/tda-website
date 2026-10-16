@@ -23,7 +23,7 @@ export const Locations: CollectionConfig = {
   labels: { singular: 'Location', plural: 'Locations' },
   admin: {
     useAsTitle: 'displayName',
-    defaultColumns: ['displayName', 'country', 'slug'],
+    defaultColumns: ['displayName', 'country', 'worldRegion', 'slug'],
     group: 'Reference',
     description:
       'Cities where projects are. One record per city; projects link to it so the site can filter and map by place.',
@@ -59,6 +59,20 @@ export const Locations: CollectionConfig = {
           admin: { description: 'Write each country the same way every time.' },
         },
       ],
+    },
+    {
+      name: 'worldRegion',
+      label: 'World region',
+      type: 'select',
+      options: [
+        { label: 'North America', value: 'north-america' },
+        { label: 'South America', value: 'south-america' },
+        { label: 'Europe', value: 'europe' },
+        { label: 'Middle East', value: 'middle-east' },
+        { label: 'Africa', value: 'africa' },
+        { label: 'Asia + Pacific', value: 'asia-pacific' },
+      ],
+      admin: { description: 'Used by the location filter on the projects page.' },
     },
     {
       name: 'displayName',

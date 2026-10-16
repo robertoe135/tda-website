@@ -316,6 +316,10 @@ export interface Location {
    */
   country: string;
   /**
+   * Used by the location filter on the projects page.
+   */
+  worldRegion?: ('north-america' | 'south-america' | 'europe' | 'middle-east' | 'africa' | 'asia-pacific') | null;
+  /**
    * Filled in automatically from city and state, or city and country.
    */
   displayName?: string | null;
@@ -940,6 +944,7 @@ export interface LocationsSelect<T extends boolean = true> {
   city?: T;
   region?: T;
   country?: T;
+  worldRegion?: T;
   displayName?: T;
   lat?: T;
   lng?: T;

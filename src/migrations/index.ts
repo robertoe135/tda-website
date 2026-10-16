@@ -10,6 +10,7 @@ import * as migration_20261015_233932_awards_press from './20261015_233932_award
 import * as migration_20261015_234111_user_roles from './20261015_234111_user_roles';
 import * as migration_20261015_234239_globals from './20261015_234239_globals';
 import * as migration_20261016_021837_credits_clients_area from './20261016_021837_credits_clients_area';
+import * as migration_20261016_022300_location_world_region from './20261016_022300_location_world_region';
 
 export const migrations = [
   {
@@ -70,6 +71,11 @@ export const migrations = [
   {
     up: migration_20261016_021837_credits_clients_area.up,
     down: migration_20261016_021837_credits_clients_area.down,
-    name: '20261016_021837_credits_clients_area'
+    name: '20261016_021837_credits_clients_area',
+  },
+  {
+    up: migration_20261016_022300_location_world_region.up,
+    down: migration_20261016_022300_location_world_region.down,
+    name: '20261016_022300_location_world_region'
   },
 ];
