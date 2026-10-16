@@ -25,6 +25,26 @@ pnpm migrate:inventory scripts/migrate/cache/sitemap.xml # or use a saved copy
 The live fetch is one request. Squarespace rate-limits automated traffic and may block cloud
 servers; if it does, save the sitemap from a browser and pass the file.
 
+## 2. Fetch (`pnpm migrate:fetch`)
+
+Downloads each URL in `out/url-inventory.csv` (plus `/` and two indexed legacy pages) once,
+as Squarespace JSON (`?format=json`), falling back to HTML. Saves to `cache/pages/` and logs
+to `cache/fetch-log.csv`. No database needed; images are not downloaded.
+
+```
+pnpm migrate:fetch --limit 5   # try a few first
+pnpm migrate:fetch             # everything; about 15 minutes at the default 2 s delay
+pnpm migrate:fetch --delay 4000
+```
+
+- One request at a time with a 2 s pause. On HTTP 429/503 it waits (honouring
+  `Retry-After`, otherwise 30 s, 60 s, ...) and stops after five refusals. Rerun later:
+  saved pages are skipped.
+- Respects robots.txt. If it disallows `?format=json`, the HTML is fetched instead; if a page
+  is disallowed entirely it is skipped and counted. `--ignore-robots` overrides this. It is
+  TDA's own site, but agree that with marketing first.
+- Run it from a normal connection. Squarespace blocks many cloud servers.
+
 ## Known gaps
 
 - The sitemap is not the full list of old URLs: pages the audit found indexed
