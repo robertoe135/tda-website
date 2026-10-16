@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { matchProject, parsePhotoPath, skipReason, slideOrder } from '../../scripts/media/lib'
+import { guessProject, matchProject, parsePhotoPath, sameWord, skipReason, slideOrder } from '../../scripts/media/lib'
 import { splitCredit } from '../../scripts/migrate/lib'
 
 describe('photo folders', () => {
@@ -55,5 +55,30 @@ describe('photo folders', () => {
     expect(skipReason('Museum', '4. The Shed', cats)).toBeUndefined()
     expect(skipReason('Academic', '3. Charles Library at Temple University', cats)).toBeUndefined()
     expect(skipReason('Places of Worship', '2. Old Stone Church', cats)).toBeUndefined()
+  })
+
+  it('reads words through the typos on the drive, never across numbers', () => {
+    expect(sameWord('rubenstien', 'rubenstein')).toBe(true)
+    expect(sameWord('univeristy', 'university')).toBe(true)
+    expect(sameWord('cente', 'center')).toBe(true) // cut off
+    expect(sameWord('juliard', 'juilliard')).toBe(true)
+    expect(sameWord('art', 'arts')).toBe(false) // too short to guess
+    expect(sameWord('270', '275')).toBe(false)
+  })
+
+  it('accepts a guess only when it is clearly the best one', () => {
+    const projects = [
+      { slug: 'rubenstein', name: 'David Rubenstein Forum University of Chicago', categories: ['Academic'] },
+      { slug: 'faena', name: 'Faena Forum', categories: ['Performing Arts'] },
+      { slug: 'broad', name: 'The Broad Museum', categories: ['Museums'] },
+      { slug: 'israel', name: 'Israel Museum', categories: ['Museums'] },
+      { slug: 'shed', name: 'The Shed', categories: ['Performing Arts'] },
+    ]
+    expect(guessProject('Rubenstien Forum', 'Academic', projects)).toMatchObject({ accepted: true, candidate: { slug: 'rubenstein' } })
+    expect(guessProject('Feana Forum', 'Performing Arts', projects)).toMatchObject({ accepted: true, candidate: { slug: 'faena' } })
+    expect(guessProject('The Shed', 'Museums', projects)).toMatchObject({ exact: true, accepted: true })
+    // Two museums fit equally well: a suggestion only.
+    expect(guessProject('Museum', 'Museums', projects)).toMatchObject({ accepted: false })
+    expect(guessProject('Unrelated Residence', 'Residential', projects)).toBeUndefined()
   })
 })

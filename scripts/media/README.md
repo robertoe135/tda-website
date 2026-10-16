@@ -56,8 +56,19 @@ can be pasted into a chat or email. Every file, with real names, goes to
 ## 1. Scan
 
 ```
-pnpm media:scan "/Volumes/T7/Website"     # or the Photos folder itself
+pnpm media:scan "/Volumes/T7/Website"                     # or the Photos folder itself
+pnpm media:scan "/Volumes/T7/Website" --accept-guesses    # also use the clear best guesses
 ```
+
+With `--accept-guesses`, a folder whose name isn't exact still gets `yes` when the best guess is
+clear: the folder's words are all in the project's name, typos and shortened words allowed
+("Rubenstien Forum" → "David Rubenstein Forum University of Chicago"), and it is well ahead of the
+next closest project. Vague names ("Museum", "Four Seasons") stay for a person. Two folders for
+one project: the exact one wins, then the closer guess, then the one with more photos.
+
+The scan also writes `scripts/media/cache/photo-matches.csv`, one row per folder: folder, project,
+score, status and the next closest project. Reading that is much quicker than the photo list. An
+existing `photos.csv` is kept as `photos.before-<date>.csv` before a new one is written.
 
 Reads only. Writes `scripts/media/cache/photos.csv` (kept out of git: file names can name
 private clients). One row per photo:
