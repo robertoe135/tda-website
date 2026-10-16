@@ -61,8 +61,15 @@ export const SiteSettings: GlobalConfig = {
       admin: { description: 'Shown on the contact page. Leave empty if TDA is not hiring.' },
     },
     {
-      ...urlField('careersLink', 'Careers link'),
-      admin: { description: 'Where applications go: a form or job board. Leave empty to hide the button.' },
+      name: 'careersEmail',
+      label: 'Applications go to',
+      type: 'email',
+      defaultValue: 'jobs@tillotsondesign.com',
+      admin: { description: 'Applications from the careers form are emailed here, with the CV attached, and listed under Leads.' },
+    },
+    {
+      ...urlField('careersLink', 'Careers link (optional)'),
+      admin: { description: 'Only to send applicants to an outside job board instead of the site’s own form.' },
     },
     {
       name: 'socialLinks',

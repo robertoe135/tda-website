@@ -331,3 +331,40 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 
 .not-found p { font-weight: 300; max-width: 34rem; margin-top: 1.5rem; }
 .not-found a { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Forms: careers application, newsletter */
+.careers-grid { display: grid; gap: 2.5rem; margin-top: 2rem; }
+.application-form { display: grid; gap: 1.25rem; max-width: 40rem; }
+.field { display: grid; gap: 0.35rem; min-width: 0; }
+.field-row { display: grid; gap: 1.25rem; }
+.field label { font-size: 0.8rem; font-weight: 400; }
+.optional { color: var(--muted); font-weight: 300; }
+.field input, .field textarea, .newsletter input {
+  font: inherit; font-weight: 300; font-size: 1rem; color: var(--text); background: var(--bg);
+  border: 1px solid #bbb; border-radius: 0; padding: 0.7rem 0.75rem; min-height: 48px; width: 100%;
+}
+.field input[type='file'] { padding: 0.55rem 0.5rem; }
+.field input:focus, .field textarea:focus, .newsletter input:focus { outline: 2px solid var(--focus); outline-offset: 1px; border-color: var(--text); }
+.field [aria-invalid='true'] { border-color: #a4161a; }
+.field-error { margin: 0; color: #a4161a; font-size: 0.85rem; }
+.button-solid {
+  justify-self: start; min-height: 48px; padding: 0 1.5rem; border: 1px solid var(--text); background: var(--text);
+  color: var(--bg); font: inherit; font-size: 0.9rem; cursor: pointer;
+}
+.button-solid:disabled { opacity: 0.6; cursor: progress; }
+.form-note { margin: 0; font-size: 0.8rem; font-weight: 300; color: var(--muted); }
+.form-done h2 { font-weight: 200; font-size: 1.9rem; margin: 0 0 0.75rem; }
+.form-done p { font-weight: 300; }
+.footer-end { display: grid; gap: 0.75rem; justify-items: start; }
+.newsletter { display: grid; gap: 0.35rem; width: 100%; max-width: 22rem; }
+.newsletter label { color: var(--text); font-weight: 400; }
+.newsletter-row { display: flex; }
+.newsletter input { min-height: 44px; padding: 0.5rem 0.6rem; font-size: 0.85rem; }
+.newsletter button { min-height: 44px; padding: 0 1rem; white-space: nowrap; flex: 0 0 auto; border: 1px solid var(--text); background: var(--text); color: var(--bg); font: inherit; font-size: 0.8rem; cursor: pointer; }
+.newsletter-done { margin: 0; color: var(--text); }
+
+@media (min-width: 720px) {
+  .careers-grid { grid-template-columns: 5fr 7fr; gap: 5rem; margin-top: 3rem; }
+  .field-row { grid-template-columns: 1fr 1fr; }
+  .footer-end { justify-items: end; }
+}

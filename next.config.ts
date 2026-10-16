@@ -14,6 +14,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Career applications carry a CV of up to 4 MB; Vercel refuses requests over 4.5 MB.
+  experimental: { serverActions: { bodySizeLimit: '4.4mb' } },
   // Old Squarespace addresses of the menu pages. Project addresses are handled separately.
   redirects: async () => [
     { source: '/about-5', destination: '/about', permanent: true },

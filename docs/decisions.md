@@ -89,6 +89,8 @@ deploy and restore.
 7. Do TDA's brand typefaces have web licenses? Where are the brand files?
    Typeface answered: DM Sans (open source, OFL). Colors and logo files still needed.
 8. Where is the domain registered and who controls DNS? What email records exist?
+   Also decides how the site sends email (career applications): an SMTP account on TDA's
+   mail service, or a sending service that needs DNS records (`docs/forms-and-email.md`).
 9. Which external profiles (ArchDaily, Archinect, directories) should be claimed and corrected,
    and which address is canonical (Suite 703)?
 10. Launch scope: is the map view, news, press archive or careers listing required on day one?

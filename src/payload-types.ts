@@ -78,6 +78,7 @@ export interface Config {
     firms: Firm;
     photographers: Photographer;
     creditRoles: CreditRole;
+    leads: Lead;
     users: User;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
@@ -108,6 +109,7 @@ export interface Config {
     firms: FirmsSelect<false> | FirmsSelect<true>;
     photographers: PhotographersSelect<false> | PhotographersSelect<true>;
     creditRoles: CreditRolesSelect<false> | CreditRolesSelect<true>;
+    leads: LeadsSelect<false> | LeadsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -678,6 +680,38 @@ export interface Video {
   focalY?: number | null;
 }
 /**
+ * Career applications and inquiries sent through the site. Admins only. Delete applications once a position is filled or after six months, whichever comes first.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "leads".
+ */
+export interface Lead {
+  id: number;
+  type: 'career' | 'inquiry';
+  status: 'new' | 'reviewing' | 'contacted' | 'closed';
+  name: string;
+  email: string;
+  phone?: string | null;
+  position?: string | null;
+  portfolioUrl?: string | null;
+  message?: string | null;
+  /**
+   * File name only. The CV itself is attached to the email in the jobs inbox.
+   */
+  cvFileName?: string | null;
+  /**
+   * For TDA only. Never shared with the applicant.
+   */
+  notes?: string | null;
+  /**
+   * Off means the email failed: read the CV from the applicant directly.
+   */
+  emailSent?: boolean | null;
+  senderHash?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * People who can log in to this admin. Only admins can add or remove them.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -774,6 +808,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'creditRoles';
         value: number | CreditRole;
+      } | null)
+    | ({
+        relationTo: 'leads';
+        value: number | Lead;
       } | null)
     | ({
         relationTo: 'users';
@@ -1096,6 +1134,26 @@ export interface CreditRolesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "leads_select".
+ */
+export interface LeadsSelect<T extends boolean = true> {
+  type?: T;
+  status?: T;
+  name?: T;
+  email?: T;
+  phone?: T;
+  position?: T;
+  portfolioUrl?: T;
+  message?: T;
+  cvFileName?: T;
+  notes?: T;
+  emailSent?: T;
+  senderHash?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
@@ -1313,7 +1371,11 @@ export interface SiteSetting {
     [k: string]: unknown;
   } | null;
   /**
-   * Where applications go: a form or job board. Leave empty to hide the button.
+   * Applications from the careers form are emailed here, with the CV attached, and listed under Leads.
+   */
+  careersEmail?: string | null;
+  /**
+   * Only to send applicants to an outside job board instead of the site’s own form.
    */
   careersLink?: string | null;
   socialLinks?:
@@ -1411,6 +1473,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   pressEmail?: T;
   intro?: T;
   careersText?: T;
+  careersEmail?: T;
   careersLink?: T;
   socialLinks?:
     | T
