@@ -184,3 +184,22 @@ pnpm migrate:drop-in-progress --write    # delete them (--confirm-backup if not 
 Before deleting, its old web addresses, press, awards and homepage places move to the completed
 project, so old links keep working. A pair needs the in-progress name (three words or more) to sit
 inside exactly one completed project's name; anything less certain is listed and left alone.
+
+## The team (`pnpm migrate:people`)
+
+Brings the old team page across: 23 people with their names, titles, groups, page order and
+headshots.
+
+```bash
+pnpm migrate:people                                            # list what would change
+pnpm migrate:people --write --publish --confirm-backup         # create, add headshots, publish
+```
+
+- Names and titles are copied exactly. For someone already in the admin, an editor's title,
+  group and order are kept (a different title on the old page goes to review.csv).
+- Everyone on the old page is public there, so "Show on site" is turned on for them.
+- Headshots are downloaded at the size TDA uploaded them. Transparent PNGs stay PNG. They're
+  renamed and stripped of camera data like every upload. A file named for someone else's
+  initials, or marked temporary, goes to review.csv.
+- The old site has no bios, and none are written. Each person supplies their own.
+- Safe to run again: a second run changes nothing.
