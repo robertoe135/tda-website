@@ -72,6 +72,16 @@ export const SiteSettings: GlobalConfig = {
       admin: { description: 'Only to send applicants to an outside job board instead of the site’s own form.' },
     },
     {
+      name: 'blockAICrawlers',
+      label: 'Block AI crawlers',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description:
+          'On: asks AI companies’ crawlers (OpenAI, Anthropic, Google AI training, Perplexity, Common Crawl and others) not to read the site. Search engines are not affected. Open question 11.',
+      },
+    },
+    {
       name: 'socialLinks',
       label: 'Social links',
       type: 'array',

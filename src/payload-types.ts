@@ -1378,6 +1378,10 @@ export interface SiteSetting {
    * Only to send applicants to an outside job board instead of the site’s own form.
    */
   careersLink?: string | null;
+  /**
+   * On: asks AI companies’ crawlers (OpenAI, Anthropic, Google AI training, Perplexity, Common Crawl and others) not to read the site. Search engines are not affected. Open question 11.
+   */
+  blockAICrawlers?: boolean | null;
   socialLinks?:
     | {
         platform: 'instagram' | 'linkedin' | 'facebook' | 'vimeo' | 'youtube' | 'x' | 'other';
@@ -1475,6 +1479,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   careersText?: T;
   careersEmail?: T;
   careersLink?: T;
+  blockAICrawlers?: T;
   socialLinks?:
     | T
     | {
