@@ -101,13 +101,30 @@ const imageOf = (img: HTMLElement): Image | undefined => {
 
 // ── parsers ──────────────────────────────────────────────────────────────────
 
+const US_STATE_NAMES = new Set(
+  'Alabama Alaska Arizona Arkansas California Colorado Connecticut Delaware Florida Georgia Hawaii Idaho Illinois Indiana Iowa Kansas Kentucky Louisiana Maine Maryland Massachusetts Michigan Minnesota Mississippi Missouri Montana Nebraska Nevada Ohio Oklahoma Oregon Pennsylvania Tennessee Texas Utah Vermont Virginia Washington Wisconsin Wyoming|New Hampshire|New Jersey|New Mexico|New York|North Carolina|North Dakota|Rhode Island|South Carolina|South Dakota|West Virginia'
+    .split('|')
+    .flatMap((group, i) => (i === 0 ? group.split(' ') : [group])),
+)
+const CA_PROVINCES = new Set(['Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador', 'Nova Scotia', 'Ontario', 'Prince Edward Island', 'Quebec', 'Saskatchewan'])
+const US_COUNTRY = new Set(['U.S.', 'US', 'USA', 'U.S.A.', 'United States'])
+const isUsRegion = (s: string) => US_STATES.has(s) || US_STATE_NAMES.has(s) || /^D\.?C\.?$/.test(s)
+
+/**
+ * Splits a location as written into city, region and country without changing any spelling.
+ * Only the country "United States" is inferred, from a US state or "D.C.". Anything that does
+ * not fit is returned with just `asWritten` so it can be flagged.
+ */
 export function parseLocation(asWritten: string): Location {
   const parts = asWritten.split(',').map((p) => p.trim()).filter(Boolean)
-  if (parts.length === 2 && US_STATES.has(parts[1])) {
-    return { asWritten, city: parts[0], region: parts[1], country: 'United States' }
-  }
-  if (parts.length === 2) return { asWritten, city: parts[0], country: parts[1] }
-  return { asWritten }
+  if (parts.length === 3) return { asWritten, city: parts[0], region: parts[1], country: parts[2] }
+  if (parts.length !== 2) return { asWritten }
+  const [city, second] = parts
+  if (isUsRegion(second)) return { asWritten, city, region: second, country: 'United States' }
+  if (US_COUNTRY.has(second)) return { asWritten, city, country: 'United States' }
+  const regionCountry = second.match(/^([A-Z]{2}) (Canada)$/) // "Waterloo, ON Canada"
+  if (regionCountry) return { asWritten, city, region: regionCountry[1], country: regionCountry[2] }
+  return { asWritten, city, country: second }
 }
 
 /** "Max Touhey / Michael Moran- OTTO" → two names. Firm values are never split (A & B, A + B). */
@@ -298,7 +315,7 @@ async function main() {
     if (main) creditsByPath.set(row.path, parseCredits(lines(main)))
   }
   const claimed = new Set<string>()
-  for (const project of projects.values()) {
+  for (const [key, project] of [...projects]) {
     if (!project.creditsPath) {
       flag(project.legacyPaths[0], 'credits page', project.name, 'Project page has no "Full Project Stats" link.')
       continue
@@ -308,12 +325,24 @@ async function main() {
       flag(project.legacyPaths[0], 'credits page', project.creditsPath, 'Links to a credits page that is not in the sitemap or was not fetched.')
       continue
     }
-    if (claimed.has(project.creditsPath)) {
-      flag(project.creditsPath, 'credits page', project.name, 'More than one project page links to this credits page.')
-    }
-    claimed.add(project.creditsPath)
     project.credits = credits
-    project.legacyPaths.push(project.creditsPath)
+    if (!claimed.has(project.creditsPath)) {
+      claimed.add(project.creditsPath)
+      project.legacyPaths.push(project.creditsPath)
+      continue
+    }
+    // A second project page linking to the same credits page. Same name: one project under two
+    // addresses, so merge. Different names (712 Fifth Lobby and Atrium): keep both and flag.
+    const first = [...projects.values()].find((p) => p !== project && p.creditsPath === project.creditsPath)!
+    if (normalizeName(first.name) === normalizeName(project.name)) {
+      first.legacyPaths.push(...project.legacyPaths.filter((x) => !first.legacyPaths.includes(x)))
+      first.typologies.push(...project.typologies.filter((t) => !first.typologies.includes(t)))
+      first.featured ||= project.featured
+      projects.delete(key)
+      flag(project.legacyPaths[0], 'project', `${first.legacyPaths[0]} | ${project.legacyPaths[0]}`, `Same project (${project.name}) under two addresses; merged into one. Images and text come from the first.`)
+    } else {
+      flag(project.creditsPath, 'credits page', `${first.name} | ${project.name}`, 'Two different projects share one credits page. Both keep these credits; the old credits address redirects to the first. Split the credits if they differ.')
+    }
   }
 
   // Credits pages no project links to: projects that exist only as credits, or stale copies.
@@ -400,7 +429,13 @@ async function main() {
   const seenLocations = new Set<string>()
   for (const p of projects.values()) {
     for (const loc of [p.location, p.credits?.location]) {
-      if (!loc || loc.region || seenLocations.has(loc.asWritten)) continue
+      if (!loc || seenLocations.has(loc.asWritten)) continue
+      if (loc.city && CA_PROVINCES.has(loc.city)) {
+        seenLocations.add(loc.asWritten)
+        flag(p.legacyPaths[0] ?? p.key, 'location', loc.asWritten, `"${loc.city}" is a province, not a city. Order may be reversed.`)
+        continue
+      }
+      if (loc.region) continue
       seenLocations.add(loc.asWritten)
       flag(p.legacyPaths[0] ?? p.key, 'location', loc.asWritten, loc.country ? `Read as city "${loc.city}", country "${loc.country}". Confirm how the country should be written.` : 'Could not split into city and state or country.')
     }

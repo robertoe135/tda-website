@@ -18,7 +18,8 @@
     "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts",
     "migrate:inventory": "tsx scripts/migrate/inventory.ts",
     "migrate:fetch": "tsx scripts/migrate/fetch.ts",
-    "migrate:extract": "tsx scripts/migrate/extract.ts"
+    "migrate:extract": "tsx scripts/migrate/extract.ts",
+    "migrate:import": "tsx scripts/migrate/import.ts"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "3.91.0",

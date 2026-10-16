@@ -39,17 +39,17 @@ https://www.tillotsondesign.com/performing-arts/nyu-paulson-center,project name,
 https://www.tillotsondesign.com/restaurants/rainbow-room,project name,Rainbow Room | Rainbow Room at Rockefeller Center,,"Same project, named differently under two categories."
 https://www.tillotsondesign.com/retail/knoll-flagship-offices-showroom-and-shop,project name,"Knoll Flagship: Offices, Showroom, and Shop | Knoll Flagship Offices, Showroom, and Shop",,"Same project, named differently under two categories."
 https://www.tillotsondesign.com/sitepublicrealm/dee-and-charles-wyly-theater,project name,Dee & Charles Wyly Theatre | Dee & Charles Wyly Theater,,"Same project, named differently under two categories."
-https://www.tillotsondesign.com/712-fifth-avenue-full-project-credits,credits page,712 Fifth Avenue Lobby,,More than one project page links to this credits page.
+https://www.tillotsondesign.com/712-fifth-avenue-full-project-credits,credits page,712 Fifth Avenue Atrium | 712 Fifth Avenue Lobby,,Two different projects share one credits page. Both keep these credits; the old credits address redirects to the first. Split the credits if they differ.
 https://www.tillotsondesign.com/corporate/foundation-in-the-midwest,credits page,Foundation in the Midwest,,"Project page has no ""Full Project Stats"" link."
-https://www.tillotsondesign.com/nanotronics-smart-factory-full-project-credits,credits page,Nanotronics Smart Factory,,More than one project page links to this credits page.
-https://www.tillotsondesign.com/rainbow-room-full-project-credits,credits page,Rainbow Room,,More than one project page links to this credits page.
-https://www.tillotsondesign.com/new-york-public-library-stephen-a-schwartzman-building-full-project-credits,credits page,NYPL Stephen A. Schwarzman Building,,More than one project page links to this credits page.
-https://www.tillotsondesign.com/charles-library-temple-university-full-project-credits,credits page,Temple University Charles Library,,More than one project page links to this credits page.
+https://www.tillotsondesign.com/historic/nanotronicssmartfactory,project,/corporate/nanotronics-smart-factory | /historic/nanotronicssmartfactory,,Same project (Nanotronics Smart Factory) under two addresses; merged into one. Images and text come from the first.
+https://www.tillotsondesign.com/rainbow-room-full-project-credits,credits page,Rainbow Room at Rockefeller Center | Rainbow Room,,Two different projects share one credits page. Both keep these credits; the old credits address redirects to the first. Split the credits if they differ.
+https://www.tillotsondesign.com/libraries/new-york-public-library-sasb,project,/historic/nypl-stephen-a-schwarzman | /libraries/new-york-public-library-sasb,,Same project (NYPL Stephen A. Schwarzman Building) under two addresses; merged into one. Images and text come from the first.
+https://www.tillotsondesign.com/libraries/temple-university-charles-library,project,/academic/temple-charles-library | /libraries/temple-university-charles-library,,Same project (Temple University Charles Library) under two addresses; merged into one. Images and text come from the first.
 https://www.tillotsondesign.com/places-of-worship/chapel-of-st-ignatius-and-gayle-and-tom-benson-jesuit-center-at-loyola-university,credits page,Chapel of St. Ignatius and Gayle and Tom Benson Jesuit Center at Loyola University,,"Project page has no ""Full Project Stats"" link."
 https://www.tillotsondesign.com/retail/holt-renfrew,credits page,Holt Renfrew,,"Project page has no ""Full Project Stats"" link."
 https://www.tillotsondesign.com/retail/moma-retail-store,credits page,/museum-of-modern-art-renovation-expansion-full-project-credits,,Links to a credits page that is not in the sitemap or was not fetched.
-https://www.tillotsondesign.com/duke-university-west-campus-union-full-credits,credits page,Duke University West Campus Union,,More than one project page links to this credits page.
-https://www.tillotsondesign.com/united-states-olympic-paralympic-museum-full-project-credits,credits page,Park Union Bridge at the US Olympic & Paralympic Museum,,More than one project page links to this credits page.
+https://www.tillotsondesign.com/sitepublicrealm/duke-west-campus-union,project,/academic/duke-university-west-union | /sitepublicrealm/duke-west-campus-union,,Same project (Duke University West Campus Union) under two addresses; merged into one. Images and text come from the first.
+https://www.tillotsondesign.com/united-states-olympic-paralympic-museum-full-project-credits,credits page,U.S. Olympic & Paralympic Museum | Park Union Bridge at the US Olympic & Paralympic Museum,,Two different projects share one credits page. Both keep these credits; the old credits address redirects to the first. Split the credits if they differ.
 https://www.tillotsondesign.com/36-sml-southampton-beach-house-full-project-credits,project,36 Small Southampton Beach House,,"Credits page with no project page. Import as a draft project (no images, no category) or leave out?"
 https://www.tillotsondesign.com/425-park-avenue-full-project-credits,project,425 Park Avenue,,"Credits page with no project page. Import as a draft project (no images, no category) or leave out?"
 https://www.tillotsondesign.com/bronx-childrens-museum-full-project-credits,project,Bronx Children’s Museum,,"Credits page with no project page. Import as a draft project (no images, no category) or leave out?"
@@ -177,22 +177,16 @@ https://www.tillotsondesign.com/the-ned-nomad-full-project-credits,year,The Ned 
 https://www.tillotsondesign.com/wright-residence-full-project-credits,year,The Wright Residence,,"Credits page has no ""Project Completed"" year."
 https://www.tillotsondesign.com/corporate/bloomberg-european-hq,location,"London, England",,"Read as city ""London"", country ""England"". Confirm how the country should be written."
 https://www.tillotsondesign.com/corporate/bloomberg-european-hq,location,"London, UK",,"Read as city ""London"", country ""UK"". Confirm how the country should be written."
-https://www.tillotsondesign.com/corporate/cigi-centre-for-international-governance-innovation,location,"Waterloo, Ontario, Canada",,Could not split into city and state or country.
-https://www.tillotsondesign.com/corporate/cigi-centre-for-international-governance-innovation,location,"Waterloo, ON Canada",,"Read as city ""Waterloo"", country ""ON Canada"". Confirm how the country should be written."
-https://www.tillotsondesign.com/corporate/foundation-in-the-midwest,location,"Midwest, U.S.",,"Read as city ""Midwest"", country ""U.S."". Confirm how the country should be written."
+https://www.tillotsondesign.com/corporate/foundation-in-the-midwest,location,"Midwest, U.S.",,"Read as city ""Midwest"", country ""United States"". Confirm how the country should be written."
 https://www.tillotsondesign.com/corporate/hony-capital-shenzhen,location,"Shenzen, China",,"Read as city ""Shenzen"", country ""China"". Confirm how the country should be written."
 https://www.tillotsondesign.com/corporate/hony-capital-shenzhen,location,"Shenzhen, China",,"Read as city ""Shenzhen"", country ""China"". Confirm how the country should be written."
-https://www.tillotsondesign.com/exhibitions/canadian-museum-of-human-rights,location,"Winnipeg, Manitoba, Canada",,Could not split into city and state or country.
 https://www.tillotsondesign.com/exhibitions/canadian-museum-of-human-rights,location,"Winnipeg, Canada",,"Read as city ""Winnipeg"", country ""Canada"". Confirm how the country should be written."
 https://www.tillotsondesign.com/exhibitions/gabrielle-chanel-fashion-manifesto,location,"Shanghai, China",,"Read as city ""Shanghai"", country ""China"". Confirm how the country should be written."
 https://www.tillotsondesign.com/hospitality/edition-hotel-istanbul,location,"Istanbul, Turkey",,"Read as city ""Istanbul"", country ""Turkey"". Confirm how the country should be written."
 https://www.tillotsondesign.com/hospitality/edition-hotel-istanbul,location,"Instanbul, Turkey",,"Read as city ""Instanbul"", country ""Turkey"". Confirm how the country should be written."
-https://www.tillotsondesign.com/museums/folger-shakespeare-library,location,"Washington, D.C.",,"Read as city ""Washington"", country ""D.C."". Confirm how the country should be written."
 https://www.tillotsondesign.com/museums/israel-museum,location,"Jerusalem, Israel",,"Read as city ""Jerusalem"", country ""Israel"". Confirm how the country should be written."
-https://www.tillotsondesign.com/museums/princeton-university-art-museum,location,"Princeton, New Jersey",,"Read as city ""Princeton"", country ""New Jersey"". Confirm how the country should be written."
-https://www.tillotsondesign.com/museums/remai-modern-art-gallery,location,"Saskatchewan, Saskatoon, Canada",,Could not split into city and state or country.
+https://www.tillotsondesign.com/museums/remai-modern-art-gallery,location,"Saskatchewan, Saskatoon, Canada",,"""Saskatchewan"" is a province, not a city. Order may be reversed."
 https://www.tillotsondesign.com/museums/tel-aviv-museum-of-art,location,"Tel Aviv, Israel",,"Read as city ""Tel Aviv"", country ""Israel"". Confirm how the country should be written."
-https://www.tillotsondesign.com/performing-arts/cigi-balsillie-school-of-international-affairs,location,"Waterloo, ON, Canada",,Could not split into city and state or country.
 https://www.tillotsondesign.com/performing-arts/the-tianjin-julliard-school,location,"Tianjin, China",,"Read as city ""Tianjin"", country ""China"". Confirm how the country should be written."
 https://www.tillotsondesign.com/retail/holt-renfrew,location,"Toronto, Canada",,"Read as city ""Toronto"", country ""Canada"". Confirm how the country should be written."
 https://www.tillotsondesign.com/harbin-bank-headquarters-full-project-credits,location,"Harbin, China",,"Read as city ""Harbin"", country ""China"". Confirm how the country should be written."
@@ -245,6 +239,27 @@ https://www.tillotsondesign.com/collaborators,firm,Altieri Sebor Wieber | Altier
 https://www.tillotsondesign.com/collaborators,firm,Pelli Clarke Pelli | Pelli Clark Pelli,,"Two firm names that differ by a letter or two. Same firm misspelled, or two firms?"
 https://www.tillotsondesign.com/collaborators,firm,Selldorf Architects | Seldorf Architects,,"Two firm names that differ by a letter or two. Same firm misspelled, or two firms?"
 https://www.tillotsondesign.com/collaborators,firm,Mathews Nielsen Landscape Architecture | Mathews Nielson Landscape Architects,,"Two firm names that differ by a letter or two. Same firm misspelled, or two firms?"
+https://www.tillotsondesign.com/stanford-mcmurty-building-for-the-department-of-art-and-art-history-project-credits,certification,Pending,,"Not a plain ""LEED Gold"" style value; not imported. Enter it by hand."
+https://www.tillotsondesign.com/comcaast-technology-center-full-project-credits,certification,Triple LEED Platinum,,"Not a plain ""LEED Gold"" style value; not imported. Enter it by hand."
+https://www.tillotsondesign.com/oxman-studios-full-credits,certification,Pending,,"Not a plain ""LEED Gold"" style value; not imported. Enter it by hand."
+https://www.tillotsondesign.com/exhibitions/about-time,press,'About Time' Fashion and Duration,,Press item has no web link; not imported. Add the link by hand.
+https://www.tillotsondesign.com/gabrielle-chanel-fashion-manifesto-full-credits,credit,Curators: …,,"Curators and artists are people, not firms; not imported into credits. Add by hand if they should be credited."
+https://www.tillotsondesign.com/edition-hotel-full-project-credits,lighting design,Tillotson Design Associate,,"Lighting design credit is not ""Tillotson Design Associates"". Typo, or a predecessor-firm project?"
+https://www.tillotsondesign.com/the-knickerbocker-hotel-full-project-credits,area,"100,000 SF - 300,000 SF (175,000 SF)",,"Area not in ""N SF"" form; not imported. Enter it by hand."
+https://www.tillotsondesign.com/folger-shakespeare-library-full-credits,credit,Sculpture Artist: …,,"Curators and artists are people, not firms; not imported into credits. Add by hand if they should be credited."
+https://www.tillotsondesign.com/tel-aviv-museum-of-art-full-project-credits,area,"195,000 SF (Rounded up)",,"Area not in ""N SF"" form; not imported. Enter it by hand."
+https://www.tillotsondesign.com/att-performing-arts-center-dee-and-charles-wyly-theater-full-project-credits,area,"80,000 SF on a 20 acre Park",,"Area not in ""N SF"" form; not imported. Enter it by hand."
+https://www.tillotsondesign.com/central-park-west-duplex-full-project-credits,area,"3,150 SF w/ Two Terraces",,"Area not in ""N SF"" form; not imported. Enter it by hand."
+https://www.tillotsondesign.com/dean-and-deluca-stage-full-project-credits,area,550 SF (Stage),,"Area not in ""N SF"" form; not imported. Enter it by hand."
+https://www.tillotsondesign.com/hudson-eats-at-brookfield-place-full-project-credits,area,"(P) 7,800 SF /(RF) +500,000 SF",,"Area not in ""N SF"" form; not imported. Enter it by hand."
+https://www.tillotsondesign.com/hudson-eats-at-brookfield-place-full-project-credits,year,Pavillion: 2013 / Reconfiguration: 2021,,Not a single year; not imported. Enter it by hand.
+https://www.tillotsondesign.com/alessi-us-flagship-full-project-credits,area,"1,650 SF (Not including Cellar)",,"Area not in ""N SF"" form; not imported. Enter it by hand."
+https://www.tillotsondesign.com/east-river-waterfront-full-project-credits,area,"1.5 Miles of Site/14,000,000 SF",,"Area not in ""N SF"" form; not imported. Enter it by hand."
+https://www.tillotsondesign.com/lincoln-center-for-the-performing-arts-public-spaces-and-infoscape-full-project-credits,area,"348,480 SF (8 acres)",,"Area not in ""N SF"" form; not imported. Enter it by hand."
+https://www.tillotsondesign.com/nicollett-mall-full-project-credits,area,"12 Block Stretch / 400,000 SF (Concrete Flatwork)",,"Area not in ""N SF"" form; not imported. Enter it by hand."
+https://www.tillotsondesign.com/425-park-avenue-full-project-credits,area,"670,080 SF (Office), 18,381 SF (Retail)",,"Area not in ""N SF"" form; not imported. Enter it by hand."
+https://www.tillotsondesign.com/dallas-museum-of-art-cartier-and-islamic-art-in-search-of-modernity-full-project-credits,area,"500,000+ SF",,"Area not in ""N SF"" form; not imported. Enter it by hand."
+https://www.tillotsondesign.com/residential,confidential,9 residential projects,,"Imported as confidential (client hidden). Confirm per project which residences can name the client (decisions.md, question 5)."
 https://www.tillotsondesign.com/duke-university-west-campus-union-full-credits,credits page,/duke-university-west-campus-union-full-credits,,Unconfirmed: possibly duke-university-west-union. The fetch step will check the project page's credits link.
 https://www.tillotsondesign.com/brow-university-the-perry-and-marty-granoff-center-for-the-creative-arts-project-credits,credits page,/brow-university-the-perry-and-marty-granoff-center-for-the-creative-arts-project-credits,,Unconfirmed: possibly brown-university-creative-arts-center. The fetch step will check the project page's credits link.
 https://www.tillotsondesign.com/the-brearley-school-full-project-credits,credits page,/the-brearley-school-full-project-credits,,"No project page has a similar address. A project that exists only as a credits page, or an orphaned page?"

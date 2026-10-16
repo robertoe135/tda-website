@@ -69,6 +69,33 @@ differ between a project page and its credits page, unknown credit labels, locat
 are not "City, ST", and more. That file never contains owner names or image filenames.
 Credit label variants live in `credit-labels.ts`; unknown labels are flagged, not guessed.
 
+## 4. Import (`pnpm migrate:import`)
+
+Writes the extracted data into Payload through the Local API. Needs the database
+(`DATABASE_URL`) and `PAYLOAD_SECRET` in `.env`.
+
+```
+pnpm migrate:import            # create what is missing; existing records are left alone
+pnpm migrate:import --update   # also overwrite imported fields on existing projects and people
+```
+
+- Projects and people are created as drafts. People have "Show on site" off and no bio.
+  Nothing is public until someone at TDA publishes it.
+- Creates the 13 typologies in the order of the old portfolio menu. "On the boards" is a
+  project status (In progress), not a typology.
+- Architects come from the project page label; consultants and secondary architects become
+  Credits (role + firms); the Owner becomes the client. Residential projects are imported as
+  confidential, which hides the client publicly, until TDA confirms otherwise.
+- Firms, clients, locations, credit roles and photographers are matched on their normalized
+  name, so spellings that differ only in punctuation share one record. Where the collaborators
+  page has the firm, its spelling is used. Different spellings (Pedersen / Pederson) stay
+  separate and are listed in review.csv.
+- Two project pages are merged only when they share a credits page and the same name.
+- Images are not imported; originals come from TDA's file server.
+- Safe to rerun: projects are matched on their own old address, so a second run adds nothing.
+- Refuses any database not on this machine unless `--confirm-backup` is passed. Take a
+  backup first.
+
 ## Known gaps
 
 - The sitemap is not the full list of old URLs: pages the audit found indexed

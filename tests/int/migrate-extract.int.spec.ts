@@ -13,6 +13,12 @@ describe('parseLocation', () => {
       country: 'United States',
     })
   })
+  it('handles D.C., full state names, three parts and "ON Canada"', () => {
+    expect(parseLocation('Washington, D.C.')).toMatchObject({ city: 'Washington', region: 'D.C.', country: 'United States' })
+    expect(parseLocation('Princeton, New Jersey')).toMatchObject({ region: 'New Jersey', country: 'United States' })
+    expect(parseLocation('Waterloo, Ontario, Canada')).toMatchObject({ city: 'Waterloo', region: 'Ontario', country: 'Canada' })
+    expect(parseLocation('Waterloo, ON Canada')).toMatchObject({ city: 'Waterloo', region: 'ON', country: 'Canada' })
+  })
   it('keeps a non-US country exactly as written', () => {
     expect(parseLocation('London, UK')).toEqual({ asWritten: 'London, UK', city: 'London', country: 'UK' })
   })
@@ -97,5 +103,23 @@ describe('parseProjectPage', () => {
   })
   it('reads press items with outlet and link', () => {
     expect(page.press).toEqual([{ title: 'A headline', outlet: 'The Outlet', url: 'https://example.com/a' }])
+  })
+})
+
+describe('import parsing', async () => {
+  const { parseArea, parseCertifications } = await import('../../scripts/migrate/import')
+  it('reads area in square feet with an optional note', () => {
+    expect(parseArea('1,750,000 SF')).toEqual({ areaSqFt: 1750000, areaNote: undefined })
+    expect(parseArea('800,000 SF / Lobby: 5,200 SF')).toEqual({ areaSqFt: 800000, areaNote: 'Lobby: 5,200 SF' })
+    expect(parseArea('about a block')).toBeUndefined()
+  })
+  it('reads plain certifications and refuses unusual ones', () => {
+    expect(parseCertifications('LEED Platinum, WELL Platinum')).toEqual([
+      { system: 'leed', level: 'platinum', note: undefined },
+      { system: 'well', level: 'platinum', note: undefined },
+    ])
+    expect(parseCertifications('WELL Gold, LEED ID+C Gold')?.[1]).toEqual({ system: 'leed', level: 'gold', note: 'ID+C' })
+    expect(parseCertifications('Triple LEED Platinum')).toBeUndefined()
+    expect(parseCertifications('Pending')).toBeUndefined()
   })
 })
