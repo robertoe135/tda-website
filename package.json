@@ -31,7 +31,8 @@
     "media:scan": "tsx scripts/media/scan.ts",
     "media:import": "tsx scripts/media/import.ts",
     "projects:add": "tsx scripts/media/projects-to-add.ts",
-    "media:publish": "tsx scripts/media/publish.ts"
+    "media:publish": "tsx scripts/media/publish.ts",
+    "media:check": "tsx scripts/media/check.ts"
   },
   "dependencies": {
     "@fontsource-variable/dm-sans": "5.3.0",
