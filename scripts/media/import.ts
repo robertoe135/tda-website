@@ -26,6 +26,7 @@ import { normalizeName } from '../../src/hooks/preventNearDuplicates'
 import { parseCsv } from '../team/lib'
 
 import { photosRoot } from './lib'
+import { recordTouched } from './publish'
 import { PHOTOS_CSV } from './scan'
 import { assertSafeTarget, uploadPhoto } from './upload'
 
@@ -142,8 +143,10 @@ async function main() {
       data: { heroImage: ids[0], gallery: ids.slice(1).map((image) => ({ image })) },
       draft: true,
     })
+    await recordTouched(target.id)
   }
-  console.log(`\nUploaded ${uploaded} photos (${reused} already there) to ${targets.length} project drafts. Publish them in the admin.`)
+  console.log(`\nUploaded ${uploaded} photos (${reused} already there) to ${targets.length} project drafts.`)
+  console.log('Publish them in the admin, or all at once with: pnpm media:publish')
   process.exit(0)
 }
 

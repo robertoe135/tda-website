@@ -140,3 +140,21 @@ pnpm projects:add "/Volumes/T7/Website" --write    # create drafts and upload ph
 
 Photo descriptions start as "<Project>, photograph N", the same as the photo import. Write
 better ones in the admin before publishing.
+
+## 5. Publish what the imports saved (`pnpm media:publish`)
+
+The imports save drafts, so nothing is public until it is published. Spot-check a few projects
+in the admin, then publish the rest at once:
+
+```bash
+pnpm media:publish                              # list what would be published
+pnpm media:publish --write --confirm-backup     # publish it
+```
+
+- Only projects that `media:import` or `projects:add` saved on this computer are published.
+  They're kept in `scripts/media/cache/touched.json` as each one is saved. Other drafts in the
+  admin are left alone.
+- Each project's latest draft goes live exactly as the admin shows it.
+- **Held:** a project without categories (typologies) or without a status. New projects from
+  Projects to Add always need their categories chosen first. They stay on the list, so run the
+  command again once they are ready.
