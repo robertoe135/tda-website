@@ -54,7 +54,7 @@ export default async function ProjectsPage({ searchParams }: Props) {
       <h1 className="page-title">Portfolio</h1>
 
       <details className="filters-toggle" open={active.length > 0}>
-        <summary>filter{active.length > 0 ? ` (${active.length})` : ''}</summary>
+        <summary>Filter{active.length > 0 ? ` (${active.length})` : ''}</summary>
         <form className="filters" action="/projects" method="get" aria-label="Filter projects">
           <FilterGroup legend="Category">
             {typologies
@@ -87,8 +87,8 @@ export default async function ProjectsPage({ searchParams }: Props) {
           )}
 
           <div className="filters-actions">
-            <button type="submit">apply</button>
-            {active.length > 0 && <Link href="/projects">clear</Link>}
+            <button type="submit">Apply</button>
+            {active.length > 0 && <Link href="/projects">Clear</Link>}
           </div>
         </form>
       </details>
@@ -115,7 +115,12 @@ export default async function ProjectsPage({ searchParams }: Props) {
           {shown.map((p) => (
             <li key={p.id} className="portfolio-item">
               <Link href={`/projects/${p.slug}`}>
-                {/* Project image goes here once photographs are uploaded. */}
+                <div className="portfolio-image">
+                  {p.image && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={p.image.src} alt="" loading="lazy" />
+                  )}
+                </div>
                 <h3 className="portfolio-title">{p.name}</h3>
               </Link>
             </li>

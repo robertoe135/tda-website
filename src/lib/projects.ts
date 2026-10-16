@@ -1,7 +1,7 @@
 import config from '@payload-config'
 import { getPayload } from 'payload'
 
-import type { Firm, Location, Project, Typology } from '@/payload-types'
+import type { Firm, Location, Media, Photographer, Project, Typology } from '@/payload-types'
 
 /**
  * Data for the public projects pages. Every query runs with access control on
@@ -21,6 +21,8 @@ export type ProjectCard = {
   location?: Pick<Location, 'displayName' | 'slug' | 'worldRegion'>
   typologies: Pick<Typology, 'name' | 'slug'>[]
   architects: Pick<Firm, 'name' | 'slug'>[]
+  /** Card-sized hero image, when one has been uploaded. */
+  image?: { src: string; alt: string }
   /** Slugs of firms in the credits list and of clients, for the collaborator/client filters. */
   collaboratorSlugs: string[]
   clientSlugs: string[]
@@ -48,8 +50,10 @@ export async function getPublishedProjects(): Promise<ProjectCard[]> {
       architects: true,
       credits: true,
       clients: true,
+      heroImage: true,
     },
     populate: {
+      media: { url: true, alt: true, sizes: true },
       locations: { displayName: true, slug: true, worldRegion: true },
       typologies: { name: true, slug: true, order: true },
       firms: { name: true, slug: true },
@@ -65,6 +69,9 @@ export async function getPublishedProjects(): Promise<ProjectCard[]> {
     location: isObject<Location>(p.location) ? p.location : undefined,
     typologies: (p.typologies ?? []).filter(isObject<Typology>),
     architects: (p.architects ?? []).filter(isObject<Firm>),
+    image: isObject<Media>(p.heroImage) && p.heroImage.url
+      ? { src: p.heroImage.sizes?.card?.url ?? p.heroImage.url, alt: p.heroImage.alt }
+      : undefined,
     collaboratorSlugs: (p.credits ?? []).flatMap((c) =>
       c.firms.filter(isObject<Firm>).map((f) => f.slug ?? ''),
     ),
@@ -176,4 +183,36 @@ export function describeProject(project: Project): string | undefined {
     ?.children?.map((c) => c.text ?? '')
     .join('')
   return first ? (first.length > 160 ? `${first.slice(0, 157).trimEnd()}…` : first) : undefined
+}
+
+/** Slideshow slides from the hero image and gallery, in that order, using Payload's sizes. */
+export function projectSlides(project: Project) {
+  const images: { media: Media; caption?: string | null }[] = [
+    ...(isObject<Media>(project.heroImage) ? [{ media: project.heroImage }] : []),
+    ...(project.gallery ?? []).flatMap((g) => (isObject<Media>(g.image) ? [{ media: g.image, caption: g.caption }] : [])),
+  ]
+  return images
+    .filter(({ media }) => media.url)
+    .map(({ media, caption }) => {
+      const sizes = [media.sizes?.card, media.sizes?.gallery, media.sizes?.hero].filter(
+        (s): s is { url: string; width: number } => Boolean(s?.url && s.width),
+      )
+      return {
+        src: media.sizes?.hero?.url ?? media.url!,
+        srcSet: sizes.map((s) => `${s.url} ${s.width}w`).join(', ') || undefined,
+        width: media.sizes?.hero?.width ?? media.width ?? undefined,
+        height: media.sizes?.hero?.height ?? media.height ?? undefined,
+        alt: media.alt,
+        caption: caption ?? undefined, // only a caption someone wrote; alt text is not a caption
+      }
+    })
+}
+
+/** Photographers credited on a project's images, in order, without repeats. */
+export function projectPhotographers(project: Project): string[] {
+  const media = [project.heroImage, ...(project.gallery ?? []).map((g) => g.image)].filter(isObject<Media>)
+  const names = media.map((m) => (isObject<Photographer>(m.photographer) ? m.photographer.name : m.credit)).filter(
+    (n): n is string => Boolean(n),
+  )
+  return [...new Set(names)]
 }

@@ -1,6 +1,7 @@
 /*
  * Layout follows the current tillotsondesign.com: centered project name and
- * "location | architect" line, justified description, plain text links, lowercase menu.
+ * "location | architect" line, justified description, plain text links. Only the menu is
+ * lowercase; headings and labels are Title Case, as on the current site.
  * Typeface: DM Sans (TDA's brand font; SIL Open Font License, self-hosted from
  * @fontsource-variable/dm-sans). Colors, sizes and the logo are placeholders until
  * marketing's brand files arrive (decisions.md, question 7): do not invent them here.
@@ -38,23 +39,25 @@ a:hover { text-decoration: underline; }
 .site-nav a[aria-current='page'] { text-decoration: underline; }
 
 main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
-.page-title { font-weight: 300; text-transform: lowercase; font-size: 1.5rem; margin: 0 0 1rem; }
+.page-title { font-weight: 300; font-size: 1.5rem; margin: 0 0 1rem; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* Portfolio */
-.filters-toggle > summary { cursor: pointer; text-transform: lowercase; font-weight: 300; margin-bottom: 1rem; }
+.filters-toggle > summary { cursor: pointer; font-weight: 300; margin-bottom: 1rem; }
 .filters { display: grid; gap: 1.25rem; padding-bottom: 1.25rem; margin-bottom: 1rem; border-bottom: 1px solid var(--line); }
 .filters fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
-.filters legend { text-transform: lowercase; color: var(--muted); padding: 0; margin-bottom: 0.25rem; }
+.filters legend { color: var(--muted); padding: 0; margin-bottom: 0.25rem; }
 .checkbox { display: flex; align-items: center; gap: 0.5rem; padding: 0.15rem 0; font-weight: 300; }
 .checkbox input { width: 1rem; height: 1rem; margin: 0; }
 .filters-scroll { max-height: 15rem; overflow-y: auto; }
-.filters-actions { display: flex; gap: 1.25rem; align-items: baseline; text-transform: lowercase; }
+.filters-actions { display: flex; gap: 1.25rem; align-items: baseline; }
 .filters-actions button { font: inherit; background: none; border: 0; padding: 0; text-decoration: underline; cursor: pointer; }
 .active-filters { font-weight: 300; }
 .empty { font-weight: 300; }
 
 .portfolio-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.5rem; }
+.portfolio-image { aspect-ratio: 3 / 2; background: #f4f4f4; overflow: hidden; }
+.portfolio-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .portfolio-title { font-weight: 400; font-size: 1.05rem; margin: 0.5rem 0 0; }
 
 /* Project page (sizes and alignment from the current site) */
@@ -63,26 +66,75 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .project-line { margin: 0; font-weight: 300; font-size: 0.7rem; }
 .project-description { max-width: 38rem; margin: 2rem auto 0; text-align: justify; hyphens: auto; font-weight: 300; font-size: 0.8rem; line-height: 1.55; }
 .project-description p { margin: 0 0 0.75rem; }
-.project-stats-link { max-width: 38rem; margin: 0.75rem auto 2.5rem; font-size: 0.75rem; font-weight: 600; }
-.project-stats-link a { text-decoration: underline; }
 .press ul { list-style: none; margin: 0; padding: 1.5rem 0; display: grid; gap: 1.5rem; text-align: center; }
 .press-title { margin: 0; font-weight: 300; font-size: 0.9rem; }
 .press-outlet { margin: 0.15rem 0 0; font-weight: 300; font-size: 0.65rem; }
 .press-outlet a { text-decoration: underline; }
 .section-heading { font-weight: 400; font-size: 1rem; margin: 3rem 0 1rem; }
-.other-projects ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; font-weight: 300; }
+.other-projects ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; font-weight: 300; }
+.other-project { display: block; }
+.other-project img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; display: block; }
 .pager { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 4rem 0 2rem; font-weight: 300; font-size: 1.3rem; line-height: 1.2; }
 .pager a[rel='next'] { text-align: right; }
 
-/* Full Project Stats */
-.credits .project-title { margin-bottom: 1.25rem; }
-.credits-list p { margin: 0 0 0.35rem; font-weight: 300; }
-.credits-list .credits-heading { margin-top: 1rem; font-weight: 400; }
-.meta-link:hover, .credits-list a:hover { text-decoration: underline; }
+.meta-link:hover { text-decoration: underline; }
+
+/* Slideshow: one photograph at a time, arrows over the image, caption and counter below. */
+.slideshow { margin: 0 calc(-1 * var(--gutter)); }
+.slideshow:focus-visible { outline-offset: -2px; }
+.slideshow-frame { position: relative; aspect-ratio: 3 / 2; background: #f4f4f4; }
+.slideshow-frame img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.slideshow-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 44px; height: 44px; display: grid; place-items: center;
+  border: 0; border-radius: 50%; background: rgb(255 255 255 / 0.85); color: var(--text); cursor: pointer;
+}
+.slideshow-prev { left: 0.5rem; }
+.slideshow-next { right: 0.5rem; }
+.slideshow-meta {
+  display: flex; justify-content: space-between; gap: 1rem;
+  padding: 0.4rem var(--gutter) 0; font-weight: 300; font-size: 0.7rem; color: var(--muted);
+}
+
+/* Fact band: the key facts and the TDA team above the story, Project Info folded below them. */
+.fact-band { max-width: 50rem; margin: 2rem auto 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.facts-key { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem 1.5rem; margin: 0; padding: 1.25rem 0; }
+.fact dt { font-size: 0.65rem; font-weight: 400; color: var(--muted); letter-spacing: 0.04em; }
+.fact dd { margin: 0.15rem 0 0; font-weight: 300; font-size: 0.85rem; line-height: 1.4; }
+/* Faint underline so a linked name (current staff, a firm) reads differently from plain text. */
+.fact dd a, .project-info-body a { text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
+.fact dd a:hover, .project-info-body a:hover { text-decoration-color: currentColor; }
+.fact-wide { grid-column: 1 / -1; }
+.facts-team { border-top: 1px solid var(--line); padding-top: 1.25rem; }
+.facts-team .facts-key { padding-top: 0.75rem; }
+.facts-heading { margin: 0; font-weight: 400; font-size: 0.8rem; }
+
+.project-info { border-top: 1px solid var(--line); }
+.project-info > summary {
+  list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+  padding: 0.9rem 0; font-weight: 400; font-size: 0.8rem; min-height: 44px;
+}
+.project-info > summary::-webkit-details-marker { display: none; }
+.project-info-sign::before { content: '+'; font-weight: 300; font-size: 1.1rem; }
+.project-info[open] .project-info-sign::before { content: '\2212'; }
+.project-info-body { display: grid; gap: 1rem 2rem; padding: 0 0 1.25rem; font-weight: 300; font-size: 0.8rem; }
+.project-info-body p { margin: 0 0 0.35rem; }
+.project-info-body .project-info-heading { margin-top: 0.75rem; font-weight: 400; }
+.project-info-body > div > .project-info-heading:first-child { margin-top: 0; }
+
+/* Team pages */
+.person-projects { max-width: 38rem; margin: 0 auto; }
+.person-projects ul { list-style: none; margin: 0; padding: 0; font-weight: 300; }
+.person-projects li { display: flex; justify-content: space-between; gap: 1rem; padding: 0.5rem 0; border-bottom: 1px solid var(--line); }
+.person-project-meta { color: var(--muted); font-size: 0.8rem; text-align: right; }
 
 @media (min-width: 720px) {
   .press ul { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .other-projects ul { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .slideshow { margin: 0; }
+  .slideshow-meta { padding-inline: 0; }
+  .facts-key { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .project-info-body { grid-template-columns: 1fr 1fr; }
   .filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .filters-actions { grid-column: 1 / -1; }
   .portfolio-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

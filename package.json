@@ -19,7 +19,8 @@
     "migrate:inventory": "tsx scripts/migrate/inventory.ts",
     "migrate:fetch": "tsx scripts/migrate/fetch.ts",
     "migrate:extract": "tsx scripts/migrate/extract.ts",
-    "migrate:import": "tsx scripts/migrate/import.ts"
+    "migrate:import": "tsx scripts/migrate/import.ts",
+    "team:import": "tsx scripts/team/import.ts"
   },
   "dependencies": {
     "@fontsource-variable/dm-sans": "5.3.0",
