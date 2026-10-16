@@ -51,3 +51,5 @@ node_modules/
 
 # Migration cache: raw sitemap and image report contain filenames that name private clients
 /scripts/migrate/cache/
+# Photo list: folder and file names can name private clients
+/scripts/media/cache/

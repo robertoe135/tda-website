@@ -507,6 +507,7 @@ export interface Media {
    * Only when the credit is not a photographer in the list, or must read differently, e.g. "Courtesy of the architect".
    */
   credit?: string | null;
+  sourceHash?: string | null;
   prefix?: string | null;
   _objectKey?: string | null;
   updatedAt: string;
@@ -856,6 +857,7 @@ export interface MediaSelect<T extends boolean = true> {
   alt?: T;
   photographer?: T;
   credit?: T;
+  sourceHash?: T;
   prefix?: T;
   _objectKey?: T;
   updatedAt?: T;

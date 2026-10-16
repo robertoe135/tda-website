@@ -30,7 +30,7 @@ import type { Location as LocationDoc, Project } from '../../src/payload-types'
 
 import { ARCHITECT_ROLES, FIRM_ROLES, type Role } from './credit-labels'
 import type { Location, ProjectRecord } from './extract'
-import { cacheDir, type ReviewRow, SITE, writeReview } from './lib'
+import { cacheDir, type ReviewRow, SITE, splitCredit, writeReview } from './lib'
 
 const extractedDir = path.join(cacheDir, new URL(SITE).host, 'extracted')
 const update = process.argv.includes('--update')
@@ -382,7 +382,7 @@ async function main() {
     }
 
     // Photographers (credited on images later), awards and press.
-    for (const name of c?.photography ?? []) await findOrCreate('photographers', name)
+    for (const name of (c?.photography ?? []).flatMap(splitCredit)) await findOrCreate('photographers', name)
     for (const award of c?.awards ?? []) {
       const dup = await payload.find({
         collection: 'awards',

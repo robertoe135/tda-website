@@ -13,6 +13,7 @@ import * as migration_20261016_021837_credits_clients_area from './20261016_0218
 import * as migration_20261016_022300_location_world_region from './20261016_022300_location_world_region';
 import * as migration_20261016_035226_media_blob_prefix from './20261016_035226_media_blob_prefix';
 import * as migration_20261016_043020_team_roles from './20261016_043020_team_roles';
+import * as migration_20261016_050937_media_source_hash from './20261016_050937_media_source_hash';
 
 export const migrations = [
   {
@@ -88,6 +89,11 @@ export const migrations = [
   {
     up: migration_20261016_043020_team_roles.up,
     down: migration_20261016_043020_team_roles.down,
-    name: '20261016_043020_team_roles'
+    name: '20261016_043020_team_roles',
+  },
+  {
+    up: migration_20261016_050937_media_source_hash.up,
+    down: migration_20261016_050937_media_source_hash.down,
+    name: '20261016_050937_media_source_hash'
   },
 ];

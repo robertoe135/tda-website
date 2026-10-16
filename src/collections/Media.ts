@@ -51,6 +51,14 @@ export const Media: CollectionConfig = {
           ? true
           : 'Choose a photographer or write a credit. Every image must be credited.',
     },
+    {
+      // Set by scripts/media/import.ts so a second run reuses the upload instead of
+      // duplicating it. A hash of the original file's bytes; reveals nothing about it.
+      name: 'sourceHash',
+      type: 'text',
+      index: true,
+      admin: { hidden: true },
+    },
   ],
   upload: {
     mimeTypes: ['image/*'],

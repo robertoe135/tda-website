@@ -79,3 +79,14 @@ export async function writeReview(step: string, rows: ReviewRow[]): Promise<numb
   await writeFile(path.join(migrateDir, 'review.csv'), [REVIEW_COLUMNS.join(','), ...lines].join('\n') + '\n')
   return lines.length
 }
+
+/**
+ * The old credits pages list several photographers in one line, comma-separated:
+ * "Brett Beyer, Iwan Baan". Split on commas only; "+" and "&" are part of studio names
+ * ("Floto + Warner", "FG+SG Architectural Photography"). Names are kept as written.
+ */
+export const splitCredit = (line: string): string[] =>
+  line
+    .split(',')
+    .map((name) => name.trim())
+    .filter(Boolean)
