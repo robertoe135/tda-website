@@ -26,6 +26,28 @@ are ignored. Licenses for web use were confirmed in October 2026 (`docs/decision
   Beyer, Iwan Baan") and credits each project with the photographers its old credits page
   lists. TDA credits photography per project, so most photos need no credit of their own.
 
+## 0. Inventory: what is on the drive (`pnpm media:inventory`)
+
+Before uploading anything, see what the website folder holds:
+
+```
+pnpm media:inventory "/Volumes/T7/Website"
+pnpm media:inventory "/Volumes/T7/Website" --match    # also match folders to website projects
+```
+
+Reads only. Prints:
+
+- counts and sizes: photos, images to export first (HEIC, PSD, RAW), videos, documents;
+- the folders three levels deep, with how many photos, videos and documents each holds;
+- roughly how much would go into Blob if every photo went on the site;
+- what needs attention: images to export, videos to convert or shorten (over 40 MB), small
+  photos that would look soft, the same photo filed twice.
+
+Folder names under any Residential or Private folder are hidden in the printed summary, so it
+can be pasted into a chat or email. Every file, with real names, goes to
+`scripts/media/cache/inventory.csv` (kept out of git). `--match` needs `DATABASE_URL`
+(local or production; it only reads).
+
 ## 1. Scan
 
 ```
