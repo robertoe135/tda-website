@@ -1,5 +1,6 @@
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import type { Metadata } from 'next'
+import Link from 'next/link'
 
 import { formatAddress, getSettings, telHref } from '@/lib/site'
 
@@ -80,10 +81,14 @@ export default async function ContactPage() {
             <div className="contact-careers-text">
               <RichText data={settings.careersText} />
             </div>
-            {settings.careersLink && (
+            {settings.careersLink ? (
               <a href={settings.careersLink} rel="noopener" className="button-outline">
                 Apply <Arrow />
               </a>
+            ) : (
+              <Link href="/careers" className="button-outline">
+                Apply <Arrow />
+              </Link>
             )}
           </div>
         </section>

@@ -1,5 +1,6 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
+import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
@@ -9,6 +10,7 @@ import sharp from 'sharp'
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Videos } from './collections/Videos'
+import { Leads } from './collections/Leads'
 import { Typologies } from './collections/Typologies'
 import { Locations } from './collections/Locations'
 import { Firms } from './collections/Firms'
@@ -32,7 +34,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Projects, People, Media, Videos, Awards, Press, Typologies, Locations, Firms, Photographers, CreditRoles, Users],
+  collections: [Projects, People, Media, Videos, Awards, Press, Typologies, Locations, Firms, Photographers, CreditRoles, Leads, Users],
   globals: [Home, About, SiteSettings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
@@ -51,6 +53,21 @@ export default buildConfig({
     // than on every server start, where several instances could race.
     migrationDir: path.resolve(dirname, 'migrations'),
   }),
+  // Outgoing email (career applications, admin password resets) through any SMTP service:
+  // Microsoft 365, Google Workspace or a sending service such as Resend. Without SMTP_HOST,
+  // emails are printed to the server log instead (local development).
+  email: process.env.SMTP_HOST
+    ? nodemailerAdapter({
+        defaultFromAddress: process.env.EMAIL_FROM || 'website@tillotsondesign.com',
+        defaultFromName: 'Tillotson Design Associates website',
+        transportOptions: {
+          host: process.env.SMTP_HOST,
+          port: Number(process.env.SMTP_PORT || 587),
+          secure: Number(process.env.SMTP_PORT) === 465,
+          auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+        },
+      })
+    : undefined,
   sharp,
   plugins: [
     // Images go to Vercel Blob when BLOB_READ_WRITE_TOKEN is set (production); without it, to

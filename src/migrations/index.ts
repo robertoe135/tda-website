@@ -18,6 +18,8 @@ import * as migration_20261016_052641_pages_home_about_contact from './20261016_
 import * as migration_20261016_123730_home_rows_videos from './20261016_123730_home_rows_videos';
 import * as migration_20261016_130037_about_lede_facts from './20261016_130037_about_lede_facts';
 import * as migration_20261016_141302_firm_aliases from './20261016_141302_firm_aliases';
+import * as migration_20261016_144302_leads_careers_email from './20261016_144302_leads_careers_email';
+import * as migration_20261016_182004_block_ai_crawlers from './20261016_182004_block_ai_crawlers';
 
 export const migrations = [
   {
@@ -118,6 +120,16 @@ export const migrations = [
   {
     up: migration_20261016_141302_firm_aliases.up,
     down: migration_20261016_141302_firm_aliases.down,
-    name: '20261016_141302_firm_aliases'
+    name: '20261016_141302_firm_aliases',
+  },
+  {
+    up: migration_20261016_144302_leads_careers_email.up,
+    down: migration_20261016_144302_leads_careers_email.down,
+    name: '20261016_144302_leads_careers_email',
+  },
+  {
+    up: migration_20261016_182004_block_ai_crawlers.up,
+    down: migration_20261016_182004_block_ai_crawlers.down,
+    name: '20261016_182004_block_ai_crawlers'
   },
 ];

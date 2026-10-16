@@ -1,8 +1,11 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import React from 'react'
 
 import { NavLink } from '@/components/NavLink'
+import { OrganizationJsonLd } from '@/components/OrganizationJsonLd'
 import { SiteFooter } from '@/components/SiteFooter'
+import { indexingAllowed } from '@/lib/seo'
 import '@fontsource-variable/dm-sans'
 import './styles.css'
 
@@ -11,9 +14,11 @@ import './styles.css'
 // timeline, About, contact) would be frozen at build time.
 export const dynamic = 'force-dynamic'
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Tillotson Design Associates',
   metadataBase: new URL(process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'),
+  // Not indexed until launch (src/lib/seo.ts): crawlers may read, but must not list, pages.
+  ...(indexingAllowed() ? {} : { robots: { index: false, follow: true } }),
 }
 
 export default async function RootLayout(props: { children: React.ReactNode }) {
@@ -40,6 +45,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
         </header>
         <main id="main">{children}</main>
         <SiteFooter />
+        <OrganizationJsonLd />
       </body>
     </html>
   )
