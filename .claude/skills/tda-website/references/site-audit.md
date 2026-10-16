@@ -41,6 +41,15 @@ Known URL patterns (from the index; the full list should come from `/sitemap.xml
 - Legacy standalone project pages still indexed over http:
   `/nyu-steinhardt`, `/upper-east-side-townhouse/`, `/performing-arts` (older template)
 
+Sitemap snapshot (16 October 2026; see `scripts/migrate/out/url-inventory.csv`): 298 URLs.
+13 category index pages (academic, corporate, exhibitions, historic, hospitality, libraries,
+museums, performing-arts, places-of-worship, residential, restaurants, retail,
+sitepublicrealm), 136 project pages holding 124 unique project slugs (12 projects are
+duplicated under two categories), 138 standalone `*-full-project-credits` pages (about 20 of
+them for projects with no project page), and 11 other pages. The page at priority 1.0, so
+probably the homepage, lives at `/sereno-sofia-parazi-photography`. The sitemap omits some
+indexed legacy pages listed below.
+
 Structural consequences:
 
 - **One project, one category.** Projects live under a single typology path, so a project that

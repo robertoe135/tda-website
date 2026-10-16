@@ -48,3 +48,6 @@ node_modules/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Migration cache: raw sitemap and image report contain filenames that name private clients
+/scripts/migrate/cache/

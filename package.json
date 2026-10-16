@@ -15,9 +15,11 @@
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "test": "pnpm run test:int && pnpm run test:e2e",
     "test:e2e": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" playwright test --config=playwright.config.ts",
-    "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts"
+    "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts",
+    "migrate:inventory": "tsx scripts/migrate/inventory.ts"
   },
   "dependencies": {
+    "@payloadcms/db-postgres": "3.91.0",
     "@payloadcms/next": "3.91.0",
     "@payloadcms/richtext-lexical": "3.91.0",
     "@payloadcms/ui": "3.91.0",
@@ -28,8 +30,7 @@
     "payload": "3.91.0",
     "react": "19.2.6",
     "react-dom": "19.2.6",
-    "sharp": "0.35.4",
-    "@payloadcms/db-postgres": "3.91.0"
+    "sharp": "0.35.4"
   },
   "devDependencies": {
     "@playwright/test": "1.58.2",
@@ -40,6 +41,7 @@
     "@vitejs/plugin-react": "4.5.2",
     "eslint": "^9.16.0",
     "eslint-config-next": "16.3.3",
+    "fast-xml-parser": "^5.11.2",
     "jsdom": "28.0.0",
     "prettier": "^3.4.2",
     "tsx": "4.23.15",
