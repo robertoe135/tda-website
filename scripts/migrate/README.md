@@ -108,7 +108,9 @@ pnpm migrate:import --update   # also overwrite imported fields on existing proj
 
 Copies the homepage, About, contact and timeline content, word for word:
 
-- Homepage (draft): the old order of projects, with the two quotes where they stood.
+- Homepage (draft): rows as laid out on the old site (its 24-column grid gives each row's
+  layout), with the two quotes in place. The four videos it played are listed in `review.csv`
+  with their old addresses; upload the originals under Videos (`docs/editing-the-homepage.md`).
 - About page (draft): one section per heading.
 - Site settings: address, phone, emails, contact intro and careers text, only where empty.
 - Timeline: the year from `/timeline` on projects that have none. Where the timeline and the
@@ -124,3 +126,46 @@ Splits comma-separated photo credits the first import stored as one photographer
 credits each project (as a draft) with the photographers its old credits page lists. Run it
 before importing photos (`scripts/media/README.md`).
 
+
+## 7. Redirects (`pnpm migrate:check-redirects`)
+
+Old addresses keep working, from the data rather than a hand-kept list:
+
+- Project and "full project credits" pages: each project stores its old addresses
+  (`legacyUrls`); `src/app/(frontend)/[...legacy]` sends them to the project with a permanent
+  redirect, in any letter case, once the project is published. Unpublished projects 404 until
+  then, so nobody is sent to a page that does not exist yet.
+- Category pages (`/museums`, `/sitepublicrealm`, ...) open the portfolio filtered to that
+  category; `/on-the-boards` opens On the Boards.
+- Menu pages (`/about-5`, `/team`, `/collaborators`) are in `next.config.ts`; a few one-off
+  pages are in `src/lib/legacy.ts`.
+
+`pnpm migrate:check-redirects` lists any old address without a destination; add `--live` to
+check only what redirects today. Two are open in `review-notes.csv` (`/loyola-chapel`, `/new-page`).
+
+## 8. Duplicate firms and other names (`pnpm migrate:merge-firms`)
+
+A firm has one main record; its abbreviations and other spellings are **Other names**
+(aliases) on that record: SOM for Skidmore, Owings & Merrill, or a misspelling found in the
+old site. The site always shows the main name. Old filter links, imports and the admin's
+duplicate check all treat an alias as the main firm.
+
+When `review.csv` shows one firm as two records, a person picks the main one, then:
+
+```
+pnpm migrate:merge-firms --keep "Foster + Partners" --merge "Fosters + Partners"          # list
+pnpm migrate:merge-firms --keep "Foster + Partners" --merge "Fosters + Partners" --write  # merge
+```
+
+Projects naming the second record (architect, client or credits) move to the main one, the
+second record is deleted, and its name becomes an alias. Names must match exactly. For a name
+that never had its own record (an abbreviation), add it under Other names in the admin.
+
+### Decided names (`pnpm migrate:firm-names`)
+
+TDA's decisions live in `firm-names.csv`: one row per firm, the main name, then its other
+names separated by `;`. `pnpm migrate:firm-names --write` applies them all: records using any
+of the names are merged, the result carries the main name (its web address stays), and every
+other name becomes an alias. Run it again any time; rows already applied change nothing.
+Decided in October 2026: SOM; Foster + Partners; Kohn Pedersen Fox; Adjaye Associates;
+OMA - Office for Metropolitan Architecture.

@@ -22,6 +22,9 @@
     "migrate:import": "tsx scripts/migrate/import.ts",
     "migrate:pages": "tsx scripts/migrate/pages.ts",
     "migrate:photographers": "tsx scripts/migrate/photographers.ts",
+    "migrate:merge-firms": "tsx scripts/migrate/merge-firms.ts",
+    "migrate:firm-names": "tsx scripts/migrate/firm-names.ts",
+    "migrate:check-redirects": "tsx scripts/migrate/check-redirects.ts",
     "team:import": "tsx scripts/team/import.ts",
     "media:scan": "tsx scripts/media/scan.ts",
     "media:import": "tsx scripts/media/import.ts"

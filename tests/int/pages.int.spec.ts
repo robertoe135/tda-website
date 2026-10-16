@@ -1,25 +1,37 @@
 import { parse } from 'node-html-parser'
 import { getPayload, Payload } from 'payload'
 import config from '@/payload.config'
+import type { Home } from '@/payload-types'
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
-import { parseAbout, parseContact, parseHome, parseTimeline } from '../../scripts/migrate/pages'
+import { parseAbout, parseContact, parseHomeRows, parseTimeline } from '../../scripts/migrate/pages'
 
 const main = (html: string) => parse(`<main>${html}</main>`).querySelector('main')!
 
 describe('old page parsers', () => {
-  it('keeps homepage projects and quotes in page order, once each', () => {
-    const items = parseHome(
-      main(`<a href="/a/one"><img></a><a href="/a/one">One</a>
-        <h3>“Light is intentional.”</h3><p>-[Person]</p>
-        <a href="https://www.tillotsondesign.com/b/two/">Two</a>`),
-    )
-    expect(items).toEqual([
-      { kind: 'project', path: '/a/one' },
+  it('rebuilds homepage rows from the old grid: pairs, layouts, quotes and videos', () => {
+    const area = (id: string, a: string) => `\n  @media (min-width: 768px) {\n    .fe-block-${id} {\n      grid-area: ${a};\n    }\n  }\n`
+    const block = (id: string, inner: string) => `<div class="fe-block fe-block-${id}">${inner}</div>`
+    const video = `<div data-config-video='{"alexandriaUrl":"https://video.example/v/{variant}"}'></div>`
+    const html = `<html><head><style>${[
+      area('a', '1/2/13/15'), area('b', '1/2/12/15'), area('q', '2/16/10/25'),
+      area('c', '13/2/20/10'), area('d', '13/2/20/10'), area('e', '13/10/20/18'), area('f', '13/10/20/18'), area('g', '13/18/20/26'), area('h', '13/18/20/26'),
+      area('i', '22/2/34/12'), area('j', '22/2/34/12'),
+    ].join('')}</style></head><body><main>${[
+      block('a', video), block('b', '<p><a href="/x/pac">PAC</a></p>'), block('q', '<h3>“Light is intentional.”</h3><p>-[Person]</p>'),
+      block('c', '<img src="x">'), block('d', '<a href="/x/one">One</a>'), block('e', '<a href="/x/elsewhere"><img src="x"></a>'), block('f', '<a href="/x/two">Two</a>'),
+      block('g', '<img src="x">'), block('h', '<a href="/x/three">Three</a>'),
+      block('i', '<img src="x">'), block('j', '<a href="/x/four">Four</a>'),
+    ].join('')}</main></body></html>`
+    const rows = parseHomeRows(html)
+    expect(rows.map((r) => r.layout)).toEqual(['wide-narrow', 'three', 'one'])
+    expect(rows[0].items).toEqual([
+      { kind: 'project', path: '/x/pac', name: 'PAC', video: 'https://video.example/v/1920:1080', imagePath: undefined },
       { kind: 'quote', text: 'Light is intentional.', attribution: '[Person]' },
-      { kind: 'project', path: '/b/two' },
     ])
+    // The name's link wins over a photo that links elsewhere; the mismatch is kept for review.
+    expect(rows[1].items[1]).toMatchObject({ path: '/x/two', imagePath: '/x/elsewhere' })
   })
 
   it('reads About sections word for word', () => {
@@ -59,12 +71,21 @@ describe('homepage and About drafts', () => {
     await payload.updateGlobal({ slug: 'home', data: before as never, draft: true })
   })
 
+  const texts = (home: Home) => (home.rows ?? []).flatMap((r) => (r.items ?? []).map((i) => (i.blockType === 'quote' ? i.text : '')))
+
+  it('refuses a row whose items do not fit its layout', async () => {
+    const error = await payload
+      .updateGlobal({ slug: 'home', data: { rows: [{ layout: 'three', items: [{ blockType: 'quote', text: 'x', attribution: 'y' }] }], _status: 'published' } })
+      .catch((e: { data?: { errors?: { message: string }[] } }) => e)
+    expect((error as { data?: { errors?: { message: string }[] } }).data?.errors?.[0]?.message).toMatch(/holds 3 items; this row has 1/)
+  })
+
   it('shows visitors the published homepage, never a newer draft', async () => {
-    await payload.updateGlobal({ slug: 'home', data: { items: [{ blockType: 'quote', text: 'Published', attribution: 'A' }], _status: 'published' } })
-    await payload.updateGlobal({ slug: 'home', data: { items: [{ blockType: 'quote', text: 'Draft', attribution: 'B' }] }, draft: true })
+    await payload.updateGlobal({ slug: 'home', data: { rows: [{ layout: 'one', items: [{ blockType: 'quote', text: 'Published', attribution: 'A' }] }], _status: 'published' } })
+    await payload.updateGlobal({ slug: 'home', data: { rows: [{ layout: 'one', items: [{ blockType: 'quote', text: 'Draft', attribution: 'B' }] }] }, draft: true })
     const anon = await payload.findGlobal({ slug: 'home', overrideAccess: false })
-    expect(anon.items?.map((i) => (i.blockType === 'quote' ? i.text : ''))).toEqual(['Published'])
+    expect(texts(anon)).toEqual(['Published'])
     const asDraft = await payload.findGlobal({ slug: 'home', overrideAccess: false, draft: true })
-    expect(asDraft.items?.map((i) => (i.blockType === 'quote' ? i.text : ''))).not.toContain('Draft')
+    expect(texts(asDraft)).not.toContain('Draft')
   })
 })

@@ -1,4 +1,5 @@
-import type { Firm, Media, Person } from '@/payload-types'
+import type { RowLayout } from '@/globals/Home'
+import type { Firm, Media, Person, Video } from '@/payload-types'
 
 import { getPayloadClient, getPublishedProjects, type ProjectCard } from './projects'
 
@@ -17,22 +18,47 @@ export async function getAbout() {
   return (await getPayloadClient()).findGlobal({ slug: 'about', overrideAccess: false, depth: 1 })
 }
 
-export type HomeItem =
-  | { kind: 'quote'; id?: string | null; text: string; attribution: string }
-  | { kind: 'project'; id?: string | null; project: ProjectCard }
+export type HomeMedia = { src: string; srcSet?: string; alt: string }
+export type HomeVideo = { src: string; type: string; poster?: string }
+export type HomeTile = { kind: 'project'; id?: string | null; project: ProjectCard; image?: HomeMedia; video?: HomeVideo }
+export type HomeQuote = { kind: 'quote'; id?: string | null; text: string; attribution: string }
+export type HomeRowData = { id?: string | null; layout: RowLayout; items: (HomeTile | HomeQuote)[] }
 
-/** Homepage items in order; projects that are not published are left out. */
-export async function getHomeItems(): Promise<HomeItem[]> {
+const imageOf = (m: unknown): HomeMedia | undefined => {
+  if (!isObject<Media>(m) || !m.url) return undefined
+  const sizes = [m.sizes?.card, m.sizes?.gallery, m.sizes?.hero].filter((x): x is { url: string; width: number } => Boolean(x?.url && x?.width))
+  return { src: m.sizes?.gallery?.url ?? m.url, srcSet: sizes.map((x) => `${x.url} ${x.width}w`).join(', ') || undefined, alt: m.alt }
+}
+
+/**
+ * Homepage rows in order. Tiles whose project is not published are left out; a row left
+ * empty is dropped, and a row that lost items keeps a layout that fits what is left.
+ */
+export async function getHomeRows(): Promise<HomeRowData[]> {
   const [home, projects] = await Promise.all([
-    (await getPayloadClient()).findGlobal({ slug: 'home', overrideAccess: false, depth: 0 }),
+    (await getPayloadClient()).findGlobal({
+      slug: 'home',
+      overrideAccess: false,
+      depth: 2,
+      populate: { projects: { slug: true } },
+    }),
     getPublishedProjects(),
   ])
   const byId = new Map(projects.map((p) => [p.id, p]))
-  return (home.items ?? []).flatMap((item): HomeItem[] => {
-    if (item.blockType === 'quote') return [{ kind: 'quote', id: item.id, text: item.text, attribution: item.attribution }]
-    const id = typeof item.project === 'object' ? item.project.id : item.project
-    const project = byId.get(id)
-    return project ? [{ kind: 'project', id: item.id, project }] : []
+  return (home.rows ?? []).flatMap((row): HomeRowData[] => {
+    const items = (row.items ?? []).flatMap((item): (HomeTile | HomeQuote)[] => {
+      if (item.blockType === 'quote') return [{ kind: 'quote', id: item.id, text: item.text, attribution: item.attribution }]
+      const id = typeof item.project === 'object' ? item.project.id : item.project
+      const project = byId.get(id)
+      if (!project) return []
+      const video = isObject<Video>(item.video) && item.video.url
+        ? { src: item.video.url, type: item.video.mimeType ?? 'video/mp4', poster: imageOf(item.video.poster)?.src }
+        : undefined
+      return [{ kind: 'project', id: item.id, project, image: imageOf(item.image) ?? project.image, video }]
+    })
+    if (!items.length) return []
+    const layout = items.length === 1 ? 'one' : items.length === 2 && row.layout === 'three' ? 'two' : row.layout
+    return [{ id: row.id, layout, items }]
   })
 }
 
@@ -108,3 +134,6 @@ export function formatAddress(address: NonNullable<Awaited<ReturnType<typeof get
     directions: query ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(query)}` : undefined,
   }
 }
+
+/** tel: link for a US number as written ("212-675-7760"). */
+export const telHref = (phone: string) => `tel:+1${phone.replace(/\D/g, '').replace(/^1(?=\d{10}$)/, '')}`

@@ -11,17 +11,31 @@ export const metadata: Metadata = {
   alternates: { canonical: '/about/collaborators' },
 }
 
+const LETTERS = ['#', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ']
+
 /** Architects on published projects, A to Z; each opens the portfolio filtered to that firm. */
 export default async function CollaboratorsPage() {
   const groups = await getCollaborators()
   return (
     <div className="collaborators">
-      <h1 className="page-title">About</h1>
       <AboutNav />
-      <h2 className="visually-hidden">Collaborators</h2>
+      <h1 className="page-title page-title-large">Collaborators</h1>
+      <nav aria-label="Jump to letter" className="letter-nav">
+        {LETTERS.map((l) =>
+          groups.some((g) => g.letter === l) ? (
+            <a key={l} href={`#letter-${l === '#' ? 'other' : l}`}>
+              {l}
+            </a>
+          ) : (
+            <span key={l} aria-hidden="true">
+              {l}
+            </span>
+          ),
+        )}
+      </nav>
       <div className="collaborator-list">
         {groups.map(({ letter, firms }) => (
-          <section key={letter} aria-label={letter === '#' ? 'Other' : letter}>
+          <section key={letter} id={`letter-${letter === '#' ? 'other' : letter}`} aria-label={letter === '#' ? 'Other' : letter}>
             <h3 className="collaborator-letter" aria-hidden="true">
               {letter}
             </h3>

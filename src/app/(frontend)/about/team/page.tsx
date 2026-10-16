@@ -15,15 +15,16 @@ export default async function TeamPage() {
   const groups = await getTeam()
   return (
     <div className="team">
-      <h1 className="page-title">About</h1>
       <AboutNav />
+      <h1 className="page-title page-title-large">Team</h1>
       {groups.length === 0 && <p className="empty">The team will be introduced here soon.</p>}
       {groups.map((g) => (
-        <section key={g.value} aria-labelledby={`team-${g.value}`}>
-          <h2 id={`team-${g.value}`} className="section-heading">
-            {g.label}
-          </h2>
-          <ul className="team-grid">
+        <section key={g.value} className="team-group" aria-labelledby={`team-${g.value}`}>
+          <div className="group-head">
+            <h2 id={`team-${g.value}`}>{g.label}</h2>
+            <span>{g.people.length}</span>
+          </div>
+          <ul className={`team-grid team-grid-${g.value}`}>
             {g.people.map((p) => (
               <li key={p.id}>
                 <Link href={`/about/team/${p.slug}`} className="team-member">
