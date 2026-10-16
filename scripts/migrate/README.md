@@ -160,3 +160,12 @@ pnpm migrate:merge-firms --keep "Foster + Partners" --merge "Fosters + Partners"
 Projects naming the second record (architect, client or credits) move to the main one, the
 second record is deleted, and its name becomes an alias. Names must match exactly. For a name
 that never had its own record (an abbreviation), add it under Other names in the admin.
+
+### Decided names (`pnpm migrate:firm-names`)
+
+TDA's decisions live in `firm-names.csv`: one row per firm, the main name, then its other
+names separated by `;`. `pnpm migrate:firm-names --write` applies them all: records using any
+of the names are merged, the result carries the main name (its web address stays), and every
+other name becomes an alias. Run it again any time; rows already applied change nothing.
+Decided in October 2026: SOM; Foster + Partners; Kohn Pedersen Fox; Adjaye Associates;
+OMA - Office for Metropolitan Architecture.

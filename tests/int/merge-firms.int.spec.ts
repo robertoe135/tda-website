@@ -3,6 +3,7 @@ import config from '@/payload.config'
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
+import { applyFirmNames, parseFirmNames } from '../../scripts/migrate/firm-names'
 import { mergeFirms } from '../../scripts/migrate/merge-firms'
 import { toSlug } from '@/fields/slug'
 import { canonicalFirmFilters, parseFilters } from '@/lib/projects'
@@ -73,5 +74,22 @@ describe('merging two records of one firm', () => {
 
   it('refuses a name it cannot find exactly', async () => {
     await expect(mergeFirms(payload, `${prefix} Nobody`, `${prefix} Also Nobody`, false)).rejects.toThrow(/Expected one firm/)
+  })
+
+  it('applies a decision: the busier record takes the main name, keeps its address, and a rerun changes nothing', async () => {
+    const full = await payload.create({ collection: 'firms', data: { name: `${prefix} Brand Full Legal Name` } })
+    const short = await payload.create({ collection: 'firms', data: { name: `${prefix} Brand colon form` } })
+    await payload.create({ collection: 'projects', data: { name: `${prefix} A`, architects: [full.id] }, draft: true })
+    await payload.create({ collection: 'projects', data: { name: `${prefix} B`, architects: [full.id] }, draft: true })
+    await payload.create({ collection: 'projects', data: { name: `${prefix} C`, architects: [short.id] }, draft: true })
+
+    const [decision] = parseFirmNames(`main name,other names\n${prefix} BRND,"${full.name}; ${short.name}"\n`)
+    await applyFirmNames(payload, decision, true)
+    const main = await payload.findByID({ collection: 'firms', id: full.id })
+    expect(main.name).toBe(`${prefix} BRND`)
+    expect(main.slug).toBe(full.slug)
+    expect(main.aliases?.map((a) => a.name).sort()).toEqual([full.name, short.name].sort())
+    expect((await payload.find({ collection: 'firms', where: { id: { equals: short.id } } })).totalDocs).toBe(0)
+    expect(await applyFirmNames(payload, decision, true)).toEqual([`${prefix} BRND: already as decided.`])
   })
 })

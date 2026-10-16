@@ -19,7 +19,7 @@ import { getPayload, type Payload } from 'payload'
 
 import config from '../../src/payload.config'
 import { normalizeName } from '../../src/hooks/preventNearDuplicates'
-import type { Project } from '../../src/payload-types'
+import type { Firm, Project } from '../../src/payload-types'
 
 type Ref = number | { id: number } | null | undefined
 const idOf = (r: Ref) => (r && typeof r === 'object' ? r.id : r)
@@ -34,8 +34,11 @@ export async function mergeFirms(payload: Payload, keepName: string, mergeName: 
     if (found.docs.length !== 1) throw new Error(`Expected one firm named "${name}", found ${found.docs.length}.`)
     return found.docs[0]
   }
-  const keep = await byName(keepName)
-  const merge = await byName(mergeName)
+  return mergeFirmRecords(payload, await byName(keepName), await byName(mergeName), write)
+}
+
+/** The merge itself, for two firm records already looked up. */
+export async function mergeFirmRecords(payload: Payload, keep: Firm, merge: Firm, write: boolean) {
   if (keep.id === merge.id) throw new Error('Keep and merge are the same firm.')
 
   const projects = await payload.find({
