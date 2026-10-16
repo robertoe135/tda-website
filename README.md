@@ -32,7 +32,9 @@ migrations. After editing a collection or global:
 5. Commit the collection change, `src/payload-types.ts` and the new files in `src/migrations/`
    together.
 
-Production runs pending migrations on startup (`prodMigrations` in `src/payload.config.ts`).
+Production runs `payload migrate` once per deploy, at build time (`vercel.json`). Preview
+deployments skip it so a branch can never change the production database before it is
+merged.
 
 ## Checks
 

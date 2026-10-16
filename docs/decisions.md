@@ -49,9 +49,36 @@ Real CMS collections with multi-reference fields; designer-friendly; hosted.
 - Mitigations: TDA-owned repo, managed hosting, runbook, a second person who can deploy, and a
   portable content model.
 
+## 002: Hosting, database and image storage
+
+Status: accepted by the project lead (October 2026); needs sign-off from leadership
+
+- **Vercel (Pro), on the Tillotson Design Associates team**: one Next.js app serves the public
+  site, the admin (`/admin`) and the API. Pushing to `main` deploys. Editors log in to `/admin`
+  with Payload accounts and need no Vercel seat; only people who deploy code do
+  ($20/seat/month).
+- **Neon Postgres** (Launch plan, usage-based, about $0-15/month at TDA's scale): all content.
+  Scales to zero when idle. Back up before any bulk import (a Neon branch is enough).
+- **Vercel Blob** for images (about $1/month at ~5 GB stored and ~20 GB served). Chosen over
+  Cloudflare R2 and AWS S3 because at this size the cost difference is under $2/month and Blob
+  adds no new account, keys or bill for TDA to own. Reconsider R2 (free egress) if project
+  pages add video or traffic reaches hundreds of GB a month. Payload's storage adapters are
+  interchangeable, so a move is a file copy, not a content change.
+- **Images online are web copies.** Uploads are scaled to 3000 px on the long side and stripped
+  of metadata; full-resolution masters stay on TDA's file server.
+- **Migrations run at build time on production deploys only** (`vercel.json`). Preview
+  deployments must not share the production database once schema changes are in flight:
+  enable Neon's preview branches in the Vercel integration before the first schema PR.
+- **Estimated total**: about $25-55/month, mostly Vercel seats.
+
+Ownership still to settle (see question 1): move both repositories into a TDA-owned GitHub
+organization, confirm the Neon database is billed to TDA, and name a second person who can
+deploy and restore.
+
 ## Open questions for TDA
 
 1. Who owns the site after launch (content) and who owns the code and hosting (operations)?
+   Hosting itself is decided (decision 002); the people are not.
 2. Who is credited on project pages: principals, everyone who worked on it, former staff?
 3. Will every current designer provide an approved bio and headshot? Who writes the template?
 4. Final typology list.

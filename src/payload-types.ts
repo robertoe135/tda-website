@@ -485,7 +485,7 @@ export interface Person {
   _status?: ('draft' | 'published') | null;
 }
 /**
- * Photographs and headshots. Every image needs a description for screen readers and a credit; crediting the photographer is part of the license.
+ * Photographs and headshots. Every image needs a description for screen readers and a credit; crediting the photographer is part of the license. Upload JPEGs exported at about 3000 px on the long side and under 4 MB; larger files are refused by the server.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
@@ -501,6 +501,8 @@ export interface Media {
    * Only when the credit is not a photographer in the list, or must read differently, e.g. "Courtesy of the architect".
    */
   credit?: string | null;
+  prefix?: string | null;
+  _objectKey?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -842,6 +844,8 @@ export interface MediaSelect<T extends boolean = true> {
   alt?: T;
   photographer?: T;
   credit?: T;
+  prefix?: T;
+  _objectKey?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;

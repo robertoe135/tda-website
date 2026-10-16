@@ -11,7 +11,7 @@ export const Media: CollectionConfig = {
     useAsTitle: 'alt',
     defaultColumns: ['filename', 'alt', 'photographer', 'updatedAt'],
     description:
-      'Photographs and headshots. Every image needs a description for screen readers and a credit; crediting the photographer is part of the license.',
+      'Photographs and headshots. Every image needs a description for screen readers and a credit; crediting the photographer is part of the license. Upload JPEGs exported at about 3000 px on the long side and under 4 MB; larger files are refused by the server.',
   },
   access: {
     read: anyone,

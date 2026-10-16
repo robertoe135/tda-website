@@ -11,6 +11,7 @@ import * as migration_20261015_234111_user_roles from './20261015_234111_user_ro
 import * as migration_20261015_234239_globals from './20261015_234239_globals';
 import * as migration_20261016_021837_credits_clients_area from './20261016_021837_credits_clients_area';
 import * as migration_20261016_022300_location_world_region from './20261016_022300_location_world_region';
+import * as migration_20261016_035226_media_blob_prefix from './20261016_035226_media_blob_prefix';
 
 export const migrations = [
   {
@@ -76,6 +77,11 @@ export const migrations = [
   {
     up: migration_20261016_022300_location_world_region.up,
     down: migration_20261016_022300_location_world_region.down,
-    name: '20261016_022300_location_world_region'
+    name: '20261016_022300_location_world_region',
+  },
+  {
+    up: migration_20261016_035226_media_blob_prefix.up,
+    down: migration_20261016_035226_media_blob_prefix.down,
+    name: '20261016_035226_media_blob_prefix'
   },
 ];

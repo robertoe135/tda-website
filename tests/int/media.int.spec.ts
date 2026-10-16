@@ -66,4 +66,16 @@ describe('media uploads', () => {
     ids.push(credited.id)
     expect(credited.credit).toBe('Courtesy of the architect')
   })
+
+  it('scales originals down to 3000 px on the long side', async () => {
+    const big = await sharp({ create: { width: 4800, height: 3200, channels: 3, background: '#555' } }).jpeg().toBuffer()
+    const doc = await payload.create({
+      collection: 'media',
+      data: { alt: 'Large', credit: 'Test' },
+      file: { data: big, mimetype: 'image/jpeg', name: 'large.jpg', size: big.length },
+    })
+    ids.push(doc.id)
+    expect(doc.width).toBe(3000)
+    expect(doc.height).toBe(2000)
+  })
 })

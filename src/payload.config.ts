@@ -1,4 +1,5 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
+import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
@@ -18,7 +19,6 @@ import { Awards } from './collections/Awards'
 import { Press } from './collections/Press'
 import { About } from './globals/About'
 import { SiteSettings } from './globals/SiteSettings'
-import { migrations } from './migrations'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -45,10 +45,20 @@ export default buildConfig({
     // production never drift. After editing a collection: `pnpm payload migrate:create <name>`
     // then `pnpm payload migrate`.
     push: false,
+    // Production runs `payload migrate` once per deploy, in the build (vercel.json), rather
+    // than on every server start, where several instances could race.
     migrationDir: path.resolve(dirname, 'migrations'),
-    // Run pending migrations when the production server starts.
-    prodMigrations: migrations,
   }),
   sharp,
-  plugins: [],
+  plugins: [
+    // Images go to Vercel Blob when BLOB_READ_WRITE_TOKEN is set (production); without it, to
+    // ./media on disk (local development). alwaysInsertFields keeps the database schema the
+    // same in both, so migrations generated locally match production.
+    vercelBlobStorage({
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+      enabled: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
+      alwaysInsertFields: true,
+      collections: { media: true },
+    }),
+  ],
 })
