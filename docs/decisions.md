@@ -85,6 +85,7 @@ deploy and restore.
 5. Which projects are confidential (client hidden, city-level location only)?
 6. Do photography licenses cover web use at larger sizes and social sharing?
 7. Do TDA's brand typefaces have web licenses? Where are the brand files?
+   Typeface answered: DM Sans (open source, OFL). Colors and logo files still needed.
 8. Where is the domain registered and who controls DNS? What email records exist?
 9. Which external profiles (ArchDaily, Archinect, directories) should be claimed and corrected,
    and which address is canonical (Suite 703)?

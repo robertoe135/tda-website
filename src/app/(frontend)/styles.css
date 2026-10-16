@@ -1,9 +1,90 @@
-/* Brand typefaces and colors come from TDA marketing's brand files. Until then, keep this neutral. */
-body {
-  margin: 0;
-  font-family: system-ui, sans-serif;
+/*
+ * Layout follows the current tillotsondesign.com: centered project name and
+ * "location | architect" line, justified description, plain text links, lowercase menu.
+ * Typeface: DM Sans (TDA's brand font; SIL Open Font License, self-hosted from
+ * @fontsource-variable/dm-sans). Colors, sizes and the logo are placeholders until
+ * marketing's brand files arrive (decisions.md, question 7): do not invent them here.
+ */
+:root {
+  --text: #000;
+  --muted: #555;
+  --line: #ddd;
+  --bg: #fff;
+  --focus: #1f5fbf;
+  --gutter: 16px;
+  font-family: 'DM Sans Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  background: var(--bg);
 }
 
-main {
-  padding: 1rem;
+* { box-sizing: border-box; }
+body { margin: 0; line-height: 1.6; }
+a { color: inherit; text-decoration: none; }
+a:hover { text-decoration: underline; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+.skip-link { position: absolute; left: -9999px; }
+.skip-link:focus { left: var(--gutter); top: var(--gutter); background: var(--bg); padding: 0.5rem; z-index: 1; }
+
+/* Header and menu: logo left, small lowercase menu right, current page underlined, thin rule */
+.site-header {
+  display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem;
+  padding: var(--gutter) var(--gutter) 0.75rem; border-bottom: 1px solid var(--line);
+}
+.site-name { font-weight: 400; color: var(--muted); }
+.site-nav { display: flex; gap: 1.5rem; text-transform: lowercase; font-weight: 300; font-size: 0.8rem; }
+.site-nav a[aria-current='page'] { text-decoration: underline; }
+
+main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
+.page-title { font-weight: 300; text-transform: lowercase; font-size: 1.5rem; margin: 0 0 1rem; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Portfolio */
+.filters-toggle > summary { cursor: pointer; text-transform: lowercase; font-weight: 300; margin-bottom: 1rem; }
+.filters { display: grid; gap: 1.25rem; padding-bottom: 1.25rem; margin-bottom: 1rem; border-bottom: 1px solid var(--line); }
+.filters fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+.filters legend { text-transform: lowercase; color: var(--muted); padding: 0; margin-bottom: 0.25rem; }
+.checkbox { display: flex; align-items: center; gap: 0.5rem; padding: 0.15rem 0; font-weight: 300; }
+.checkbox input { width: 1rem; height: 1rem; margin: 0; }
+.filters-scroll { max-height: 15rem; overflow-y: auto; }
+.filters-actions { display: flex; gap: 1.25rem; align-items: baseline; text-transform: lowercase; }
+.filters-actions button { font: inherit; background: none; border: 0; padding: 0; text-decoration: underline; cursor: pointer; }
+.active-filters { font-weight: 300; }
+.empty { font-weight: 300; }
+
+.portfolio-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.5rem; }
+.portfolio-title { font-weight: 400; font-size: 1.05rem; margin: 0.5rem 0 0; }
+
+/* Project page (sizes and alignment from the current site) */
+.project-header { text-align: center; margin: 2rem 0 1.5rem; }
+.project-title { font-weight: 400; font-size: 1.4rem; margin: 0 0 0.5rem; }
+.project-line { margin: 0; font-weight: 300; font-size: 0.7rem; }
+.project-description { max-width: 38rem; margin: 2rem auto 0; text-align: justify; hyphens: auto; font-weight: 300; font-size: 0.8rem; line-height: 1.55; }
+.project-description p { margin: 0 0 0.75rem; }
+.project-stats-link { max-width: 38rem; margin: 0.75rem auto 2.5rem; font-size: 0.75rem; font-weight: 600; }
+.project-stats-link a { text-decoration: underline; }
+.press ul { list-style: none; margin: 0; padding: 1.5rem 0; display: grid; gap: 1.5rem; text-align: center; }
+.press-title { margin: 0; font-weight: 300; font-size: 0.9rem; }
+.press-outlet { margin: 0.15rem 0 0; font-weight: 300; font-size: 0.65rem; }
+.press-outlet a { text-decoration: underline; }
+.section-heading { font-weight: 400; font-size: 1rem; margin: 3rem 0 1rem; }
+.other-projects ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; font-weight: 300; }
+.pager { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 4rem 0 2rem; font-weight: 300; font-size: 1.3rem; line-height: 1.2; }
+.pager a[rel='next'] { text-align: right; }
+
+/* Full Project Stats */
+.credits .project-title { margin-bottom: 1.25rem; }
+.credits-list p { margin: 0 0 0.35rem; font-weight: 300; }
+.credits-list .credits-heading { margin-top: 1rem; font-weight: 400; }
+.meta-link:hover, .credits-list a:hover { text-decoration: underline; }
+
+@media (min-width: 720px) {
+  .press ul { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .other-projects ul { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .filters-actions { grid-column: 1 / -1; }
+  .portfolio-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1080px) {
+  .portfolio-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
