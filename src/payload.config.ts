@@ -11,6 +11,7 @@ import { Typologies } from './collections/Typologies'
 import { Locations } from './collections/Locations'
 import { Firms } from './collections/Firms'
 import { Photographers } from './collections/Photographers'
+import { CreditRoles } from './collections/CreditRoles'
 import { People } from './collections/People'
 import { Projects } from './collections/Projects'
 import { Awards } from './collections/Awards'
@@ -29,7 +30,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Projects, People, Media, Awards, Press, Typologies, Locations, Firms, Photographers, Users],
+  collections: [Projects, People, Media, Awards, Press, Typologies, Locations, Firms, Photographers, CreditRoles, Users],
   globals: [SiteSettings, About],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

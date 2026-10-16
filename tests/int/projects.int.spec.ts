@@ -11,6 +11,7 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
+  await payload.delete({ collection: 'creditRoles', where: { name: { like: prefix } } })
   await payload.delete({ collection: 'awards', where: { name: { like: prefix } } })
   await payload.delete({ collection: 'press', where: { title: { like: prefix } } })
   await payload.delete({ collection: 'projects', where: { name: { like: prefix } } })
@@ -53,29 +54,52 @@ describe('projects', () => {
     expect(result.docs).toHaveLength(0)
   })
 
-  it('hides the client of a confidential project from the public API', async () => {
+  it('hides the clients of a confidential project from the public API', async () => {
+    const owner = await payload.create({ collection: 'firms', data: { name: `${prefix} Open Owner` } })
+    const privateOwner = await payload.create({ collection: 'firms', data: { name: `${prefix} Private Owner` } })
     const open = await payload.create({
       collection: 'projects',
-      data: { name: `${prefix} Open`, status: 'completed', client: 'Open Client', _status: 'published' },
+      data: { name: `${prefix} Open`, status: 'completed', clients: [owner.id], _status: 'published' },
     })
     const secret = await payload.create({
       collection: 'projects',
       data: {
         name: `${prefix} Residence`,
         status: 'completed',
-        client: 'Private Client',
+        clients: [privateOwner.id],
         confidential: true,
         _status: 'published',
       },
     })
+    const ids = (v: unknown) => (Array.isArray(v) ? v.map((c) => (typeof c === 'object' ? c.id : c)) : v)
 
     const publicOpen = await payload.findByID({ collection: 'projects', id: open.id, ...anon })
     const publicSecret = await payload.findByID({ collection: 'projects', id: secret.id, ...anon })
-    expect(publicOpen.client).toBe('Open Client')
-    expect(publicSecret.client).toBeUndefined()
+    expect(ids(publicOpen.clients)).toEqual([owner.id])
+    expect(publicSecret.clients).toBeUndefined()
 
     const adminSecret = await payload.findByID({ collection: 'projects', id: secret.id })
-    expect(adminSecret.client).toBe('Private Client')
+    expect(ids(adminSecret.clients)).toEqual([privateOwner.id])
+  })
+
+  it('lists consultants in credits with an editable role', async () => {
+    const role = await payload.create({ collection: 'creditRoles', data: { name: `${prefix} Structural Engineer` } })
+    const firm = await payload.create({ collection: 'firms', data: { name: `${prefix} Severud` } })
+    const doc = await payload.create({
+      collection: 'projects',
+      data: {
+        name: `${prefix} Credited`,
+        status: 'completed',
+        areaSqFt: 1750000,
+        certifications: [{ system: 'leed', level: 'platinum' }],
+        credits: [{ role: role.id, firms: [firm.id] }],
+      },
+    })
+    expect(doc.credits?.[0].firms).toHaveLength(1)
+    expect(doc.areaSqFt).toBe(1750000)
+    await expect(
+      payload.create({ collection: 'creditRoles', data: { name: `${prefix} structural-engineer` } }),
+    ).rejects.toThrow()
   })
 
   it('only accepts team members who are shown on the site', async () => {

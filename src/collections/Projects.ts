@@ -71,6 +71,63 @@ export const Projects: CollectionConfig = {
               relationTo: 'locations',
             },
             {
+              type: 'row',
+              fields: [
+                {
+                  name: 'areaSqFt',
+                  label: 'Area (sq ft)',
+                  type: 'number',
+                  min: 0,
+                  admin: { description: 'Gross area in square feet, numbers only.' },
+                },
+                {
+                  name: 'areaNote',
+                  label: 'Area note',
+                  type: 'text',
+                  admin: { description: 'Optional, e.g. "Lobby: 5,200 SF".' },
+                },
+              ],
+            },
+            {
+              name: 'certifications',
+              label: 'Sustainability certifications',
+              type: 'array',
+              labels: { singular: 'Certification', plural: 'Certifications' },
+              fields: [
+                {
+                  type: 'row',
+                  fields: [
+                    {
+                      name: 'system',
+                      type: 'select',
+                      required: true,
+                      options: [
+                        { label: 'LEED', value: 'leed' },
+                        { label: 'WELL', value: 'well' },
+                        { label: 'Other', value: 'other' },
+                      ],
+                    },
+                    {
+                      name: 'level',
+                      type: 'select',
+                      required: true,
+                      options: [
+                        { label: 'Certified', value: 'certified' },
+                        { label: 'Silver', value: 'silver' },
+                        { label: 'Gold', value: 'gold' },
+                        { label: 'Platinum', value: 'platinum' },
+                      ],
+                    },
+                    {
+                      name: 'note',
+                      type: 'text',
+                      admin: { description: 'Optional, e.g. "ID+C" or the system name for Other.' },
+                    },
+                  ],
+                },
+              ],
+            },
+            {
               name: 'typologies',
               type: 'relationship',
               relationTo: 'typologies',
@@ -85,25 +142,31 @@ export const Projects: CollectionConfig = {
               admin: { description: 'Architect(s) of the project. Add missing firms under Firms.' },
             },
             {
-              name: 'otherCollaborators',
+              name: 'credits',
+              label: 'Credits',
               type: 'array',
-              labels: { singular: 'Collaborator', plural: 'Other collaborators' },
+              labels: { singular: 'Credit', plural: 'Credits' },
+              admin: {
+                description:
+                  'Everyone else on the project: executive architect, engineers, consultants. Architects above are featured; these are listed.',
+              },
               fields: [
                 {
                   type: 'row',
                   fields: [
-                    { name: 'firm', type: 'relationship', relationTo: 'firms', required: true },
                     {
                       name: 'role',
-                      type: 'select',
+                      type: 'relationship',
+                      relationTo: 'creditRoles',
                       required: true,
-                      options: [
-                        { label: 'Interior designer', value: 'interior-designer' },
-                        { label: 'Landscape architect', value: 'landscape-architect' },
-                        { label: 'Exhibit designer', value: 'exhibit-designer' },
-                        { label: 'Artist', value: 'artist' },
-                        { label: 'Other', value: 'other' },
-                      ],
+                      admin: { description: 'Add missing roles under Credit roles.' },
+                    },
+                    {
+                      name: 'firms',
+                      type: 'relationship',
+                      relationTo: 'firms',
+                      hasMany: true,
+                      required: true,
                     },
                   ],
                 },
@@ -124,8 +187,15 @@ export const Projects: CollectionConfig = {
               type: 'row',
               fields: [
                 {
-                  name: 'client',
-                  type: 'text',
+                  name: 'clients',
+                  label: 'Client',
+                  type: 'relationship',
+                  relationTo: 'firms',
+                  hasMany: true,
+                  admin: {
+                    description:
+                      'The owner. Can be the same firm as the architect. Add missing clients under Firms & clients.',
+                  },
                   access: {
                     // Hidden from the public API, not just the page, when confidential.
                     read: ({ req, doc }) => Boolean(req.user) || !doc?.confidential,

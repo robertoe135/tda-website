@@ -76,6 +76,7 @@ export interface Config {
     locations: Location;
     firms: Firm;
     photographers: Photographer;
+    creditRoles: CreditRole;
     users: User;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
@@ -104,6 +105,7 @@ export interface Config {
     locations: LocationsSelect<false> | LocationsSelect<true>;
     firms: FirmsSelect<false> | FirmsSelect<true>;
     photographers: PhotographersSelect<false> | PhotographersSelect<true>;
+    creditRoles: CreditRolesSelect<false> | CreditRolesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -167,6 +169,25 @@ export interface Project {
   year?: number | null;
   location?: (number | null) | Location;
   /**
+   * Gross area in square feet, numbers only.
+   */
+  areaSqFt?: number | null;
+  /**
+   * Optional, e.g. "Lobby: 5,200 SF".
+   */
+  areaNote?: string | null;
+  certifications?:
+    | {
+        system: 'leed' | 'well' | 'other';
+        level: 'certified' | 'silver' | 'gold' | 'platinum';
+        /**
+         * Optional, e.g. "ID+C" or the system name for Other.
+         */
+        note?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
    * A project can belong to more than one.
    */
   typologies?: (number | Typology)[] | null;
@@ -174,10 +195,16 @@ export interface Project {
    * Architect(s) of the project. Add missing firms under Firms.
    */
   architects?: (number | Firm)[] | null;
-  otherCollaborators?:
+  /**
+   * Everyone else on the project: executive architect, engineers, consultants. Architects above are featured; these are listed.
+   */
+  credits?:
     | {
-        firm: number | Firm;
-        role: 'interior-designer' | 'landscape-architect' | 'exhibit-designer' | 'artist' | 'other';
+        /**
+         * Add missing roles under Credit roles.
+         */
+        role: number | CreditRole;
+        firms: (number | Firm)[];
         id?: string | null;
       }[]
     | null;
@@ -185,7 +212,10 @@ export interface Project {
    * Only people with "Show on site" turned on can be picked.
    */
   team?: (number | Person)[] | null;
-  client?: string | null;
+  /**
+   * The owner. Can be the same firm as the architect. Add missing clients under Firms & clients.
+   */
+  clients?: (number | Firm)[] | null;
   /**
    * Hides the client everywhere on the public site. Usual for residences.
    */
@@ -326,7 +356,7 @@ export interface Typology {
   createdAt: string;
 }
 /**
- * Architects and other collaborators. Each firm gets a page listing every project TDA did with them.
+ * Architects, consultants and clients. Firms that are an architect on a project get a collaborator page; consultants appear in project credits; clients are shown unless the project is confidential.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "firms".
@@ -334,7 +364,7 @@ export interface Typology {
 export interface Firm {
   id: number;
   /**
-   * The firm's own spelling of its name, e.g. Kohn Pedersen Fox.
+   * The organization's own spelling of its name, e.g. Kohn Pedersen Fox.
    */
   name: string;
   /**
@@ -355,6 +385,23 @@ export interface Firm {
    */
   generateSlug?: boolean | null;
   slug?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Roles used in project credits, e.g. Structural Engineer or Façade Consultant.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "creditRoles".
+ */
+export interface CreditRole {
+  id: number;
+  name: string;
+  /**
+   * Position in a project’s credits. Lower numbers come first.
+   */
+  order?: number | null;
+  normalizedName?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -656,6 +703,10 @@ export interface PayloadLockedDocument {
         value: number | Photographer;
       } | null)
     | ({
+        relationTo: 'creditRoles';
+        value: number | CreditRole;
+      } | null)
+    | ({
         relationTo: 'users';
         value: number | User;
       } | null);
@@ -710,17 +761,27 @@ export interface ProjectsSelect<T extends boolean = true> {
   status?: T;
   year?: T;
   location?: T;
-  typologies?: T;
-  architects?: T;
-  otherCollaborators?:
+  areaSqFt?: T;
+  areaNote?: T;
+  certifications?:
     | T
     | {
-        firm?: T;
+        system?: T;
+        level?: T;
+        note?: T;
+        id?: T;
+      };
+  typologies?: T;
+  architects?: T;
+  credits?:
+    | T
+    | {
         role?: T;
+        firms?: T;
         id?: T;
       };
   team?: T;
-  client?: T;
+  clients?: T;
   confidential?: T;
   predecessorFirm?: T;
   summary?: T;
@@ -909,6 +970,17 @@ export interface FirmsSelect<T extends boolean = true> {
 export interface PhotographersSelect<T extends boolean = true> {
   name?: T;
   website?: T;
+  normalizedName?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "creditRoles_select".
+ */
+export interface CreditRolesSelect<T extends boolean = true> {
+  name?: T;
+  order?: T;
   normalizedName?: T;
   updatedAt?: T;
   createdAt?: T;

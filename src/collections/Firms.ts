@@ -9,13 +9,13 @@ import { normalizedNameField, preventNearDuplicates } from '../hooks/preventNear
 // Architects and other collaborators. Firm names are canonical here and nowhere else.
 export const Firms: CollectionConfig = {
   slug: 'firms',
-  labels: { singular: 'Firm', plural: 'Firms' },
+  labels: { singular: 'Firm or client', plural: 'Firms & clients' },
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'website', 'slug'],
     group: 'Reference',
     description:
-      'Architects and other collaborators. Each firm gets a page listing every project TDA did with them.',
+      'Architects, consultants and clients. Firms that are an architect on a project get a collaborator page; consultants appear in project credits; clients are shown unless the project is confidential.',
   },
   defaultSort: 'name',
   access: {
@@ -34,7 +34,7 @@ export const Firms: CollectionConfig = {
       required: true,
       unique: true,
       admin: {
-        description: "The firm's own spelling of its name, e.g. Kohn Pedersen Fox.",
+        description: "The organization's own spelling of its name, e.g. Kohn Pedersen Fox.",
       },
     },
     websiteField,

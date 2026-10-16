@@ -9,6 +9,7 @@ import * as migration_20261015_233820_projects from './20261015_233820_projects'
 import * as migration_20261015_233932_awards_press from './20261015_233932_awards_press';
 import * as migration_20261015_234111_user_roles from './20261015_234111_user_roles';
 import * as migration_20261015_234239_globals from './20261015_234239_globals';
+import * as migration_20261016_021837_credits_clients_area from './20261016_021837_credits_clients_area';
 
 export const migrations = [
   {
@@ -64,6 +65,11 @@ export const migrations = [
   {
     up: migration_20261015_234239_globals.up,
     down: migration_20261015_234239_globals.down,
-    name: '20261015_234239_globals'
+    name: '20261015_234239_globals',
+  },
+  {
+    up: migration_20261016_021837_credits_clients_area.up,
+    down: migration_20261016_021837_credits_clients_area.down,
+    name: '20261016_021837_credits_clients_area'
   },
 ];
