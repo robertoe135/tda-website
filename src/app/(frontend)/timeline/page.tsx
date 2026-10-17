@@ -57,6 +57,7 @@ export default async function TimelinePage() {
                       src={p.image.src}
                       srcSet={p.image.srcSet}
                       sizes="(min-width: 720px) 30vw, 60vw"
+                      style={p.image.position ? { objectPosition: p.image.position } : undefined}
                       alt=""
                       loading="lazy"
                     />

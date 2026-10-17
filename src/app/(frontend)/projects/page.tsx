@@ -133,7 +133,14 @@ export default async function ProjectsPage({ searchParams }: Props) {
                 <div className="portfolio-image">
                   {p.image && (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={p.image.src} alt="" loading="lazy" />
+                    <img
+                      src={p.image.src}
+                      srcSet={p.image.srcSet}
+                      sizes="(min-width: 1080px) 33vw, (min-width: 720px) 50vw, 100vw"
+                      style={p.image.position ? { objectPosition: p.image.position } : undefined}
+                      alt=""
+                      loading="lazy"
+                    />
                   )}
                 </div>
                 <h3 className="portfolio-title">{p.name}</h3>
