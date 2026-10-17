@@ -11,7 +11,11 @@ export const metadata: Metadata = {
   alternates: { canonical: '/about' },
 }
 
-/** Profile: opening line, facts, then the sections of the About page in the admin. */
+/**
+ * Profile, laid out as on the old site: each section's photo at its own proportions beside the
+ * text, alternating sides, the heading centred above justified text. An opening line and facts
+ * show only when set in the admin.
+ */
 export default async function AboutPage() {
   const about = await getAbout()
   const sections = about.sections ?? []
@@ -43,12 +47,16 @@ export default async function AboutPage() {
           >
             {image?.url && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img className="about-image" src={image.sizes?.gallery?.url ?? image.url} alt={image.alt} loading="lazy" />
+              <img
+                className="about-image"
+                src={image.sizes?.gallery?.url ?? image.url}
+                width={image.width ?? undefined}
+                height={image.height ?? undefined}
+                alt={image.alt}
+                loading="lazy"
+              />
             )}
             <div className="about-text">
-              <p className="about-number" aria-hidden="true">
-                {String(i + 1).padStart(2, '0')}
-              </p>
               <h2 id={`about-${s.id}`} className="about-heading">
                 {s.heading}
               </h2>
