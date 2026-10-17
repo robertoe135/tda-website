@@ -5,7 +5,7 @@ import type { Home } from '@/payload-types'
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
-import { parseAbout, parseContact, parseHomeRows, parseTimeline } from '../../scripts/migrate/pages'
+import { parseAbout, parseAboutImages, parseCollaborators, parseContact, parseHomeRows, parseTimeline, sameFirm } from '../../scripts/migrate/pages'
 
 const main = (html: string) => parse(`<main>${html}</main>`).querySelector('main')!
 
@@ -53,6 +53,33 @@ describe('old page parsers', () => {
       ['/x/c', 2023, 'C'],
       ['/x/d', 2023, 'D'],
     ])
+  })
+
+  it('pairs each About photograph with the heading after it, at its original size', () => {
+    const images = parseAboutImages(
+      main(`<img data-src="https://img.example/a.jpg?format=1500w"><h2>Philosophy</h2><p>x</p><h2>Background</h2><img data-src="https://img.example/b.jpg"><h2>Services</h2>`),
+    )
+    expect([...images]).toEqual([
+      ['Philosophy', 'https://img.example/a.jpg'],
+      ['Services', 'https://img.example/b.jpg'],
+    ])
+  })
+
+  it('reads the Collaborators list as written, without letter headings', () => {
+    expect(parseCollaborators(main('<p>Collaborators</p><p>#</p><p>!melk Landscape Architecture</p><p>A</p><p>Adamson Associates</p><p>SAANA / Kazuyo Sejima and Ryue Nishizawa</p>'))).toEqual([
+      '!melk Landscape Architecture',
+      'Adamson Associates',
+      'SAANA / Kazuyo Sejima and Ryue Nishizawa',
+    ])
+  })
+
+  it('knows two spellings of one firm from two different firms', () => {
+    expect(sameFirm('KPMB Architecture', 'KPMB Architects')).toBe(true)
+    expect(sameFirm('Architecture Research Office', 'ARO: Architecture Research Office')).toBe(true)
+    expect(sameFirm('Studio Gang Architects', 'Studio Gang')).toBe(true)
+    expect(sameFirm('KMW Architecture', 'REX Architecture')).toBe(false)
+    expect(sameFirm('Studio Joseph', 'Studio Gang')).toBe(false)
+    expect(sameFirm('!melk Landscape Architecture', 'Scape Landscape Architecture')).toBe(false)
   })
 
   it('reads the contact blocks as written', () => {

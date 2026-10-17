@@ -1,7 +1,7 @@
 import { ROW_HEIGHTS, type RowLayout } from '@/globals/Home'
-import type { Firm, Media, Person, Video } from '@/payload-types'
+import type { Media, Person, Video } from '@/payload-types'
 
-import { getPayloadClient, getPublishedProjects, type ProjectCard } from './projects'
+import { filterHref, getPayloadClient, getPublishedProjects, type ProjectCard } from './projects'
 
 /**
  * Data for the homepage, timeline, About and contact pages. Everything is read as an
@@ -102,22 +102,34 @@ export async function getTeam() {
 }
 
 /**
- * Collaborators: architects credited on published projects, A to Z, grouped by first
- * letter. Computed, so the list never names a firm without projects to show.
+ * Collaborators: the firms marked "Show on Collaborators page" in the admin, A to Z, grouped by
+ * first letter. A firm with published projects links to them in the portfolio (as architect, or
+ * as a credited firm); one without has nothing to show yet, so its name is not a link.
  */
 export async function getCollaborators() {
-  const firms = new Map<string, Pick<Firm, 'name' | 'slug'> & { count: number }>()
-  for (const p of await getPublishedProjects()) {
-    for (const a of p.architects) {
-      if (!a.slug) continue
-      const entry = firms.get(a.slug) ?? { ...a, count: 0 }
-      entry.count++
-      firms.set(a.slug, entry)
-    }
-  }
-  const sorted = [...firms.values()].sort((a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }))
-  const groups = new Map<string, typeof sorted>()
-  for (const f of sorted) {
+  const payload = await getPayloadClient()
+  const [listed, projects] = await Promise.all([
+    payload.find({
+      collection: 'firms',
+      overrideAccess: false,
+      pagination: false,
+      depth: 0,
+      where: { listAsCollaborator: { equals: true } },
+      select: { name: true, slug: true },
+    }),
+    getPublishedProjects(),
+  ])
+  const asArchitect = new Set(projects.flatMap((p) => p.architects.map((a) => a.slug)))
+  const credited = new Set(projects.flatMap((p) => p.collaboratorSlugs))
+  const firms = listed.docs
+    .map((f) => ({
+      name: f.name,
+      slug: f.slug ?? '',
+      href: f.slug && asArchitect.has(f.slug) ? filterHref('architect', f.slug) : f.slug && credited.has(f.slug) ? filterHref('collaborator', f.slug) : undefined,
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }))
+  const groups = new Map<string, typeof firms>()
+  for (const f of firms) {
     const first = f.name.normalize('NFKD').charAt(0).toUpperCase()
     const letter = /[A-Z]/.test(first) ? first : '#'
     groups.set(letter, [...(groups.get(letter) ?? []), f])

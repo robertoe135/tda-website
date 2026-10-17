@@ -3,11 +3,14 @@
  *
  *   pnpm migrate:pages              # fill what is empty; never overwrite
  *   pnpm migrate:pages --update     # also replace the homepage and About drafts
+ *   pnpm migrate:pages --photos     # also copy the About page's photographs (needs the internet)
  *
  * Reads the fetched pages in cache/www.tillotsondesign.com/pages and writes, word for word:
  * - Homepage (draft): rows as laid out on the old site, projects and quotes in place; the
  *   videos it played are listed for review (originals come from marketing).
- * - About page (draft): one section per heading (Philosophy, Background, …).
+ * - About page (draft): one section per heading (Philosophy, Background, …); with --photos,
+ *   each section's photograph from the old page.
+ * - Collaborators: "Show on Collaborators page" ticked on each firm the old page lists.
  * - Site settings: address, phone, emails, contact intro and careers text, only where empty.
  * - Timeline: completion years from /timeline, on projects that have none (as drafts).
  *   A year that differs from the project's is not changed; it goes to the review file.
@@ -17,6 +20,7 @@
  */
 import '../env'
 
+import { createHash } from 'crypto'
 import { readFile } from 'fs/promises'
 import path from 'path'
 
@@ -27,10 +31,11 @@ import config from '../../src/payload.config'
 import { normalizeName } from '../../src/hooks/preventNearDuplicates'
 import { ROW_HEIGHTS, type RowHeight } from '../../src/globals/Home'
 
-import { cacheDir, type ReviewRow, richText, SITE, writeReview } from './lib'
+import { cacheDir, type ReviewRow, richText, similarity, SITE, writeReview } from './lib'
 
 const pagesDir = path.join(cacheDir, new URL(SITE).host, 'pages')
 const update = process.argv.includes('--update')
+const photos = process.argv.includes('--photos')
 
 const text = (el: HTMLElement) => el.text.replace(/\s+/g, ' ').trim()
 
@@ -154,6 +159,52 @@ export function parseAbout(main: HTMLElement): { heading: string; paragraphs: st
     else if (el.tagName === 'P' && sections.length && text(el)) sections[sections.length - 1].paragraphs.push(text(el))
   }
   return sections.filter((s) => s.heading && s.paragraphs.length)
+}
+
+/**
+ * The About page's photographs, one per section: each image sits just before its heading.
+ * Returns the original upload address (without Squarespace's ?format= resizing) by heading.
+ */
+export function parseAboutImages(main: HTMLElement): Map<string, string> {
+  const byHeading = new Map<string, string>()
+  let image: string | undefined
+  for (const el of walk(main)) {
+    if (el.tagName === 'IMG') {
+      const src = el.getAttribute('data-src') ?? el.getAttribute('src')
+      if (src) image = src.split('?')[0]
+    } else if (el.tagName === 'H2' && text(el)) {
+      if (image) byHeading.set(text(el), image)
+      image = undefined
+    }
+  }
+  return byHeading
+}
+
+/**
+ * Two spellings of one firm: the same first word and nearly the same letters ("KPMB
+ * Architecture" / "KPMB Architects"), or every word of one name inside the other
+ * ("Architecture Research Office" / "ARO: Architecture Research Office"). Different firms that
+ * share only a generic word ("KMW Architecture" / "REX Architecture") are not.
+ */
+export function sameFirm(a: string, b: string): boolean {
+  const words = (s: string) => s.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/&/g, ' and ').split(/[^a-z0-9]+/).filter(Boolean)
+  const [wa, wb] = [words(a), words(b)]
+  if (!wa.length || !wb.length) return false
+  if (wa[0] === wb[0] && wa[0].length >= 3 && similarity(normalizeName(a), normalizeName(b)) >= 0.8) return true
+  const [short, long] = wa.length <= wb.length ? [wa, wb] : [wb, wa]
+  return short.length >= 2 && short.every((w) => long.includes(w))
+}
+
+/** The old Collaborators page: firm names as written, without the page title and letter headings. */
+export function parseCollaborators(main: HTMLElement): string[] {
+  const names: string[] = []
+  for (const el of walk(main)) {
+    if (el.tagName !== 'P') continue
+    const name = text(el)
+    if (!name || /^(#|[A-Z])$/.test(name) || /^collaborators$/i.test(name)) continue
+    if (!names.includes(name)) names.push(name)
+  }
+  return names
 }
 
 /**
@@ -324,6 +375,100 @@ async function main() {
     })
     console.log(`about: ${sections.length} sections (draft)`)
   } else console.log('about: already has sections, left as is')
+
+  // About photographs (--photos): downloaded from the old site, one per section, only where a
+  // section has none. Needs the internet and, for the live site, the Blob token.
+  if (photos) {
+    const draft = await payload.findGlobal({ slug: 'about', draft: true, depth: 0 })
+    const images = parseAboutImages(await loadMain('about-5.html'))
+    let added = 0
+    const sections = []
+    for (const s of draft.sections ?? []) {
+      const src = images.get(s.heading)
+      if (s.image || !src) {
+        sections.push(s)
+        continue
+      }
+      const res = await fetch(src)
+      if (!res.ok) {
+        flag('/about-5', 'About photograph', `${s.heading}: ${src}`, `Download failed (${res.status}). Upload it by hand.`)
+        sections.push(s)
+        continue
+      }
+      const data = Buffer.from(await res.arrayBuffer())
+      const mimetype = (res.headers.get('content-type') ?? 'image/jpeg').split(';')[0]
+      const sourceHash = createHash('sha256').update(`about:${s.heading}\n`).update(data).digest('hex')
+      const existing = await payload.find({ collection: 'media', where: { sourceHash: { equals: sourceHash } }, limit: 1, depth: 0 })
+      const media =
+        existing.docs[0] ??
+        (await payload.create({
+          collection: 'media',
+          // A placeholder description: the file names are staff initials, never captions.
+          data: { alt: `Tillotson Design Associates, ${s.heading}`, sourceHash },
+          file: { data, mimetype, name: mimetype === 'image/png' ? 'about.png' : 'about.jpg', size: data.length },
+        }))
+      flag('/about-5', 'About photograph', s.heading, 'Photo copied from the old page. Write a description of what it shows (Images → alt text).')
+      sections.push({ ...s, image: media.id })
+      added++
+    }
+    if (added) await payload.updateGlobal({ slug: 'about', data: { sections }, draft: true })
+    console.log(`about: ${added} photographs added (draft)`)
+  }
+
+  // Collaborators: tick "Show on Collaborators page" on each firm the old page lists, matched on
+  // its name or another name. A name with no firm becomes a firm, spelled as written, so the
+  // whole list shows; one that resembles an existing firm is listed for marketing to merge.
+  {
+    const names = parseCollaborators(await loadMain('collaborators.html'))
+    const firms = await payload.find({ collection: 'firms', pagination: false, depth: 0, select: { name: true, aliases: true, listAsCollaborator: true } })
+    const byName = new Map<string, (typeof firms.docs)[number]>()
+    for (const f of firms.docs) {
+      byName.set(normalizeName(f.name), f)
+      for (const a of f.aliases ?? []) byName.set(normalizeName(a.name), f)
+    }
+    let ticked = 0
+    let created = 0
+    for (const name of names) {
+      const firm = byName.get(normalizeName(name))
+      if (!firm) {
+        const twin = firms.docs.find((f) => sameFirm(f.name, name))
+        if (twin) {
+          // The same firm under another spelling ("KPMB Architecture" / "KPMB Architects"): the
+          // existing record holds its projects, so it is the one listed. The old page's spelling
+          // becomes one of its other names, so links and imports using it land there too.
+          try {
+            await payload.update({
+              collection: 'firms',
+              id: twin.id,
+              data: { listAsCollaborator: true, aliases: [...(twin.aliases ?? []), { name }] },
+            })
+            byName.set(normalizeName(name), { ...twin, listAsCollaborator: true })
+            ticked++
+            flag('/collaborators', 'collaborator', name, `Listed as "${twin.name}" (the firm on its projects); the old page's spelling was added to its Other names. Rename the firm if the old spelling is the right one.`)
+            continue
+          } catch {
+            // An other name another firm already uses: fall through and create it as written.
+          }
+        }
+        const similar = firms.docs.find((f) => similarity(normalizeName(f.name), normalizeName(name)) >= 0.8)
+        await payload.create({ collection: 'firms', data: { name, listAsCollaborator: true } })
+        created++
+        flag(
+          '/collaborators',
+          'collaborator',
+          name,
+          similar
+            ? `New firm, named as on the old Collaborators page. Check it is not the same as "${similar.name}"; if it is, keep one and add the other spelling to its Other names.`
+            : 'New firm, named as on the old Collaborators page. Check the spelling; add its website if wanted.',
+        )
+        continue
+      }
+      if (firm.listAsCollaborator) continue
+      await payload.update({ collection: 'firms', id: firm.id, data: { listAsCollaborator: true } })
+      ticked++
+    }
+    console.log(`collaborators: ${names.length} on the old page; ${ticked} existing firms ticked, ${created} new firms created (listed in review.csv)`)
+  }
 
   // Contact details: only empty fields
   const contactMain = await loadMain('contact.html')
