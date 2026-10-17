@@ -6,6 +6,7 @@ import { cache } from 'react'
 
 import { MetaLine, MetaLink } from '@/components/MetaLink'
 import { Slideshow } from '@/components/Slideshow'
+import { relatedProjects } from '@/lib/related'
 import {
   describeProject,
   filterHref,
@@ -89,10 +90,8 @@ export default async function ProjectPage({ params }: Props) {
   const index = all.findIndex((p) => p.id === project.id)
   const previous = index > 0 ? all[index - 1] : undefined
   const next = index > -1 && index < all.length - 1 ? all[index + 1] : undefined
-  const leadArchitect = architects[0]
-  const others = leadArchitect
-    ? all.filter((p) => p.id !== project.id && p.architects.some((a) => a.slug === leadArchitect.slug)).slice(0, 4)
-    : []
+  const card = all.find((p) => p.id === project.id)
+  const related = card ? relatedProjects(card, all) : []
 
   const line = [
     ...(location?.slug ? [{ href: filterHref('location', location.slug), label: location.displayName ?? '' }] : []),
@@ -257,22 +256,31 @@ export default async function ProjectPage({ params }: Props) {
         </section>
       )}
 
-      {leadArchitect && others.length > 0 && (
-        <section className="other-projects" aria-labelledby="others-heading">
-          <h2 id="others-heading" className="section-heading">
-            Other Projects with{' '}
-            <Link href={filterHref('architect', leadArchitect.slug ?? '')}>{leadArchitect.name}</Link>
+      {related.length > 0 && (
+        <section className="other-projects" aria-labelledby="related-heading">
+          <h2 id="related-heading" className="section-heading">
+            Related Projects
           </h2>
           <ul>
-            {others.map((p) => (
+            {related.map(({ project: p, reason }) => (
               <li key={p.id}>
                 <Link href={`/projects/${p.slug}`} className="other-project">
-                  {p.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={p.image.src} alt="" loading="lazy" />
-                  ) : null}
-                  <span className={p.image ? 'visually-hidden' : undefined}>{p.name}</span>
+                  <span className="other-project-image">
+                    {p.image && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={p.image.src}
+                        srcSet={p.image.srcSet}
+                        sizes="(min-width: 720px) 25vw, 50vw"
+                        style={p.image.position ? { objectPosition: p.image.position } : undefined}
+                        alt=""
+                        loading="lazy"
+                      />
+                    )}
+                  </span>
+                  <span className="other-project-name">{p.name}</span>
                 </Link>
+                <MetaLink href={reason.href}>{reason.label}</MetaLink>
               </li>
             ))}
           </ul>

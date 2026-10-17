@@ -1231,6 +1231,10 @@ export interface Home {
          * One, two or three items side by side. On phones they stack.
          */
         layout: 'one' | 'two' | 'wide-narrow' | 'narrow-wide' | 'three';
+        /**
+         * How tall the photos in this row are on larger screens: Low is a wide strip, Tallest is close to square. Leave empty for the standard shapes.
+         */
+        height?: ('low' | 'medium' | 'tall' | 'taller' | 'tallest') | null;
         items: (
           | {
               project: number | Project;
@@ -1404,6 +1408,7 @@ export interface HomeSelect<T extends boolean = true> {
     | T
     | {
         layout?: T;
+        height?: T;
         items?:
           | T
           | {

@@ -25,6 +25,7 @@ import { getPayload, type Payload } from 'payload'
 
 import config from '../../src/payload.config'
 import { normalizeName } from '../../src/hooks/preventNearDuplicates'
+import { ROW_HEIGHTS, type RowHeight } from '../../src/globals/Home'
 
 import { cacheDir, type ReviewRow, richText, SITE, writeReview } from './lib'
 
@@ -56,9 +57,19 @@ const legacyPath = (href: string) => {
 export type HomeItem =
   | { kind: 'project'; path: string; name: string; video?: string; imagePath?: string }
   | { kind: 'quote'; text: string; attribution: string }
-export type HomeRow = { layout: 'one' | 'two' | 'wide-narrow' | 'narrow-wide' | 'three'; items: HomeItem[] }
+export type HomeRow = { layout: 'one' | 'two' | 'wide-narrow' | 'narrow-wide' | 'three'; height?: RowHeight; items: HomeItem[] }
 
 type Area = { row: number; col: number; rowEnd: number; colEnd: number }
+
+/**
+ * The nearest height step for a block spanning `rows` rows of the old grid. At the site's full
+ * width (1500px) a row is 32.25px (1500 × 0.0215) with 11px between rows.
+ */
+export function rowHeightFor(rows: number): RowHeight {
+  const share = (rows * 1500 * 0.0215 + (rows - 1) * 11) / 1500
+  const steps = Object.entries(ROW_HEIGHTS) as [RowHeight, { share: number }][]
+  return steps.reduce((best, step) => (Math.abs(step[1].share - share) < Math.abs(best[1].share - share) ? step : best))[0]
+}
 
 /**
  * The old homepage as rows. Squarespace lays it out on a 24-column grid: each block has a
@@ -128,7 +139,10 @@ export function parseHomeRows(html: string): HomeRow[] {
     const spans = sorted.map((s) => s.colEnd - s.col)
     const layout: HomeRow['layout'] =
       items.length >= 3 ? 'three' : items.length === 1 ? 'one' : Math.abs(spans[0] - spans[1]) <= 1 ? 'two' : spans[0] > spans[1] ? 'wide-narrow' : 'narrow-wide'
-    return { layout, items: items.slice(0, 3) }
+    // The tallest photo or video in the row sets its height; quotes sit beside them.
+    const rowSpans = sorted.filter((s) => !s.quote && (s.href || s.imageHref)).map((s) => s.rowEnd - s.row)
+    const height = rowSpans.length ? rowHeightFor(Math.max(...rowSpans)) : undefined
+    return { layout, height, items: items.slice(0, 3) }
   })
 }
 
@@ -240,7 +254,7 @@ async function main() {
   const home = await payload.findGlobal({ slug: 'home', draft: true })
   {
     const html = await readFile(path.join(pagesDir, 'index.html'), 'utf8')
-    const rows = []
+    const rows: { layout: HomeRow['layout']; height?: RowHeight; items: ({ blockType: 'quote'; text: string; attribution: string } | { blockType: 'project'; project: number })[] }[] = []
     for (const row of parseHomeRows(html)) {
       const items = []
       for (const item of row.items) {
@@ -264,12 +278,27 @@ async function main() {
       if (!items.length) continue
       // A row that lost an item keeps a layout that fits what is left.
       const layout = items.length === 1 ? 'one' : items.length === 2 && row.layout === 'three' ? 'two' : row.layout
-      rows.push({ layout, items })
+      rows.push({ layout, height: row.height, items })
     }
     if (!home.rows?.length || update) {
       await payload.updateGlobal({ slug: 'home', data: { rows }, draft: true })
       console.log(`homepage: ${rows.length} rows (draft)`)
-    } else console.log('homepage: already has rows, left as is')
+    } else {
+      // Existing rows are kept as edited; only an empty height is filled, and only while the
+      // rows still line up with the old page (same count and layouts).
+      const lined = home.rows.length === rows.length && home.rows.every((r, i) => r.layout === rows[i].layout)
+      const missing = home.rows.filter((r) => !r.height).length
+      if (lined && missing) {
+        await payload.updateGlobal({
+          slug: 'home',
+          data: { rows: home.rows.map((r, i) => ({ ...r, height: r.height ?? rows[i].height })) },
+          draft: true,
+        })
+        console.log(`homepage: already has rows; filled ${missing} row heights from the old page (draft)`)
+      } else if (missing) {
+        console.log('homepage: rows were changed since the import, so heights were left empty. Set them in the admin.')
+      } else console.log('homepage: already has rows, left as is')
+    }
   }
 
   // About

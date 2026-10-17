@@ -24,7 +24,7 @@ export type ProjectCard = {
   typologies: Pick<Typology, 'name' | 'slug'>[]
   architects: Pick<Firm, 'name' | 'slug'>[]
   /** The main image, card-sized with larger sizes in srcSet, when one has been uploaded. */
-  image?: { src: string; srcSet?: string; alt: string }
+  image?: CardImage
   /** Slugs of firms in the credits list and of clients, for the collaborator/client filters. */
   collaboratorSlugs: string[]
   clientSlugs: string[]
@@ -32,9 +32,15 @@ export type ProjectCard = {
 
 const isObject = <T>(value: unknown): value is T => typeof value === 'object' && value !== null
 
-export const cardImage = (m: Media) => {
+/** `position`: CSS object-position from the photo's focal point (set in the admin), so crops keep the subject. */
+export type CardImage = { src: string; srcSet?: string; alt: string; ratio?: number; position?: string }
+
+export const cardImage = (m: Media): CardImage => {
   const sizes = [m.sizes?.card, m.sizes?.gallery].filter((x): x is { url: string; width: number } => Boolean(x?.url && x?.width))
-  return { src: m.sizes?.card?.url ?? m.url!, srcSet: sizes.map((x) => `${x.url} ${x.width}w`).join(', ') || undefined, alt: m.alt }
+  // Width over height, for layouts that keep each photo's own proportions.
+  const ratio = m.width && m.height ? m.width / m.height : undefined
+  const position = m.focalX != null && m.focalY != null && (m.focalX !== 50 || m.focalY !== 50) ? `${m.focalX}% ${m.focalY}%` : undefined
+  return { src: m.sizes?.card?.url ?? m.url!, srcSet: sizes.map((x) => `${x.url} ${x.width}w`).join(', ') || undefined, alt: m.alt, ratio, position }
 }
 
 /** All published projects, newest first, with only the fields cards and filters need. */
@@ -58,9 +64,10 @@ export async function getPublishedProjects(): Promise<ProjectCard[]> {
       credits: true,
       clients: true,
       heroImage: true,
+      gallery: true,
     },
     populate: {
-      media: { url: true, alt: true, sizes: true },
+      media: { url: true, alt: true, sizes: true, width: true, height: true, focalX: true, focalY: true },
       locations: { displayName: true, slug: true, worldRegion: true },
       typologies: { name: true, slug: true, order: true },
       firms: { name: true, slug: true },
@@ -76,7 +83,10 @@ export async function getPublishedProjects(): Promise<ProjectCard[]> {
     location: isObject<Location>(p.location) ? p.location : undefined,
     typologies: (p.typologies ?? []).filter(isObject<Typology>),
     architects: (p.architects ?? []).filter(isObject<Firm>),
-    image: isObject<Media>(p.heroImage) && p.heroImage.url ? cardImage(p.heroImage) : undefined,
+    // The main image, or else the first gallery photo, so a project with photos never shows an empty card.
+    image: [p.heroImage, ...(p.gallery ?? []).map((g) => g.image)]
+      .filter((m): m is Media => isObject<Media>(m) && Boolean(m.url))
+      .map(cardImage)[0],
     collaboratorSlugs: (p.credits ?? []).flatMap((c) =>
       c.firms.filter(isObject<Firm>).map((f) => f.slug ?? ''),
     ),

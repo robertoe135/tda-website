@@ -1,4 +1,4 @@
-import type { RowLayout } from '@/globals/Home'
+import { ROW_HEIGHTS, type RowLayout } from '@/globals/Home'
 import type { Firm, Media, Person, Video } from '@/payload-types'
 
 import { getPayloadClient, getPublishedProjects, type ProjectCard } from './projects'
@@ -22,7 +22,8 @@ export type HomeMedia = { src: string; srcSet?: string; alt: string }
 export type HomeVideo = { src: string; type: string; poster?: string }
 export type HomeTile = { kind: 'project'; id?: string | null; project: ProjectCard; image?: HomeMedia; video?: HomeVideo }
 export type HomeQuote = { kind: 'quote'; id?: string | null; text: string; attribution: string }
-export type HomeRowData = { id?: string | null; layout: RowLayout; items: (HomeTile | HomeQuote)[] }
+/** `height`: photo height on larger screens as a share of the row's width (Homepage → row Height). */
+export type HomeRowData = { id?: string | null; layout: RowLayout; height?: number; items: (HomeTile | HomeQuote)[] }
 
 const imageOf = (m: unknown): HomeMedia | undefined => {
   if (!isObject<Media>(m) || !m.url) return undefined
@@ -58,7 +59,7 @@ export async function getHomeRows(): Promise<HomeRowData[]> {
     })
     if (!items.length) return []
     const layout = items.length === 1 ? 'one' : items.length === 2 && row.layout === 'three' ? 'two' : row.layout
-    return [{ id: row.id, layout, items }]
+    return [{ id: row.id, layout, height: row.height ? ROW_HEIGHTS[row.height]?.share : undefined, items }]
   })
 }
 

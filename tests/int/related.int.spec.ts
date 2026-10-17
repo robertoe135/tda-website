@@ -1,0 +1,59 @@
+import { describe, expect, it } from 'vitest'
+
+import type { ProjectCard } from '@/lib/projects'
+import { relatedProjects } from '@/lib/related'
+
+const card = (id: number, o: Partial<ProjectCard> = {}): ProjectCard => ({
+  id,
+  name: `P${id}`,
+  slug: `p${id}`,
+  typologies: [],
+  architects: [],
+  collaboratorSlugs: [],
+  clientSlugs: [],
+  status: 'completed',
+  ...o,
+})
+const corporate = { name: 'Corporate', slug: 'corporate' }
+const kpf = { name: 'KPF', slug: 'kpf' }
+
+describe('related projects', () => {
+  const me = card(1, { year: 2020, typologies: [corporate], architects: [kpf] })
+  const all = [
+    me,
+    card(2, { architects: [kpf] }),
+    card(3, { architects: [kpf] }),
+    card(4, { typologies: [corporate] }),
+    card(5, { typologies: [corporate] }),
+    card(6, { year: 2020 }),
+    card(7, { year: 2020, status: 'in-progress' }),
+    card(8, { year: 2019 }),
+  ]
+
+  it('mixes architect, category and year, never repeats or includes the project itself', () => {
+    const picks = relatedProjects(me, all)
+    const ids = picks.map((p) => p.project.id)
+    expect(ids).toHaveLength(4)
+    expect(new Set(ids).size).toBe(4)
+    expect(ids).not.toContain(1)
+    expect(ids).not.toContain(8) // nothing in common
+    expect(ids).not.toContain(7) // on the boards: no completion year to share
+    expect(new Set(picks.map((p) => p.reason.label))).toEqual(new Set(['KPF', 'Corporate', '2020']))
+  })
+
+  it('links every reason to a filtered view or the Timeline year', () => {
+    const hrefs = relatedProjects(me, all).map((p) => p.reason.href)
+    for (const h of hrefs) expect(h).toMatch(/^\/projects\?(architect=kpf|typology=corporate)$|^\/timeline#year-2020$/)
+  })
+
+  it('gives the same set every time for one project, and puts projects with photos first', () => {
+    expect(relatedProjects(me, all)).toEqual(relatedProjects(me, all))
+    const withPhoto = all.map((p) => (p.id === 5 ? { ...p, image: { src: 'x', alt: '' } } : p))
+    const picks = relatedProjects(me, withPhoto).filter((p) => p.reason.label === 'Corporate')
+    expect(picks[0].project.id).toBe(5)
+  })
+
+  it('returns nothing for a project with nothing in common', () => {
+    expect(relatedProjects(card(9), [card(9), card(10)])).toEqual([])
+  })
+})

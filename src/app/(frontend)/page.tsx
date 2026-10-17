@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
@@ -20,7 +21,13 @@ export default async function HomePage() {
         <p className="empty">Projects are on their way.</p>
       ) : (
         rows.map((row, r) => (
-          <div key={row.id ?? r} className="home-row" data-layout={row.layout}>
+          <div
+            key={row.id ?? r}
+            className="home-row"
+            data-layout={row.layout}
+            data-height={row.height ? '' : undefined}
+            style={row.height ? ({ '--h': row.height } as CSSProperties) : undefined}
+          >
             {row.items.map((item, i) =>
               item.kind === 'quote' ? (
                 <figure key={item.id ?? i} className="home-quote">

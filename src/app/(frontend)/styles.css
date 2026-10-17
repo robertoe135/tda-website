@@ -106,7 +106,13 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .section-heading { font-weight: 400; font-size: 1rem; margin: 3rem 0 1rem; }
 .other-projects ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; font-weight: 300; }
 .other-project { display: block; }
-.other-project img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; display: block; }
+.other-project:hover { text-decoration: none; }
+.other-project-image { display: block; aspect-ratio: 3 / 2; background: #f0f0ee; overflow: hidden; }
+.other-project-image img { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity 0.2s; }
+.other-project:hover .other-project-image img { opacity: 0.85; }
+.other-project-name { display: block; margin-top: 0.5rem; font-size: 0.9rem; line-height: 1.3; font-weight: 400; }
+.other-project:hover .other-project-name { text-decoration: underline; }
+.other-projects li .meta-link { display: inline-block; margin-top: 0.15rem; font-size: 0.78rem; color: var(--muted); }
 .pager { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 4rem 0 2rem; font-weight: 300; font-size: 1.3rem; line-height: 1.2; }
 .pager a[rel='next'] { text-align: right; }
 
@@ -115,12 +121,16 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 /* Slideshow: one photograph at a time, arrows over the image, caption and counter below. */
 .slideshow { margin: 0 calc(-1 * var(--gutter)); }
 .slideshow:focus-visible { outline-offset: -2px; }
-.slideshow-frame { position: relative; aspect-ratio: 3 / 2; background: #f4f4f4; }
-.slideshow-frame img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.slideshow-frame { position: relative; aspect-ratio: 3 / 2; background: #f4f4f4; overflow: hidden; touch-action: pan-y; }
+/* Slides stack and cross-fade; the current one sits on top. */
+.slideshow-slide { position: absolute; inset: 0; opacity: 0; transition: opacity 0.6s ease; }
+.slideshow-slide[data-current] { opacity: 1; z-index: 1; }
+.slideshow-slide img { width: 100%; height: 100%; object-fit: contain; display: block; }
+@media (prefers-reduced-motion: reduce) { .slideshow-slide { transition: none; } }
 .slideshow-arrow {
   position: absolute; top: 50%; transform: translateY(-50%);
   width: 44px; height: 44px; display: grid; place-items: center;
-  border: 0; border-radius: 50%; background: rgb(255 255 255 / 0.85); color: var(--text); cursor: pointer;
+  border: 0; border-radius: 50%; background: rgb(255 255 255 / 0.85); color: var(--text); cursor: pointer; z-index: 2;
 }
 .slideshow-prev { left: 0.5rem; }
 .slideshow-next { right: 0.5rem; }
@@ -222,17 +232,50 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .year-nav { display: flex; gap: 1rem; overflow-x: auto; white-space: nowrap; font-weight: 300; font-size: 0.8rem; width: 100%; }
 .year-nav a { color: var(--muted); padding: 0.5rem 0; }
 
-/* Timeline: on phones a list with small thumbnails; on larger screens a year column beside
-   a grid of photographs. */
-.timeline-year { border-top: 1px solid var(--line); padding: 1.25rem 0 0.5rem; scroll-margin-top: 6rem; }
-.timeline-heading { margin: 0 0 0.5rem; font-weight: 200; font-size: 2.5rem; line-height: 1; letter-spacing: -0.02em; }
-.timeline-list { list-style: none; margin: 0; padding: 0; }
-.timeline-item { display: flex; align-items: center; gap: 0.9rem; min-height: 60px; padding: 0.35rem 0; }
-.timeline-item:hover { text-decoration: none; }
-.timeline-item:hover .timeline-name { text-decoration: underline; }
-.timeline-thumb { flex: 0 0 64px; height: 48px; background: #f0f0ee; overflow: hidden; }
-.timeline-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.timeline-name { font-size: 0.9rem; line-height: 1.35; }
+/* Timeline, picture first: each year is a band of photographs at one height (--row), each
+   keeping its own proportions (--r, set per photo) and growing to fill the row. The year is small
+   and sticks below the site header while its band scrolls past. */
+.timeline { --row: 150px; --shot-gap: 6px; --year-top: 4.75rem; }
+.timeline-year { border-top: 1px solid var(--line); padding: 0 0 1.75rem; scroll-margin-top: 5rem; }
+.timeline-heading {
+  position: sticky; top: var(--year-top); z-index: 1; background: var(--bg);
+  margin: 0; padding: 0.6rem 0; font-weight: 400; font-size: 0.9rem; line-height: 1.2;
+}
+.timeline-shots { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--shot-gap); }
+.timeline-shots > li { flex: var(--r) 1 calc(var(--row) * var(--r)); height: var(--row); min-width: 0; }
+.timeline-shots > .timeline-fill { flex: 10 1 0; height: 0; }
+.shot { position: relative; display: block; height: 100%; overflow: hidden; background: #f0f0ee; }
+.shot:hover { text-decoration: none; }
+.shot img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.shot:hover img, .shot:focus-visible img { transform: scale(1.04); }
+.shot-name {
+  position: absolute; left: 0; right: 0; bottom: 0; padding: 1.75rem 0.7rem 0.6rem;
+  background: linear-gradient(to top, rgb(0 0 0 / 0.62), rgb(0 0 0 / 0)); color: #fff;
+  font-size: 0.8rem; line-height: 1.3;
+  opacity: 0; transform: translateY(6px); transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.shot:hover .shot-name, .shot:focus-visible .shot-name { opacity: 1; transform: none; }
+/* No photo yet: the name on a plain tile, always shown. */
+.shot-empty { display: flex; align-items: flex-end; }
+.shot-empty .shot-name { position: static; background: none; color: var(--text); opacity: 1; transform: none; padding: 0.7rem; }
+.shot-empty:hover .shot-name { text-decoration: underline; }
+@media (hover: none) {
+  .shot-name { opacity: 1; transform: none; }
+}
+/* Each photo eases up and fades in as it scrolls into view, where the browser supports
+   scroll-driven animation; elsewhere, and with reduced motion, photos simply appear. Names never
+   fade, so text keeps its contrast mid-scroll. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .timeline-shots > li { animation: shot-rise linear both; animation-timeline: view(); animation-range: entry 0% entry 100%; }
+    .shot img { animation: shot-fade linear both; animation-timeline: view(); animation-range: entry 0% entry 100%; }
+  }
+}
+@keyframes shot-rise { from { transform: translateY(24px); } to { transform: none; } }
+@keyframes shot-fade { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .shot img, .shot-name { transition: none; }
+}
 
 /* About sub-menu */
 .sub-nav { display: flex; gap: 1.4rem; font-weight: 300; font-size: 0.9rem; margin: 0.25rem 0 0; }
@@ -306,12 +349,9 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   .page-title-large { font-size: 3.25rem; margin-top: 3rem; }
   .page-head { padding-top: 3rem; padding-bottom: 1.5rem; }
   .year-nav { width: auto; max-width: 48rem; flex-wrap: wrap; justify-content: flex-end; gap: 0.1rem 0.9rem; overflow: visible; }
-  .timeline-year { display: grid; grid-template-columns: 12rem minmax(0, 1fr); gap: 2.5rem; padding: 1.75rem 0 2.5rem; }
-  .timeline-heading { font-size: 3.5rem; }
-  .timeline-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.75rem 1.25rem; }
-  .timeline-item { display: block; min-height: 0; padding: 0; }
-  .timeline-thumb { display: block; height: auto; aspect-ratio: 4 / 3; }
-  .timeline-name { display: block; margin-top: 0.6rem; font-size: 0.82rem; }
+  .timeline { --row: 220px; --shot-gap: 8px; --year-top: 4.4rem; }
+  .timeline-year { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: 1.25rem; padding: 0.9rem 0 2.5rem; }
+  .timeline-heading { align-self: start; padding: 0; background: none; }
   .about-lede { font-size: 3.25rem; margin-top: 4.5rem; line-height: 1.12; }
   .about-facts { margin-top: 4rem; padding: 1.75rem 0; gap: 2rem; }
   .about-facts dd { font-size: 2.1rem; font-weight: 200; }
@@ -362,6 +402,11 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   .home-row[data-layout='narrow-wide'] > :last-child .tile-image { aspect-ratio: 16 / 9; }
   .home-row[data-layout='wide-narrow'] > :last-child .tile-image,
   .home-row[data-layout='narrow-wide'] > :first-child .tile-image { aspect-ratio: 16 / 13; }
+  /* A row with a Height set: every photo and video is that share of the row's width tall,
+     as on the old homepage's grid. */
+  .home-row[data-height] { container-type: inline-size; }
+  .home-row[data-height] .tile-image,
+  .home-row[data-height] > * .tile-image { width: 100%; aspect-ratio: auto; height: calc(var(--h) * 100cqi); }
   .home-quote { padding: 0 1.5rem; }
   .home-quote blockquote { font-size: 1.85rem; line-height: 1.34; }
   .press ul { grid-template-columns: repeat(4, minmax(0, 1fr)); }
@@ -373,7 +418,7 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   .portfolio-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (min-width: 1080px) {
-  .timeline-list { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .timeline { --row: 240px; }
   .tile-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .portfolio-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }

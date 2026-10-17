@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
@@ -9,9 +10,21 @@ export const metadata: Metadata = {
   alternates: { canonical: '/timeline' },
 }
 
+// Photos keep their own proportions; very wide or very tall ones are cropped to these limits so
+// one panorama or one tall shot can't take over a row.
+const MIN_RATIO = 0.66
+const MAX_RATIO = 2
+const NO_PHOTO_RATIO = 4 / 3
+
+const tileRatio = (ratio?: number) =>
+  ratio ? Math.min(MAX_RATIO, Math.max(MIN_RATIO, ratio)) : NO_PHOTO_RATIO
+
 /**
- * Published, completed projects by year, built from each project's completion year. Desktop:
- * the year in a column beside a grid of photographs. Phones: a compact list.
+ * Published, completed projects by year, picture first: each year is a band of photographs at
+ * one height, each keeping its own proportions, filling the row edge to edge. The year is small
+ * and stays at the top of its band while it scrolls. Project names show on hover and keyboard
+ * focus, and always on touch screens. A project without a photo shows its name on a plain tile
+ * until marketing uploads one.
  */
 export default async function TimelinePage() {
   const years = await getTimeline()
@@ -34,20 +47,27 @@ export default async function TimelinePage() {
           <h2 id={`year-${year}-h`} className="timeline-heading">
             {year}
           </h2>
-          <ul className="timeline-list">
+          <ul className="timeline-shots">
             {projects.map((p) => (
-              <li key={p.id}>
-                <Link href={`/projects/${p.slug}`} className="timeline-item">
-                  <span className="timeline-thumb" aria-hidden="true">
-                    {p.image && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={p.image.src} alt="" loading="lazy" />
-                    )}
-                  </span>
-                  <span className="timeline-name">{p.name}</span>
+              <li key={p.id} style={{ '--r': tileRatio(p.image?.ratio) } as CSSProperties}>
+                <Link href={`/projects/${p.slug}`} className={p.image ? 'shot' : 'shot shot-empty'}>
+                  {p.image && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={p.image.src}
+                      srcSet={p.image.srcSet}
+                      sizes="(min-width: 720px) 30vw, 60vw"
+                      style={p.image.position ? { objectPosition: p.image.position } : undefined}
+                      alt=""
+                      loading="lazy"
+                    />
+                  )}
+                  <span className="shot-name">{p.name}</span>
                 </Link>
               </li>
             ))}
+            {/* Takes the leftover space in the last row, so its photos keep their size. */}
+            <li className="timeline-fill" aria-hidden="true" />
           </ul>
         </section>
       ))}

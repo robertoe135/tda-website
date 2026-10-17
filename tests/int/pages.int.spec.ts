@@ -26,6 +26,8 @@ describe('old page parsers', () => {
     ].join('')}</main></body></html>`
     const rows = parseHomeRows(html)
     expect(rows.map((r) => r.layout)).toEqual(['wide-narrow', 'three', 'one'])
+    // Photo heights from the grid: 12 rows is about a third of the width, 7 rows a fifth.
+    expect(rows.map((r) => r.height)).toEqual(['taller', 'low', 'taller'])
     expect(rows[0].items).toEqual([
       { kind: 'project', path: '/x/pac', name: 'PAC', video: 'https://video.example/v/1920:1080', imagePath: undefined },
       { kind: 'quote', text: 'Light is intentional.', attribution: '[Person]' },
