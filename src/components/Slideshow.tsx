@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { type CSSProperties, useRef, useState } from 'react'
 
 export type Slide = {
   src: string
@@ -14,8 +14,8 @@ export type Slide = {
 const SWIPE_PX = 40
 
 /**
- * Project photographs, one at a time, with previous / next, swipe and a counter. Slides are
- * stacked and cross-fade (no fade with reduced motion). The photos either side of the current
+ * Project photographs, one at a time, with previous / next, swipe and a counter. The frame
+ * fits each photo's own shape within the window. Slides are stacked and cross-fade (no fade with reduced motion). The photos either side of the current
  * one load ahead, so a click never waits on a blank frame; the rest load once neared, so a
  * visitor who looks at one photo doesn't download forty. Images come in the sizes Payload
  * already makes (card, gallery, hero) and the browser picks one via srcset. Arrow keys work
@@ -42,6 +42,9 @@ export function Slideshow({ slides, label }: { slides: Slide[]; label: string })
       className="slideshow"
       aria-roledescription="carousel"
       aria-label={label}
+      // The frame takes the current photo's proportions (capped to the window height), so a
+      // vertical photo is shown tall rather than shrunk into a landscape box.
+      style={{ '--r': slide.width && slide.height ? slide.width / slide.height : 1.5 } as CSSProperties}
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === 'ArrowLeft') go(-1)
