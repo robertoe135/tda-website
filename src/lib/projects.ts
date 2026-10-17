@@ -67,7 +67,8 @@ export async function getPublishedProjects(): Promise<ProjectCard[]> {
       gallery: true,
     },
     populate: {
-      media: { url: true, alt: true, sizes: true, width: true, height: true, focalX: true, focalY: true },
+      // Photos are loaded whole: the storage plugin builds each address from the file name and
+      // storage key when a photo is read, so a narrowed field list gives addresses that 404.
       locations: { displayName: true, slug: true, worldRegion: true },
       typologies: { name: true, slug: true, order: true },
       firms: { name: true, slug: true },

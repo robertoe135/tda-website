@@ -104,6 +104,8 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .press-outlet { margin: 0.15rem 0 0; font-weight: 300; font-size: 0.65rem; }
 .press-outlet a { text-decoration: underline; }
 .section-heading { font-weight: 400; font-size: 1rem; margin: 3rem 0 1rem; }
+/* Space below the last section, now that the previous / next links are gone. */
+.project { padding-bottom: 4rem; }
 .other-projects ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; font-weight: 300; }
 .other-project { display: block; }
 .other-project:hover { text-decoration: none; }
@@ -113,8 +115,6 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .other-project-name { display: block; margin-top: 0.5rem; font-size: 0.9rem; line-height: 1.3; font-weight: 400; }
 .other-project:hover .other-project-name { text-decoration: underline; }
 .other-projects li .meta-link { display: inline-block; margin-top: 0.15rem; font-size: 0.78rem; color: var(--muted); }
-.pager { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 4rem 0 2rem; font-weight: 300; font-size: 1.3rem; line-height: 1.2; }
-.pager a[rel='next'] { text-align: right; }
 
 .meta-link:hover { text-decoration: underline; }
 
