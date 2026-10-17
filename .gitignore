@@ -55,3 +55,4 @@ node_modules/
 # Photo list: folder and file names can name private clients
 /scripts/media/cache/
 /scripts/team/out/
+/scripts/content/out/

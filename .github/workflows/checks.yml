@@ -1,0 +1,55 @@
+# Runs on every pull request and on main: the same checks a contributor runs before a task is
+# done (CLAUDE.md). A red check means the change would break the build Vercel deploys, or the
+# behaviour the tests pin down. Uses its own empty Postgres; never a shared database.
+name: Checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: tda
+          POSTGRES_PASSWORD: tda
+          POSTGRES_DB: tda_website
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U tda" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://tda:tda@localhost:5432/tda_website
+      PAYLOAD_SECRET: ci-only-secret-not-used-anywhere-else
+      NEXT_PUBLIC_SERVER_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # The committed migrations must build the whole schema from nothing (production never
+      # relies on push mode).
+      - name: Migrations
+        run: pnpm payload migrate
+      - name: Types are up to date
+        run: |
+          pnpm payload generate:types
+          git diff --exit-code src/payload-types.ts || (echo "Run pnpm payload generate:types and commit payload-types.ts" && exit 1)
+      - run: pnpm tsc --noEmit
+      - run: pnpm lint
+      - name: Integration tests
+        run: pnpm test:int
+      - run: pnpm build
