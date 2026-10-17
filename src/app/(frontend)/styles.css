@@ -97,8 +97,8 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .project-header { text-align: center; margin: 2rem 0 1.5rem; }
 .project-title { font-weight: 400; font-size: 1.4rem; margin: 0 0 0.5rem; }
 .project-line { margin: 0; font-weight: 300; font-size: 0.7rem; }
-.project-description { max-width: 38rem; margin: 2rem auto 0; text-align: justify; hyphens: auto; font-weight: 300; font-size: 0.8rem; line-height: 1.55; }
-.project-description p { margin: 0 0 0.75rem; }
+.project-description { max-width: 38rem; margin: 2rem auto 0; text-align: justify; hyphens: auto; font-weight: 300; font-size: 0.95rem; line-height: 1.65; }
+.project-description p { margin: 0 0 0.9rem; }
 .press ul { list-style: none; margin: 0; padding: 1.5rem 0; display: grid; gap: 1.5rem; text-align: center; }
 .press-title { margin: 0; font-weight: 300; font-size: 0.9rem; }
 .press-outlet { margin: 0.15rem 0 0; font-weight: 300; font-size: 0.65rem; }
@@ -119,14 +119,22 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .meta-link:hover { text-decoration: underline; }
 
 /* Slideshow: one photograph at a time, arrows over the image, caption and counter below. */
-.slideshow { margin: 0 calc(-1 * var(--gutter)); }
+/* The frame has the current photo's shape (--r: its width over height) at full width, but is
+   never taller than the window minus the site header and caption line, so the whole photo is
+   always in view; a photo that hits that limit narrows and is centred, and the arrows and
+   caption line follow its edges. Size eases between photos of different shapes. */
+.slideshow { margin: 0 calc(-1 * var(--gutter)); --slideshow-chrome: 8.5rem; --slide-w: min(100%, calc((100svh - var(--slideshow-chrome)) * var(--r, 1.5))); }
 .slideshow:focus-visible { outline-offset: -2px; }
-.slideshow-frame { position: relative; aspect-ratio: 3 / 2; background: #f4f4f4; overflow: hidden; touch-action: pan-y; }
+.slideshow-frame {
+  position: relative; overflow: hidden; touch-action: pan-y;
+  width: var(--slide-w); aspect-ratio: var(--r, 1.5); margin-inline: auto;
+  transition: width 0.45s ease, aspect-ratio 0.45s ease;
+}
 /* Slides stack and cross-fade; the current one sits on top. */
 .slideshow-slide { position: absolute; inset: 0; opacity: 0; transition: opacity 0.6s ease; }
 .slideshow-slide[data-current] { opacity: 1; z-index: 1; }
 .slideshow-slide img { width: 100%; height: 100%; object-fit: contain; display: block; }
-@media (prefers-reduced-motion: reduce) { .slideshow-slide { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .slideshow-slide, .slideshow-frame, .slideshow-meta { transition: none; } }
 .slideshow-arrow {
   position: absolute; top: 50%; transform: translateY(-50%);
   width: 44px; height: 44px; display: grid; place-items: center;
@@ -135,15 +143,16 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .slideshow-prev { left: 0.5rem; }
 .slideshow-next { right: 0.5rem; }
 .slideshow-meta {
-  display: flex; justify-content: space-between; gap: 1rem;
+  display: flex; justify-content: space-between; gap: 1rem; width: var(--slide-w); margin-inline: auto; transition: width 0.45s ease;
   padding: 0.4rem var(--gutter) 0; font-weight: 300; font-size: 0.7rem; color: var(--muted);
 }
 
 /* Fact band: the key facts and the TDA team above the story, Project Info folded below them. */
-.fact-band { max-width: 50rem; margin: 2rem auto 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+/* Same column as the description, so facts, Project Info and the text line up. */
+.fact-band { max-width: 38rem; margin: 2rem auto 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .facts-key { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem 1.5rem; margin: 0; padding: 1.25rem 0; }
-.fact dt { font-size: 0.65rem; font-weight: 400; color: var(--muted); letter-spacing: 0.04em; }
-.fact dd { margin: 0.15rem 0 0; font-weight: 300; font-size: 0.85rem; line-height: 1.4; }
+.fact dt { font-size: 0.72rem; font-weight: 400; color: var(--muted); letter-spacing: 0.04em; }
+.fact dd { margin: 0.15rem 0 0; font-weight: 300; font-size: 0.95rem; line-height: 1.45; }
 /* Faint underline so a linked name (current staff, a firm) reads differently from plain text. */
 .fact dd a, .project-info-body a { text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
 .fact dd a:hover, .project-info-body a:hover { text-decoration-color: currentColor; }
@@ -160,7 +169,7 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .project-info > summary::-webkit-details-marker { display: none; }
 .project-info-sign::before { content: '+'; font-weight: 300; font-size: 1.1rem; }
 .project-info[open] .project-info-sign::before { content: '\2212'; }
-.project-info-body { display: grid; gap: 1rem 2rem; padding: 0 0 1.25rem; font-weight: 300; font-size: 0.8rem; }
+.project-info-body { display: grid; gap: 1rem 2rem; padding: 0 0 1.25rem; font-weight: 300; font-size: 0.9rem; }
 .project-info-body p { margin: 0 0 0.35rem; }
 .project-info-body .project-info-heading { margin-top: 0.75rem; font-weight: 400; }
 .project-info-body > div > .project-info-heading:first-child { margin-top: 0; }
