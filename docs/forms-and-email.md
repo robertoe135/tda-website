@@ -35,3 +35,19 @@ A signup box in the footer adds the address to TDA's Mailchimp audience with **d
 opt-in**: Mailchimp emails the person to confirm. Nothing about signups is stored on the
 site. The box is hidden until `MAILCHIMP_API_KEY` and `MAILCHIMP_AUDIENCE_ID` are set in
 Vercel; then redeploy. Create the API key in Mailchimp → Profile → Extras → API keys.
+
+## How long applications are kept
+
+Career applications and inquiries (Leads) are deleted automatically six months after they
+arrive. That matches what the Leads screen tells staff: delete once a position is filled, or
+after six months, whichever comes first. Delete earlier by hand when a position is filled.
+CVs are never stored on the site. They live only in the jobs inbox, so they follow the inbox's
+own rules.
+
+The deletion runs once a day (06:17 UTC) as a Vercel Cron job (`vercel.json`, route
+`/cron/purge-leads`). It needs one setting in Vercel, Settings → Environment Variables:
+
+- `CRON_SECRET`: any long random value, Production only. Vercel sends it with each run, and the
+  route refuses anything else. Without it the job does nothing, and the cron log says so.
+
+The six months is `LEAD_RETENTION_MONTHS` in `src/lib/retention.ts`.

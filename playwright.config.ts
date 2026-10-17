@@ -4,7 +4,22 @@ import { defineConfig, devices } from '@playwright/test'
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
  */
-import 'dotenv/config'
+import dotenv from 'dotenv'
+
+// The same files the dev server reads: .env.local first (where vercel env pull writes), then .env.
+dotenv.config({ path: ['.env.local', '.env'], quiet: true } as dotenv.DotenvConfigOptions)
+
+// The browser tests drive the admin and create records. They must never reach a shared
+// database: refuse to start unless DATABASE_URL points at this machine.
+{
+  let host = ''
+  try {
+    host = new URL(process.env.DATABASE_URL ?? '').hostname
+  } catch {}
+  if (!['localhost', '127.0.0.1', '::1'].includes(host)) {
+    throw new Error(`Browser tests only run against a local database; DATABASE_URL points at ${host || 'nothing'}.`)
+  }
+}
 
 /**
  * See https://playwright.dev/docs/test-configuration.

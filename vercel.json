@@ -1,5 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "buildCommand": "if [ \"$VERCEL_ENV\" = \"production\" ]; then pnpm payload migrate; fi && pnpm build"
+  "buildCommand": "if [ \"$VERCEL_ENV\" = \"production\" ]; then pnpm payload migrate; fi && pnpm build",
+  "crons": [
+    {
+      "path": "/cron/purge-leads",
+      "schedule": "17 6 * * *"
+    }
+  ]
 }
