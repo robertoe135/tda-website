@@ -64,7 +64,7 @@ function PersonName({ person }: { person: Person }) {
 /**
  * Project page, option F2: TDA's name and "location | architect" line, a slideshow, a fact
  * band (Design Architect, Location, Project Completed, then the TDA team), "Project Info"
- * holding everything else, the description, press, other projects, previous / next.
+ * holding everything else, the description, press, related projects.
  */
 export default async function ProjectPage({ params }: Props) {
   const project = await getProject((await params).slug)
@@ -87,9 +87,6 @@ export default async function ProjectPage({ params }: Props) {
   const photographers = projectPhotographers(project)
 
   const all = await getPublishedProjects()
-  const index = all.findIndex((p) => p.id === project.id)
-  const previous = index > 0 ? all[index - 1] : undefined
-  const next = index > -1 && index < all.length - 1 ? all[index + 1] : undefined
   const card = all.find((p) => p.id === project.id)
   const related = card ? relatedProjects(card, all) : []
 
@@ -287,22 +284,6 @@ export default async function ProjectPage({ params }: Props) {
         </section>
       )}
 
-      <nav className="pager" aria-label="More projects">
-        {previous ? (
-          <Link href={`/projects/${previous.slug}`} rel="prev">
-            <span className="visually-hidden">Previous project: </span>
-            {previous.name}
-          </Link>
-        ) : (
-          <span />
-        )}
-        {next && (
-          <Link href={`/projects/${next.slug}`} rel="next">
-            <span className="visually-hidden">Next project: </span>
-            {next.name}
-          </Link>
-        )}
-      </nav>
     </article>
   )
 }
