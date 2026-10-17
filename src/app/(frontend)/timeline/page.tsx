@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { YearRail } from '@/components/YearRail'
 import { getTimeline } from '@/lib/site'
 
 export const metadata: Metadata = {
@@ -32,16 +33,8 @@ export default async function TimelinePage() {
     <div className="timeline">
       <div className="page-head">
         <h1 className="page-title page-title-large">Timeline</h1>
-        {years.length > 1 && (
-          <nav aria-label="Years" className="year-nav">
-            {years.map(({ year }) => (
-              <a key={year} href={`#year-${year}`}>
-                {year}
-              </a>
-            ))}
-          </nav>
-        )}
       </div>
+      {years.length > 1 && <YearRail years={years.map(({ year }) => year)} />}
       {years.map(({ year, projects }) => (
         <section key={year} id={`year-${year}`} className="timeline-year" aria-labelledby={`year-${year}-h`}>
           <h2 id={`year-${year}-h`} className="timeline-heading">

@@ -491,3 +491,24 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   .home-tile .tile:hover .tile-image img { opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) { .home-tile .tile-name { transition: none; } }
+
+/* Timeline: a column of dots, one per year, fixed beside the photos on larger screens. The
+   current year's dot is filled and larger; pointing at a dot shows its year. On phones the
+   years stick at the top of each band instead. */
+.year-rail { display: none; }
+@media (min-width: 900px) {
+  .timeline { padding-right: 2.5rem; }
+  .year-rail { display: block; position: fixed; right: 1.25rem; top: 50%; transform: translateY(-50%); z-index: 5; }
+  .year-rail ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+  .year-rail a { position: relative; display: grid; place-items: center; width: 24px; height: 18px; }
+  .year-rail a::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #c4c4c4; transition: transform 0.25s ease, background-color 0.25s ease; }
+  .year-rail a:hover::before, .year-rail a:focus-visible::before { background: var(--text); }
+  .year-rail a[aria-current]::before { background: var(--text); transform: scale(1.6); }
+  .year-rail-label {
+    position: absolute; right: 100%; top: 50%; transform: translate(4px, -50%); margin-right: 0.35rem;
+    font-size: 0.75rem; line-height: 1; white-space: nowrap; color: var(--text); background: var(--bg); padding: 0.2rem 0.35rem;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .year-rail a:hover .year-rail-label, .year-rail a:focus-visible .year-rail-label { opacity: 1; transform: translate(0, -50%); }
+}
+@media (prefers-reduced-motion: reduce) { .year-rail a::before, .year-rail-label { transition: none; } }
