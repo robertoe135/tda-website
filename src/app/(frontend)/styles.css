@@ -392,6 +392,11 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   .home-row[data-layout='narrow-wide'] > :last-child .tile-image { aspect-ratio: 16 / 9; }
   .home-row[data-layout='wide-narrow'] > :last-child .tile-image,
   .home-row[data-layout='narrow-wide'] > :first-child .tile-image { aspect-ratio: 16 / 13; }
+  /* A row with a Height set: every photo and video is that share of the row's width tall,
+     as on the old homepage's grid. */
+  .home-row[data-height] { container-type: inline-size; }
+  .home-row[data-height] .tile-image,
+  .home-row[data-height] > * .tile-image { width: 100%; aspect-ratio: auto; height: calc(var(--h) * 100cqi); }
   .home-quote { padding: 0 1.5rem; }
   .home-quote blockquote { font-size: 1.85rem; line-height: 1.34; }
   .press ul { grid-template-columns: repeat(4, minmax(0, 1fr)); }

@@ -14,6 +14,20 @@ export const ROW_LAYOUTS = {
 export type RowLayout = keyof typeof ROW_LAYOUTS
 
 /**
+ * Photo height on desktop, as a share of the row's width, so a row keeps its look at any screen
+ * size. The steps cover the heights the old homepage used (its rows were 20% to 48% of the
+ * page width). Phones always use the standard shapes.
+ */
+export const ROW_HEIGHTS = {
+  low: { label: 'Low', share: 0.2 },
+  medium: { label: 'Medium', share: 0.25 },
+  tall: { label: 'Tall', share: 0.29 },
+  taller: { label: 'Taller', share: 0.34 },
+  tallest: { label: 'Tallest', share: 0.48 },
+} as const
+export type RowHeight = keyof typeof ROW_HEIGHTS
+
+/**
  * The homepage, as on the current site: rows of project photographs, looping videos and
  * quotes. Each row has a layout; each item in it is a project tile or a quote.
  */
@@ -36,6 +50,15 @@ export const Home: GlobalConfig = {
           defaultValue: 'three',
           options: Object.entries(ROW_LAYOUTS).map(([value, { label }]) => ({ value, label })),
           admin: { description: 'One, two or three items side by side. On phones they stack.' },
+        },
+        {
+          name: 'height',
+          type: 'select',
+          options: Object.entries(ROW_HEIGHTS).map(([value, { label }]) => ({ value, label })),
+          admin: {
+            description:
+              'How tall the photos in this row are on larger screens: Low is a wide strip, Tallest is close to square. Leave empty for the standard shapes.',
+          },
         },
         {
           name: 'items',
