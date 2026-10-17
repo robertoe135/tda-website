@@ -171,3 +171,29 @@ pnpm media:publish --write --confirm-backup     # publish it
 - **Held:** a project without categories (typologies) or without a status. New projects from
   Projects to Add always need their categories chosen first. They stay on the list, so run the
   command again once they are ready.
+
+## Why a project has no photos (`pnpm media:why`)
+
+The import reads only `Photos/<Category>/<Project>/` and takes only folders whose name clearly
+matches a project. When a project you know has photos ends up without any, this looks
+everywhere under the Website folder and says why, project by project:
+
+```bash
+pnpm media:why "/Volumes/T7/Website"
+```
+
+| Reason | What to do |
+| --- | --- |
+| In Photos and matched; not imported yet | `pnpm media:scan --accept-guesses`, then `pnpm media:import --write --confirm-backup`. If the import skipped it for having no photographer, add one first. |
+| Folder name too different to match for sure | Rename the folder to the website name, or write `yes` and the slug in photos.csv. |
+| Outside Photos (Archive, another top folder) | Copy the approved web set into `Photos/<Category>/<Project>/`. |
+| In a subfolder of a project folder | Move the web set up one level: only images directly in the project folder are read. |
+| Not a portfolio category (Lifestyle Photos…) | Move into one of the portfolio categories. |
+| Marked NO RIGHTS, or removed / unused / temporary | Never imported. Rename only if TDA has the rights or these are the web photos. |
+| Only HEIC, PSD or RAW files | Export JPEGs into the same folder. |
+| In Projects to Add | `pnpm projects:add`. |
+| No folder on this drive | Says how many photos the old site showed for it. If some: the originals are elsewhere. If none: decide whether it launches. |
+
+A folder whose name is short ("Bloomberg London") is listed as *possible* under each project it
+may belong to (up to three), for a person to check. Reads only; prints counts, and writes the
+project-by-project list to `scripts/media/cache/why-no-photos.csv` (not committed).

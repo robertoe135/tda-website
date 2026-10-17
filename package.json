@@ -35,6 +35,7 @@
     "projects:add": "tsx scripts/media/projects-to-add.ts",
     "media:publish": "tsx scripts/media/publish.ts",
     "media:check": "tsx scripts/media/check.ts",
+    "media:why": "tsx scripts/media/why.ts",
     "content:check": "tsx scripts/content/check.ts"
   },
   "dependencies": {
