@@ -1,7 +1,28 @@
 # TDA team credits import
 
 Marketing fills in a spreadsheet of who worked on which project; this script puts it into the
-admin as drafts. Start from `template.csv` (open it in Excel or Google Sheets, save as CSV).
+admin as drafts.
+
+## The worksheet
+
+```
+pnpm team:worksheet
+```
+
+Writes `scripts/team/out/team-worksheet.csv`: every project on the site (live ones first, A to
+Z), each with a row for Principal in Charge, Project Manager and two Designers, its address,
+name and year already filled in. Projects that already have a team show it. Also writes
+`team-names.csv`, everyone in the admin with their title: copy names from it, so spellings match.
+
+Open the worksheet in Excel or Google Sheets and type names in the `person` column. Add rows for
+more designers; leave rows you don't need empty, since they're skipped. A project left entirely
+blank keeps the team it has. Save it as CSV. The `website name`, `year` and `live` columns are
+there to read and aren't imported.
+
+Run `pnpm migrate:people --write --publish` first, so everyone on the old team page has "Show on
+site" on. Otherwise the import stops on each of them.
+
+`template.csv` is the same format, empty, for a one-off list.
 
 | Column | What goes in it |
 | --- | --- |
@@ -27,7 +48,7 @@ One row per person per role. A project with two designers has two designer rows.
 ## Running it
 
 ```
-pnpm team:import team.csv                                  # check only, writes nothing
+pnpm team:import scripts/team/out/team-worksheet.csv       # check only, writes nothing
 pnpm team:import team.csv --write                          # save drafts
 pnpm team:import team.csv --write --create-people          # also add people not yet in the admin
 ```
