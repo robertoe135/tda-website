@@ -61,9 +61,13 @@ pnpm media:scan "/Volumes/T7/Website" --accept-guesses    # also use the clear b
 ```
 
 With `--accept-guesses`, a folder whose name isn't exact still gets `yes` when the best guess is
-clear: the folder's words are all in the project's name, typos and shortened words allowed
-("Rubenstien Forum" → "David Rubenstein Forum University of Chicago"), and it is well ahead of the
-next closest project. Vague names ("Museum", "Four Seasons") stay for a person. Two folders for
+clearly the best fit: the folder's words are in the project's name, with typos, shortened words,
+accents and abbreviations allowed ("Rubenstien Forum" → "David Rubenstein Forum University of
+Chicago", "NYU John A. Paulson Center" → "New York University…", "Hotel Barriere" → "Hôtel
+Barrière"), and it is ahead of the next project; the folder's category can decide between two
+similar names. When two near-identical project names both fit (one project entered twice), the
+closer is used and the note says to merge them. Vague names ("Museum", "Four Seasons") stay for a
+person. Abbreviations understood: NYU, NYC, NY, U.S./US/USA, MoMA, PAC, DMA, HQ. Two folders for
 one project: the exact one wins, then the closer guess, then the one with more photos.
 
 The scan also writes `scripts/media/cache/photo-matches.csv`, one row per folder: folder, project,
@@ -88,8 +92,8 @@ A project filed under several categories uses the folder with the most photos.
 
 Open it in Excel, fix what the notes point at, write `yes` where a guess is right, clear
 `include` for photos that should not go on the site, and save as CSV in the same place.
-A project with no photographer stops the import: add one to the project (Images →
-Photographers) or to its photos.
+A project with no photographer is imported anyway. It shows in the admin under **Still needed →
+Photographer** (projects list and the project's sidebar) until a credit is added.
 
 ## 3. Import
 
@@ -98,13 +102,14 @@ pnpm media:import "/Volumes/<share>/Marketing/Website/Photos"            # check
 pnpm media:import "/Volumes/<share>/Marketing/Website/Photos" --write --confirm-backup
 ```
 
-- All or nothing: any problem (missing file, no credit, no description) stops it
-  before the first upload, with the CSV line of each problem.
+- All or nothing: any problem (missing file, no description, a photographer not in the admin)
+  stops it before the first upload, with the CSV line of each problem. A missing photographer
+  does not stop it: those projects are listed and flagged in the admin (Still needed).
 - Photos are scaled to 3000 px and stripped of camera data on your computer; originals stay
   on F:.
 - Projects that already have photos are skipped unless `--replace` is added.
-- `--skip-uncredited` leaves out projects with no photographer, lists them, and imports the
-  rest. Run it again once their credits are in: what's already uploaded is skipped.
+- `--skip-uncredited` leaves out projects with no photographer instead, if you'd rather wait
+  for the credits. Run it again once they are in: what's already uploaded is skipped.
 - Projects are saved as drafts. Publish them in the admin to show the photos.
 - Safe to run again after an interruption: photos already uploaded are reused, not duplicated.
 
@@ -132,7 +137,7 @@ pnpm projects:add "/Volumes/T7/Website" --write    # create drafts and upload ph
   review.csv. "(ready)" is not required, but a folder without it gets a review row.
 - **A folder of folders** (`0 - Archive`) holds photos for projects already on the site. A
   project gets them only if it has no photos yet. Its documents are not read, because the site's
-  text wins. Its photographer must already be set on the project.
+  text wins. Without a photographer the photos still come in, flagged in the admin (Still needed).
 - **Nothing is overwritten.** A project that already exists keeps its fields. A project that
   already has photos is skipped, so running the command again is safe.
 - **Close names are held, not guessed.** If "FIT" looks like "Fashion Institute of Technology",
@@ -184,7 +189,7 @@ pnpm media:why "/Volumes/T7/Website"
 
 | Reason | What to do |
 | --- | --- |
-| In Photos and matched; not imported yet | `pnpm media:scan --accept-guesses`, then `pnpm media:import --write --confirm-backup`. If the import skipped it for having no photographer, add one first. |
+| In Photos and matched; not imported yet | `pnpm media:scan --accept-guesses`, then `pnpm media:import --write --confirm-backup`. |
 | Folder name too different to match for sure | Rename the folder to the website name, or write `yes` and the slug in photos.csv. |
 | Outside Photos (Archive, another top folder) | Copy the approved web set into `Photos/<Category>/<Project>/`. |
 | In a subfolder of a project folder | Move the web set up one level: only images directly in the project folder are read. |

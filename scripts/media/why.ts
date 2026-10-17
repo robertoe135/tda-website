@@ -26,7 +26,7 @@ import { csv } from '../migrate/lib'
 import { parseCsv } from '../team/lib'
 
 import { guessProject, type GuessCandidate } from './lib'
-import { mediaDir } from './scan'
+import { mediaDir, PHOTOS_CSV } from './scan'
 import { folderName, folderPlace, NEEDS_EXPORT, possibleProjects, WEB_IMAGE } from './why-lib'
 
 const OUT = path.join(mediaDir, 'cache', 'why-no-photos.csv')
@@ -96,7 +96,7 @@ async function main() {
 
   // Each folder goes to the project its name points to most (among all projects, so a folder
   // for a project that already has photos is not handed to another one).
-  type Found = ImageFolder & { score: number; sure: boolean; place: ReturnType<typeof folderPlace> }
+  type Found = ImageFolder & { score: number; sure: boolean; runnerUp?: string; place: ReturnType<typeof folderPlace> }
   const bySlug = new Map<string, Found[]>()
   for (const f of folders) {
     const named = [...f.parts].reverse().find((p) => !GENERIC.test(folderName(p)))
@@ -107,12 +107,23 @@ async function main() {
     // A short folder name ("Bloomberg London") may still point at a project: listed as possible.
     const slugs = guess ? [guess.candidate.slug] : possibleProjects(folderName(named), candidates).map((c) => c.slug)
     for (const slug of slugs) {
-      const found: Found = { ...f, score: guess?.score ?? 0.5, sure: Boolean(guess && (guess.exact || guess.accepted)), place }
+      const found: Found = { ...f, score: guess?.score ?? 0.5, sure: Boolean(guess && (guess.exact || guess.accepted)), runnerUp: guess?.runnerUp?.name, place }
       bySlug.set(slug, [...(bySlug.get(slug) ?? []), found])
     }
   }
 
   const oldSite = await oldSiteCounts()
+  // The last scan's plan, per <category>/<folder>: whether it was set to import, and where to.
+  const plan = new Map<string, { include: boolean; slug: string }>()
+  if (existsSync(PHOTOS_CSV)) {
+    const [header, ...lines] = parseCsv(await readFile(PHOTOS_CSV, 'utf8'))
+    const col = (name: string) => header.indexOf(name)
+    for (const line of lines) {
+      const key = `${line[col('category')]}/${line[col('folder')]}`
+      const prev = plan.get(key)
+      plan.set(key, { include: Boolean(prev?.include) || /^(y|yes)$/i.test(line[col('include')] ?? ''), slug: line[col('project')] ?? '' })
+    }
+  }
   const rows: Record<string, string | number>[] = []
   for (const p of missing) {
     const slug = p.slug ?? String(p.id)
@@ -142,22 +153,28 @@ async function main() {
     if (best.place.kind === 'blocked') {
       rows.push({ ...base, reason: best.place.reason, folder: where, photos, match, fix: best.place.fix })
     } else if (best.sure) {
-      rows.push({
-        ...base,
-        reason: 'In Photos and matched; not imported yet',
-        folder: where,
-        photos,
-        match,
-        fix: 'pnpm media:scan --accept-guesses, then pnpm media:import --write --confirm-backup. If the import skipped it for having no photographer, add one to the project first.',
-      })
+      // What the last scan's photos.csv says about this folder decides why nothing came in.
+      const planned = plan.get(best.parts.slice(1, 3).join('/'))
+      const [reason, fix] = !planned
+        ? ['Matched, but not in photos.csv (scanned before the folder was added)', 'pnpm media:scan --accept-guesses, then pnpm media:import --write --confirm-backup.']
+        : !planned.include
+          ? ['Matched, but photos.csv says not to import it', 'Write yes in photos.csv for its rows (or rerun pnpm media:scan --accept-guesses), then pnpm media:import --write --confirm-backup.']
+          : planned.slug !== slug
+            ? [`Matched, but photos.csv sends its photos to ${planned.slug}`, `Change the project column to ${slug} in photos.csv, then pnpm media:import --write --confirm-backup.`]
+            : ['Matched and marked yes in photos.csv; the import has not run since, or stopped', 'Run pnpm media:import (without --write) to see what stops it, then with --write --confirm-backup.']
+      rows.push({ ...base, reason, folder: where, photos, match, fix })
     } else {
       rows.push({
         ...base,
-        reason: 'In Photos, but the folder name is too different to match for sure',
+        reason: best.runnerUp
+          ? `Folder name close to two projects (also ${best.runnerUp})`
+          : 'In Photos, but the folder name is too different to match for sure',
         folder: where,
         photos,
         match,
-        fix: `Rename the folder to "${p.name}", or write yes and ${slug} in photos.csv for its rows.`,
+        fix: best.runnerUp
+          ? `If it is ${p.name}, write yes and ${slug} in photos.csv for its rows. If the two projects are one, merge them first.`
+          : `Write yes and ${slug} in photos.csv for its rows, or rename the folder to the website name.`,
       })
     }
   }

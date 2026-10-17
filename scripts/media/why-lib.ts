@@ -19,8 +19,14 @@ export type FolderPlace =
 export function folderPlace(parts: string[], webImages: number, otherImages: number): FolderPlace {
   const [top, ...rest] = parts
   const label = parts.join(' / ')
+  // Markers anywhere in the path win over where the folder sits: a folder inside "ST Removed"
+  // or "INTERNAL USE ONLY" was taken out on purpose, and must not be moved back in.
   if (/no\s*rights?/i.test(label))
     return { kind: 'blocked', reason: 'Marked NO RIGHTS', fix: 'Never imported. Only if TDA now has web rights: rename the folder.' }
+  if (/internal\s+use|need\w*\s+.*approval|approval\s+needed|do\s+not\s+use/i.test(label))
+    return { kind: 'blocked', reason: 'Marked internal use only or awaiting approval', fix: 'Never imported. Only once the approval is in: move the approved photos into their own project folder.' }
+  if (parts.some((p) => /^\s*!/.test(p) || /\b(removed|not\s+used|unused)\b/i.test(p)))
+    return { kind: 'blocked', reason: 'In a folder marked removed or unused', fix: 'Taken out on purpose. Nothing to do unless the project should be back on the site.' }
   if (/^projects?\s+to\s+add$/i.test(top?.trim() ?? '') || rest.some((p) => /^projects?\s+to\s+add$/i.test(p.trim())))
     return { kind: 'blocked', reason: 'In Projects to Add', fix: 'Run pnpm projects:add (photos for an existing project go in its 0 - Archive folder).' }
   if (!/^photos$/i.test(top ?? ''))
@@ -33,7 +39,7 @@ export function folderPlace(parts: string[], webImages: number, otherImages: num
   const skip = skipReason(category, folder, PORTFOLIO_CATEGORIES)
   if (skip === 'not a portfolio category')
     return { kind: 'blocked', reason: `Category "${category}" is not a portfolio category`, fix: `Move into one of: ${PORTFOLIO_CATEGORIES.join(', ')}.` }
-  if (skip) return { kind: 'blocked', reason: 'Marked removed, unused or temporary', fix: 'Rename the folder if these are the web photos.' }
+  if (skip) return { kind: 'blocked', reason: 'In a folder marked removed or unused', fix: 'Taken out on purpose. Nothing to do unless the project should be back on the site.' }
   if (!webImages && otherImages)
     return { kind: 'blocked', reason: 'Only HEIC, PSD or RAW files', fix: 'Export JPEGs into the same folder.' }
   return { kind: 'importable' }
@@ -60,12 +66,15 @@ const words = (name: string) =>
 
 /**
  * Projects a folder name may point to when it is too short to match properly ("Bloomberg
- * London" → Bloomberg European Headquarters, or London Mithraeum): those sharing a distinctive
- * word with it. More than three means the word says too little, and none are returned. These
+ * London" → Bloomberg European Headquarters, or London Mithraeum): those sharing a word with it
+ * that no other project's name has. More than three means the word says too little, and none are returned. These
  * are for a person to check, never imported on their own.
  */
 export function possibleProjects<T extends { name: string }>(folder: string, projects: T[]): T[] {
-  const mine = new Set(words(folder))
+  // Distinctive: in exactly one project's name. "Square" (Madison Square, Lincoln Square) is not.
+  const seen = new Map<string, number>()
+  for (const p of projects) for (const w of new Set(words(p.name))) seen.set(w, (seen.get(w) ?? 0) + 1)
+  const mine = new Set(words(folder).filter((w) => seen.get(w) === 1))
   if (!mine.size) return []
   const hits = projects.filter((p) => words(p.name).some((w) => mine.has(w)))
   return hits.length <= 3 ? hits : []

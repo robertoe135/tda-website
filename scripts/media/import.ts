@@ -5,7 +5,8 @@
  *   pnpm media:import "/Volumes/<share>/Marketing/Website/Photos"            # check only
  *   pnpm media:import "/Volumes/<share>/Marketing/Website/Photos" --write    # upload, save drafts
  *     --replace          also replace photos on projects that already have some
- *     --skip-uncredited  leave out projects with no photographer (listed), instead of stopping
+ *     --skip-uncredited  leave out projects with no photographer (listed). By default they are
+ *                        imported, and the admin flags them: Still needed → Photographer.
  *     --csv <file>       a different CSV than scripts/media/cache/photos.csv
  *     --confirm-backup   required when DATABASE_URL is not this machine
  *
@@ -95,14 +96,10 @@ async function main() {
       problems.push(`line ${list[0].line}: no project with slug "${slug}".`)
       continue
     }
-    if (!project.photographers?.length && list.some((r) => !r.photographer)) {
-      if (skipUncredited) {
-        uncredited.push(project.name)
-        continue
-      }
-      problems.push(`line ${list[0].line}: ${project.name} has no photographer. Add one to the project (Images → Photographers) or to each photo.`)
-      continue
-    }
+    // No photographer: imported anyway and flagged in the admin (Still needed), unless asked to skip.
+    const noCredit = !project.photographers?.length && list.some((r) => !r.photographer)
+    if (noCredit) uncredited.push(project.name)
+    if (noCredit && skipUncredited) continue
     if ((project.heroImage || project.gallery?.length) && !replace) {
       console.log(`skip ${project.name}: already has photos (use --replace).`)
       continue
@@ -117,8 +114,12 @@ async function main() {
   }
 
   if (uncredited.length) {
-    console.log(`Left out, no photographer (${uncredited.length}): ${uncredited.join(', ')}.`)
-    console.log('Add one to each project (Images → Photographers), then run this again to import them.\n')
+    console.log(`${skipUncredited ? 'Left out' : 'No photographer yet'} (${uncredited.length}): ${uncredited.join(', ')}.`)
+    console.log(
+      skipUncredited
+        ? 'Add one to each project (Images → Photographers), then run this again to import them.\n'
+        : 'Their photos are imported; the admin shows them under Still needed → Photographer until one is added.\n',
+    )
   }
   if (problems.length) {
     for (const p of problems) console.error(p)

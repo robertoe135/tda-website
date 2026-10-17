@@ -268,10 +268,8 @@ export async function addProjects(payload: Payload, plans: FolderPlan[], options
       if (!hasPhotos(project) && plan.photos.length) {
         const photographers = ((changes.photographers as number[] | undefined) ?? (project.photographers ?? []).map(idOf)) as number[]
         const documentNamesOne = update && doc!.photographers.length > 0
-        if (!photographers.length && !documentNamesOne) {
-          done({ action: 'held', project: project.name, detail: 'has no photographer. Add one to the project (Images → Photographers) first.' })
-          continue
-        }
+        // No photographer yet: the photos come in anyway; the admin flags it (Still needed).
+        if (!photographers.length && !documentNamesOne) said.push('no photographer yet (flagged in the admin)')
         if (options.write) Object.assign(changes, await uploadPhotos(payload, plan, project.slug!, project.name, photographers))
         said.unshift(`${plan.photos.length} photos`)
         photosAdded = true
@@ -303,8 +301,7 @@ export async function addProjects(payload: Payload, plans: FolderPlan[], options
     if (!doc) {
       flag(where, 'name', name, 'No write-up: the project was created from the folder name. Set its real name, facts, text and photographer before publishing.')
     } else if (!doc.photographers.length && plan.photos.length) {
-      done({ action: 'held', detail: 'The document names no photographer, so its photos cannot be credited. Add "Photography: …".' })
-      continue
+      flag(where, 'photographer', name, 'The document names no photographer. Photos imported; add the credit in the admin (Still needed → Photographer).')
     }
     const fromDoc = doc ? await docData(doc, where, options.write) : undefined
     const detail = [`${plan.photos.length} photos`, ...(fromDoc?.said ?? ['no write-up: name from the folder']), plan.ready ? '' : 'not marked (ready)']
