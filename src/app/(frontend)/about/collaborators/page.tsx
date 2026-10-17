@@ -2,18 +2,20 @@ import type { Metadata } from 'next'
 
 import { AboutNav } from '@/components/AboutNav'
 import { MetaLink } from '@/components/MetaLink'
-import { filterHref } from '@/lib/projects'
 import { getCollaborators } from '@/lib/site'
 
 export const metadata: Metadata = {
   title: 'Collaborators — Tillotson Design Associates',
-  description: 'Architects Tillotson Design Associates has worked with.',
+  description: 'Architects, landscape architects and designers Tillotson Design Associates has worked with.',
   alternates: { canonical: '/about/collaborators' },
 }
 
 const LETTERS = ['#', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ']
 
-/** Architects on published projects, A to Z; each opens the portfolio filtered to that firm. */
+/**
+ * The firms marked "Show on Collaborators page" in the admin, A to Z. A firm with published
+ * projects opens the portfolio filtered to it; the others are listed by name.
+ */
 export default async function CollaboratorsPage() {
   const groups = await getCollaborators()
   return (
@@ -41,9 +43,7 @@ export default async function CollaboratorsPage() {
             </h3>
             <ul>
               {firms.map((f) => (
-                <li key={f.slug}>
-                  <MetaLink href={filterHref('architect', f.slug ?? '')}>{f.name}</MetaLink>
-                </li>
+                <li key={f.slug}>{f.href ? <MetaLink href={f.href}>{f.name}</MetaLink> : f.name}</li>
               ))}
             </ul>
           </section>

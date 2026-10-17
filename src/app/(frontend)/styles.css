@@ -325,7 +325,8 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .collaborator-list section { display: grid; grid-template-columns: 2.75rem minmax(0, 1fr); gap: 0.5rem; padding: 1.1rem 0 0.9rem; border-bottom: 1px solid #eee; scroll-margin-top: 6rem; }
 .collaborator-letter { margin: 0; font-weight: 200; font-size: 1.75rem; line-height: 1; color: var(--muted); }
 .collaborator-list ul { list-style: none; margin: 0; padding: 0; font-weight: 300; }
-.collaborator-list li a { display: block; padding: 0.45rem 0; line-height: 1.35; }
+.collaborator-list li { padding: 0.45rem 0; line-height: 1.35; }
+.collaborator-list li a { display: block; margin: -0.45rem 0; padding: 0.45rem 0; }
 
 /* Contact */
 .contact-top { display: grid; gap: 2.25rem; padding-top: 1.75rem; }
@@ -380,7 +381,8 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   .collaborator-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 3rem 2rem; margin-top: 3rem; }
   .collaborator-list section { display: block; padding: 0; border: 0; }
   .collaborator-letter { font-size: 2.5rem; margin-bottom: 0.75rem; }
-  .collaborator-list li a { padding: 0.3rem 0; }
+  .collaborator-list li { padding: 0.3rem 0; }
+  .collaborator-list li a { margin: -0.3rem 0; padding: 0.3rem 0; }
   .contact-top { grid-template-columns: 7fr 5fr; gap: 5rem; padding-top: 4.5rem; align-items: start; }
   .contact-label { margin-bottom: 1.75rem; }
   .contact-intro { font-size: 2.75rem; line-height: 1.18; letter-spacing: -0.015em; }

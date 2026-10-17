@@ -413,6 +413,10 @@ export interface Firm {
     hasNextPage?: boolean;
     totalDocs?: number;
   };
+  /**
+   * Lists this firm on About → Collaborators. Its name links to its projects in the portfolio once one is published.
+   */
+  listAsCollaborator?: boolean | null;
   normalizedName?: string | null;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
@@ -1109,6 +1113,7 @@ export interface FirmsSelect<T extends boolean = true> {
       };
   website?: T;
   projects?: T;
+  listAsCollaborator?: T;
   normalizedName?: T;
   generateSlug?: T;
   slug?: T;

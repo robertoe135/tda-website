@@ -111,11 +111,24 @@ Copies the homepage, About, contact and timeline content, word for word:
 - Homepage (draft): rows as laid out on the old site (its 24-column grid gives each row's
   layout), with the two quotes in place. The four videos it played are listed in `review.csv`
   with their old addresses; upload the originals under Videos (`docs/editing-the-homepage.md`).
-- About page (draft): one section per heading.
+- About page (draft): one section per heading. With `--photos`, each section also gets the
+  photograph the old page showed beside it (downloaded at its original size; needs the internet
+  and, for the live site, the Blob token). Sections that already have a photo keep it. Each
+  copied photo gets a review row: write a description of what it shows.
+- Collaborators: ticks **Show on Collaborators page** on every firm the old page lists (all 63).
+  A firm is found by its name or other names. The same firm under another spelling ("KPMB
+  Architecture" / "KPMB Architects") is listed under the firm on its projects, with the old
+  spelling added to its other names. A name with no firm becomes a new firm, as written. Both
+  go to review.csv. Firms with published projects link to them; the rest are listed by name.
 - Site settings: address, phone, emails, contact intro and careers text, only where empty.
 - Timeline: the year from `/timeline` on projects that have none. Where the timeline and the
   project page disagree, nothing changes and the pair goes to `review.csv`. The new
   `/timeline` page is built from each project's year, so the two can no longer drift apart.
+
+```bash
+pnpm migrate:pages --confirm-backup              # text, collaborators, homepage heights
+pnpm migrate:pages --photos --confirm-backup     # also the About photographs
+```
 
 Publish the homepage and About page in the admin after review. `--update` replaces existing
 homepage and About drafts.

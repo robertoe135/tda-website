@@ -50,7 +50,7 @@ export const Firms: CollectionConfig = {
   labels: { singular: 'Firm or client', plural: 'Firms & clients' },
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'website', 'slug'],
+    defaultColumns: ['name', 'website', 'listAsCollaborator', 'slug'],
     group: 'Reference',
     description:
       'Architects, consultants and clients. Firms that are an architect on a project get a collaborator page; consultants appear in project credits; clients are shown unless the project is confidential.',
@@ -96,6 +96,18 @@ export const Firms: CollectionConfig = {
       collection: 'projects',
       on: 'architects',
       admin: { description: 'Projects where this firm is an architect. Edit the project to change this.' },
+    },
+    {
+      name: 'listAsCollaborator',
+      label: 'Show on Collaborators page',
+      type: 'checkbox',
+      defaultValue: false,
+      index: true,
+      admin: {
+        position: 'sidebar',
+        description:
+          'Lists this firm on About → Collaborators. Its name links to its projects in the portfolio once one is published.',
+      },
     },
     normalizedNameField,
     slug('name'),
