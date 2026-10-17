@@ -302,6 +302,10 @@ export interface Project {
       }[]
     | null;
   /**
+   * Worked out from this project each time you save. Add what is listed before publishing; each item clears itself once filled in.
+   */
+  stillNeeded?: ('photos' | 'photographer' | 'category' | 'year' | 'location' | 'architect' | 'write-up')[] | null;
+  /**
    * Show on the homepage.
    */
   featured?: boolean | null;
@@ -916,6 +920,7 @@ export interface ProjectsSelect<T extends boolean = true> {
         path?: T;
         id?: T;
       };
+  stillNeeded?: T;
   featured?: T;
   generateSlug?: T;
   slug?: T;

@@ -144,6 +144,8 @@ async function main() {
       guessed++
       status = 'best guess, used'
       notes.push(`Best guess (${Math.round(match.score * 100)}%), used. Clear include if it is the wrong project.`)
+      if (match.twin && match.runnerUp)
+        notes.push(`"${match.runnerUp.name}" fits almost as well: probably the same project entered twice. Merge them in the admin.`)
     } else {
       suggested++
       status = match.accepted ? 'best guess (run with --accept-guesses)' : 'unsure: check'

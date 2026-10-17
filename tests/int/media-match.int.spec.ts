@@ -32,3 +32,15 @@ describe('folder names marketing writes', () => {
     expect(guess?.accepted).toBe(true)
   })
 })
+
+describe('one project entered twice', () => {
+  it('takes the closer of two near-identical names and says so', () => {
+    const twins = [
+      { slug: 'barrier', name: 'Hotel Barrier Fouquet’s' },
+      { slug: 'barriere', name: 'Hôtel Barrière Fouquet’s' },
+      { slug: 'other', name: 'Seattle Central Library' },
+    ]
+    const guess = guessProject('Hotel Barriere Le Fouquets', 'Restaurants', twins)
+    expect(guess).toMatchObject({ accepted: true, twin: true, candidate: { slug: 'barriere' } })
+  })
+})

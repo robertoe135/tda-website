@@ -110,6 +110,8 @@ describe('pnpm projects:add', () => {
     const projects = await payload.find({ collection: 'projects', where: { name: { like: prefix } }, draft: true, pagination: false, depth: 0 })
     const media = projects.docs.flatMap((p) => [p.heroImage, ...(p.gallery ?? []).map((g) => g.image)]).filter(Boolean)
     await payload.delete({ collection: 'projects', where: { name: { like: prefix } } })
+    // Draft history left behind by a deleted project would show up as projects with no id.
+    await payload.db.deleteVersions({ collection: 'projects', where: { 'version.name': { like: prefix } } })
     for (const m of media) await payload.delete({ collection: 'media', id: typeof m === 'object' ? m!.id : m! })
     await payload.delete({ collection: 'press', where: { title: { like: prefix } } })
     await payload.delete({ collection: 'firms', where: { name: { like: prefix } } })
@@ -219,6 +221,8 @@ describe('finished projects and folders without a write-up', () => {
     const media = projects.docs.flatMap((p) => [p.heroImage, ...(p.gallery ?? []).map((g) => g.image)]).filter(Boolean)
     await payload.delete({ collection: 'awards', where: { name: { like: prefix } } }) // an award needs its project
     await payload.delete({ collection: 'projects', where: { name: { like: prefix } } })
+    // Draft history left behind by a deleted project would show up as projects with no id.
+    await payload.db.deleteVersions({ collection: 'projects', where: { 'version.name': { like: prefix } } })
     for (const m of media) await payload.delete({ collection: 'media', id: typeof m === 'object' ? m!.id : m! })
     await payload.delete({ collection: 'photographers', where: { name: { like: prefix } } })
     await payload.delete({ collection: 'typologies', where: { name: { like: prefix } } })

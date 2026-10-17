@@ -169,7 +169,7 @@ export async function findProjectsToAdd(given: string, photos: string): Promise<
 }
 
 export type GuessCandidate = Candidate & { categories?: string[] }
-export type Guess = { candidate: GuessCandidate; score: number; exact: boolean; accepted: boolean; runnerUp?: GuessCandidate }
+export type Guess = { candidate: GuessCandidate; score: number; exact: boolean; accepted: boolean; runnerUp?: GuessCandidate; twin?: boolean }
 
 /** Two words are the same despite a typo: "Rubenstien"/"Rubenstein", "Cente"/"Center". Numbers must match. */
 export function sameWord(a: string, b: string): boolean {
@@ -185,8 +185,9 @@ export function sameWord(a: string, b: string): boolean {
  * A best guess at the project a folder belongs to, for --accept-guesses. Scores how many of the
  * folder's words appear in the project's name (typos allowed) and how much of the name they
  * cover, plus a little when the folder's category is one of the project's categories. A guess
- * is accepted only when every word of the folder is found, or the score is high, and it is
- * clearly ahead of the next project; otherwise it stays a suggestion for a person.
+ * is accepted when every word of the folder is found or the score is high, and it is ahead of
+ * the next project, or when two near-identical names (a project entered twice) both fit and the
+ * closer one is taken. Otherwise it stays a suggestion for a person.
  */
 export function guessProject(folderName: string, category: string, candidates: GuessCandidate[]): Guess | undefined {
   const exact = matchProject(folderName, candidates)
@@ -210,7 +211,18 @@ export function guessProject(folderName: string, category: string, candidates: G
     .sort((a, b) => b.score - a.score)
   const [best, second] = scored
   if (!best || best.score < 0.6) return undefined
-  const clear = !second || best.score - second.score >= 0.1
-  const accepted = clear && ((best.coverage === 1 && best.score >= 0.75) || best.score >= 0.85)
-  return { candidate: best.candidate, score: best.score, exact: false, accepted, runnerUp: second?.candidate }
+  // Ahead by enough that the folder's category alone can decide between two similar names
+  // ("The Wright" in Restaurants: The Wright at the Guggenheim, not The Wright Residence).
+  const clear = !second || best.score - second.score >= 0.05
+  // Two names this close to the folder are usually one project entered twice: take the closer.
+  // Only when the two names are nearly the same as each other ("Hotel Barrier Fouquet's" /
+  // "Hôtel Barrière Fouquet's"), never two different projects that share a word ("Museum").
+  const twin = Boolean(
+    second &&
+      best.score >= 0.85 &&
+      best.score - second.score < 0.05 &&
+      similarity(normalizeName(matchText(best.candidate.name)), normalizeName(matchText(second.candidate.name))) >= 0.85,
+  )
+  const accepted = (clear && ((best.coverage === 1 && best.score >= 0.7) || best.score >= 0.8)) || twin
+  return { candidate: best.candidate, score: best.score, exact: false, accepted, runnerUp: second?.candidate, twin }
 }

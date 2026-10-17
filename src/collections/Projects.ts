@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { authenticated } from '../access/authenticated'
 import { publishedOrAuthenticated } from '../access/publishedOrAuthenticated'
 import { fillSlug, slug } from '../fields/slug'
+import { stillNeededField } from '../fields/stillNeeded'
 
 // Project facts are structured fields, never sentences: architect, location, year and team
 // are relationships or numbers so every label on the site can link to a filtered view.
@@ -13,7 +14,7 @@ export const Projects: CollectionConfig = {
   labels: { singular: 'Project', plural: 'Projects' },
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'year', 'status', 'location', 'featured', '_status'],
+    defaultColumns: ['name', 'year', 'status', 'stillNeeded', '_status'],
     listSearchableFields: ['name', 'summary'],
   },
   defaultSort: '-year',
@@ -345,6 +346,7 @@ export const Projects: CollectionConfig = {
         },
       ],
     },
+    stillNeededField,
     {
       name: 'featured',
       type: 'checkbox',

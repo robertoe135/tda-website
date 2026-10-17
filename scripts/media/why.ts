@@ -81,7 +81,7 @@ async function main() {
     draft: true,
     pagination: false,
     depth: 1,
-    select: { name: true, slug: true, heroImage: true, gallery: true, legacyUrls: true, typologies: true, photographers: true },
+    select: { name: true, slug: true, heroImage: true, gallery: true, legacyUrls: true, typologies: true },
     populate: { typologies: { name: true } },
   })
   const live = new Set(
@@ -152,15 +152,6 @@ async function main() {
     const match = best.sure ? `sure (${best.score.toFixed(2)})` : best.score > 0.5 ? `unsure (${best.score.toFixed(2)})` : 'possible: shares a distinctive word'
     if (best.place.kind === 'blocked') {
       rows.push({ ...base, reason: best.place.reason, folder: where, photos, match, fix: best.place.fix })
-    } else if (best.sure && !p.photographers?.length) {
-      rows.push({
-        ...base,
-        reason: 'Matched, but the project has no photographer (the import skips it)',
-        folder: where,
-        photos,
-        match,
-        fix: 'Add the photographer in the admin (Images → Photographers), then pnpm media:scan --accept-guesses and pnpm media:import --write --confirm-backup.',
-      })
     } else if (best.sure) {
       // What the last scan's photos.csv says about this folder decides why nothing came in.
       const planned = plan.get(best.parts.slice(1, 3).join('/'))
