@@ -97,8 +97,8 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .project-header { text-align: center; margin: 2rem 0 1.5rem; }
 .project-title { font-weight: 400; font-size: 1.4rem; margin: 0 0 0.5rem; }
 .project-line { margin: 0; font-weight: 300; font-size: 0.7rem; }
-.project-description { max-width: 38rem; margin: 2rem auto 0; text-align: justify; hyphens: auto; font-weight: 300; font-size: 0.8rem; line-height: 1.55; }
-.project-description p { margin: 0 0 0.75rem; }
+.project-description { max-width: 38rem; margin: 2rem auto 0; text-align: justify; hyphens: auto; font-weight: 300; font-size: 0.95rem; line-height: 1.65; }
+.project-description p { margin: 0 0 0.9rem; }
 .press ul { list-style: none; margin: 0; padding: 1.5rem 0; display: grid; gap: 1.5rem; text-align: center; }
 .press-title { margin: 0; font-weight: 300; font-size: 0.9rem; }
 .press-outlet { margin: 0.15rem 0 0; font-weight: 300; font-size: 0.65rem; }
@@ -151,8 +151,8 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 /* Same column as the description, so facts, Project Info and the text line up. */
 .fact-band { max-width: 38rem; margin: 2rem auto 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .facts-key { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem 1.5rem; margin: 0; padding: 1.25rem 0; }
-.fact dt { font-size: 0.65rem; font-weight: 400; color: var(--muted); letter-spacing: 0.04em; }
-.fact dd { margin: 0.15rem 0 0; font-weight: 300; font-size: 0.85rem; line-height: 1.4; }
+.fact dt { font-size: 0.72rem; font-weight: 400; color: var(--muted); letter-spacing: 0.04em; }
+.fact dd { margin: 0.15rem 0 0; font-weight: 300; font-size: 0.95rem; line-height: 1.45; }
 /* Faint underline so a linked name (current staff, a firm) reads differently from plain text. */
 .fact dd a, .project-info-body a { text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
 .fact dd a:hover, .project-info-body a:hover { text-decoration-color: currentColor; }
@@ -169,7 +169,7 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .project-info > summary::-webkit-details-marker { display: none; }
 .project-info-sign::before { content: '+'; font-weight: 300; font-size: 1.1rem; }
 .project-info[open] .project-info-sign::before { content: '\2212'; }
-.project-info-body { display: grid; gap: 1rem 2rem; padding: 0 0 1.25rem; font-weight: 300; font-size: 0.8rem; }
+.project-info-body { display: grid; gap: 1rem 2rem; padding: 0 0 1.25rem; font-weight: 300; font-size: 0.9rem; }
 .project-info-body p { margin: 0 0 0.35rem; }
 .project-info-body .project-info-heading { margin-top: 0.75rem; font-weight: 400; }
 .project-info-body > div > .project-info-heading:first-child { margin-top: 0; }
