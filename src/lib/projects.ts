@@ -32,7 +32,7 @@ export type ProjectCard = {
 
 const isObject = <T>(value: unknown): value is T => typeof value === 'object' && value !== null
 
-const cardImage = (m: Media) => {
+export const cardImage = (m: Media) => {
   const sizes = [m.sizes?.card, m.sizes?.gallery].filter((x): x is { url: string; width: number } => Boolean(x?.url && x?.width))
   return { src: m.sizes?.card?.url ?? m.url!, srcSet: sizes.map((x) => `${x.url} ${x.width}w`).join(', ') || undefined, alt: m.alt }
 }

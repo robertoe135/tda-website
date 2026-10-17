@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation'
 import { cache } from 'react'
 
 import { AboutNav } from '@/components/AboutNav'
-import { getPayloadClient } from '@/lib/projects'
+import { cardImage, getPayloadClient } from '@/lib/projects'
 import type { Media } from '@/payload-types'
 
 type Props = { params: Promise<{ slug: string }> }
@@ -30,8 +30,8 @@ const getPerson = cache(async (slug: string) => {
     where: { 'team.person': { equals: person.id } },
     pagination: false,
     sort: ['-year', 'name'],
-    depth: 0,
-    select: { name: true, slug: true, year: true, team: true },
+    depth: 1,
+    select: { name: true, slug: true, year: true, team: true, heroImage: true },
   })
   return { person, projects: projects.docs }
 })
@@ -56,28 +56,38 @@ export default async function PersonPage({ params }: Props) {
   return (
     <article className="person">
       <AboutNav />
-      <header className="project-header">
-        <h1 className="project-title">{person.name}</h1>
-        {person.title && <p className="project-line">{person.title}</p>}
+      <header className="person-header">
+        <h1 className="person-name">{person.name}</h1>
+        {person.title && <p className="person-title">{person.title}</p>}
       </header>
-      {headshot && (
-        <div className="person-headshot">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={headshot.sizes?.gallery?.url ?? headshot.url!} alt={headshot.alt} width={headshot.width ?? undefined} height={headshot.height ?? undefined} />
+
+      {(headshot || person.bio) && (
+        <div className="person-intro">
+          {headshot && (
+            <div className="person-headshot">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={headshot.sizes?.gallery?.url ?? headshot.url!} alt={headshot.alt} width={headshot.width ?? undefined} height={headshot.height ?? undefined} />
+            </div>
+          )}
+          {/* The bio only when the person has approved one; never written for them. */}
+          {person.bio && (
+            <section className="person-bio" aria-labelledby="person-bio">
+              <h2 id="person-bio" className="person-section-head">
+                About
+              </h2>
+              <RichText data={person.bio} />
+            </section>
+          )}
         </div>
       )}
-      {/* The bio only when the person has approved one; never written for them. */}
-      {person.bio && (
-        <div className="project-description">
-          <RichText data={person.bio} />
-        </div>
-      )}
+
       {projects.length > 0 && (
         <section className="person-projects" aria-labelledby="person-projects">
-          <h2 id="person-projects" className="section-heading">
-            Projects
-          </h2>
-          <ul>
+          <div className="person-section-head person-projects-head">
+            <h2 id="person-projects">Projects</h2>
+            <span>{projects.length}</span>
+          </div>
+          <ul className="person-project-grid">
             {projects.map((p) => {
               const roles = [
                 ...new Set(
@@ -86,12 +96,19 @@ export default async function PersonPage({ params }: Props) {
                     .map((t) => ROLE_LABEL[t.role]),
                 ),
               ]
+              const image = typeof p.heroImage === 'object' && p.heroImage?.url ? cardImage(p.heroImage as Media) : undefined
               return (
                 <li key={p.id}>
-                  <Link href={`/projects/${p.slug}`}>{p.name}</Link>
-                  <span className="person-project-meta">
-                    {[p.year, roles.join(', ')].filter(Boolean).join(' · ')}
-                  </span>
+                  <Link href={`/projects/${p.slug}`}>
+                    <div className="person-project-image">
+                      {image && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={image.src} srcSet={image.srcSet} sizes="(min-width: 768px) 25vw, 50vw" alt="" loading="lazy" />
+                      )}
+                    </div>
+                    <h3 className="person-project-name">{p.name}</h3>
+                    <span className="person-project-meta">{[p.year, roles.join(', ')].filter(Boolean).join(' · ')}</span>
+                  </Link>
                 </li>
               )
             })}

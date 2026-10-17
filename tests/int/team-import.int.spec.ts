@@ -43,10 +43,29 @@ describe('team CSV', () => {
       ['[Person B]', 'principal', true],
       ['[Person A]', 'designer', false],
     ])
-    expect(problems.map((p) => p.line)).toEqual([5, 6])
+    // Line 5 has no person: a row left empty is skipped, not an error. Line 6's role is unknown.
+    expect(problems.map((p) => p.line)).toEqual([6])
   })
 
   it('refuses a file without the required columns', () => {
     expect(planTeams(parseCsv('project,name\nx,y')).problems[0].message).toMatch(/"person"/)
+  })
+
+  it('reads a filled-in worksheet: extra columns ignored, rows left empty skipped', () => {
+    const sheet = [
+      'project,website name,year,live,person,role,former staff,note',
+      'the-shed,The Shed,2019,yes,Ann Bell,Principal in Charge,,',
+      'the-shed,The Shed,2019,yes,,Project Manager,,',
+      'the-shed,The Shed,2019,yes,Cy Dee,Designer,yes,',
+      'the-shed,The Shed,2019,yes,,Designer,,',
+      'untouched-project,Untouched,2020,no,,Principal in Charge,,',
+    ].join('\n')
+    const { teams, problems } = planTeams(parseCsv(sheet))
+    expect(problems).toEqual([])
+    expect([...teams.keys()]).toEqual(['slug:the-shed']) // a project left blank keeps its team
+    expect(teams.get('slug:the-shed')!.map((c) => [c.person, c.role, c.former])).toEqual([
+      ['Ann Bell', 'principal', false],
+      ['Cy Dee', 'designer', true],
+    ])
   })
 })

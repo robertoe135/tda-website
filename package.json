@@ -28,6 +28,7 @@
     "migrate:people": "tsx scripts/migrate/people.ts",
     "migrate:check-redirects": "tsx scripts/migrate/check-redirects.ts",
     "team:import": "tsx scripts/team/import.ts",
+    "team:worksheet": "tsx scripts/team/worksheet.ts",
     "media:inventory": "tsx scripts/media/inventory.ts",
     "media:scan": "tsx scripts/media/scan.ts",
     "media:import": "tsx scripts/media/import.ts",

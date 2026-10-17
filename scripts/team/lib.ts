@@ -5,6 +5,8 @@
 
 export type TeamRole = 'principal' | 'project-manager' | 'designer'
 export const ROLE_ORDER: TeamRole[] = ['principal', 'project-manager', 'designer']
+/** As written in the CSV (and read back by parseRole). */
+export const ROLE_LABELS: Record<TeamRole, string> = { principal: 'Principal in Charge', 'project-manager': 'Project Manager', designer: 'Designer' }
 
 export const COLUMNS = ['project', 'person', 'role', 'former staff', 'note'] as const
 
@@ -100,11 +102,12 @@ export function planTeams(rows: string[][]): { teams: Map<string, Credit[]>; ref
     const get = (c: (typeof COLUMNS)[number]) => (index[c] >= 0 ? (cells[index[c]] ?? '').trim() : '')
     const ref = parseProjectRef(get('project'))
     const person = get('person').replace(/\s+/g, ' ')
+    // A worksheet row nobody filled in (no person) is skipped; a project left blank keeps its team.
+    if (!person) return
     const role = parseRole(get('role'))
     if (!ref) problems.push({ line, message: `Project "${get('project')}" is not a slug or a project address.` })
-    if (!person) problems.push({ line, message: 'Person is empty.' })
     if (!role) problems.push({ line, message: `Role "${get('role')}" is not Principal in Charge, Project Manager or Designer.` })
-    if (!ref || !person || !role) return
+    if (!ref || !role) return
     const key = 'slug' in ref ? `slug:${ref.slug}` : `path:${ref.legacyPath}`
     refs.set(key, ref)
     const team = teams.get(key) ?? []
