@@ -57,3 +57,25 @@ Against the production database, take a backup in Neon first and add `--confirm-
 
 Later, the same CSV can come from a manual, one-way export of the internal TDA app's project
 roles. This script never connects to that app.
+
+## Original headshots (`pnpm team:headshots`)
+
+The old site's headshots are small web copies. To replace them with the original photographs:
+
+```bash
+pnpm team:headshots "/Users/you/Desktop/Team photos"                         # list the matches
+pnpm team:headshots "/Users/you/Desktop/Team photos" --write --publish --confirm-backup
+```
+
+- Looks through the folder and its subfolders for JPEG, PNG, TIFF or WebP photos. HEIC, PSD and
+  RAW files are counted and skipped: export JPEGs.
+- A photo belongs to a person when its file name, or a folder it sits in, holds their first name
+  and surname, in either order and any spelling of accents: `Jane Smith.jpg`, `Smith_Jane.jpg`,
+  `Jane Smith/IMG_0042.jpg`. Either part of a double surname is enough.
+- Initials work too (`JS.jpg`, `TDA_JS.jpg`), but only when no one else has them; those rows say
+  "initials: check".
+- Several photos for one person: the largest is used. A person whose current headshot is as
+  large keeps it, so running it twice changes nothing.
+- Photos are scaled to 3000 px and stripped of camera data before upload. The old headshot
+  stays in Images. Without `--publish` the new photo is saved as a draft.
+- Every match, and every photo that matched no one, is in `scripts/team/out/headshots.csv`.
