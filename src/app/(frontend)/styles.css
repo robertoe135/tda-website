@@ -398,17 +398,14 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   .collaborator-list { columns: 3; }
   .contact-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .home { gap: 4.5rem; padding-top: 1.5rem; }
-  .home-row { gap: 2rem; }
-  .home-row > *, .home-row[data-layout='three'] > :nth-child(n + 2) { grid-column: auto; }
-  .home-row[data-layout='one'] { grid-template-columns: minmax(0, 1fr); }
+  /* A row is a line of items, each its share (--w) of the row's width in its layout (--n
+     places), so a row missing a project keeps the others at their size, centred. */
+  .home-row { display: flex; justify-content: center; align-items: center; gap: var(--home-gap); }
+  .home-row > * { flex: 0 0 calc(var(--w, 1) * (100% - (var(--n, 1) - 1) * var(--home-gap))); }
   .home-row[data-layout='one'] .tile-image { aspect-ratio: 16 / 9; }
   .home-row[data-layout='two'] .tile-image { aspect-ratio: 3 / 2; }
-  .home-row[data-layout='three'] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .home-row[data-layout='three'] .tile-image,
   .home-row[data-layout='three'] > :nth-child(n + 2) .tile-image { aspect-ratio: 4 / 3; }
-  /* 13 + 9 columns; aspect ratios chosen so both items end at the same height. */
-  .home-row[data-layout='wide-narrow'] { grid-template-columns: 13fr 9fr; }
-  .home-row[data-layout='narrow-wide'] { grid-template-columns: 9fr 13fr; }
   .home-row[data-layout='wide-narrow'] > :first-child .tile-image,
   .home-row[data-layout='narrow-wide'] > :last-child .tile-image { aspect-ratio: 16 / 9; }
   .home-row[data-layout='wide-narrow'] > :last-child .tile-image,
@@ -418,8 +415,9 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   .home-row[data-height] { container-type: inline-size; }
   .home-row[data-height] .tile-image,
   .home-row[data-height] > * .tile-image { width: 100%; aspect-ratio: auto; height: calc(var(--h) * 100cqi); }
-  .home-quote { padding: 0 1.5rem; }
-  .home-quote blockquote { font-size: 1.85rem; line-height: 1.34; }
+  .home { --home-gap: 0.75rem; }
+  .home-quote { padding: 0 2rem; }
+  .home-quote blockquote { font-size: 1.4rem; line-height: 1.4; }
   .press ul { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .other-projects ul { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .slideshow { margin: 0; }
@@ -473,3 +471,20 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   .field-row { grid-template-columns: 1fr 1fr; }
   .footer-end { justify-items: end; }
 }
+
+/* Homepage on larger screens, as on the old site: wider than other pages (up to 1500px, with a
+   4vw margin), and the project name over the photo when pointed at rather than under it. */
+@media (min-width: 1080px) {
+  .home { --home-w: min(1500px, 92vw); width: var(--home-w); margin-left: calc(50% - var(--home-w) / 2); }
+}
+@media (min-width: 720px) and (hover: hover) {
+  .home-tile .tile { position: relative; }
+  .home-tile .tile-name {
+    position: absolute; left: 0; right: 0; bottom: 0; margin: 0; padding: 2.5rem 1rem 0.85rem;
+    background: linear-gradient(to top, rgb(0 0 0 / 0.55), rgb(0 0 0 / 0)); color: #fff; font-weight: 400;
+    opacity: 0; transition: opacity 0.3s ease;
+  }
+  .home-tile .tile:hover .tile-name, .home-tile .tile:focus-visible .tile-name { opacity: 1; text-decoration: none; }
+  .home-tile .tile:hover .tile-image img { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) { .home-tile .tile-name { transition: none; } }

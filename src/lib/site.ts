@@ -20,10 +20,20 @@ export async function getAbout() {
 
 export type HomeMedia = { src: string; srcSet?: string; alt: string }
 export type HomeVideo = { src: string; type: string; poster?: string }
-export type HomeTile = { kind: 'project'; id?: string | null; project: ProjectCard; image?: HomeMedia; video?: HomeVideo }
-export type HomeQuote = { kind: 'quote'; id?: string | null; text: string; attribution: string }
+/** `share`: the item's part of the row's width in its layout (a third, 13/22…), kept when others drop out. */
+export type HomeTile = { kind: 'project'; id?: string | null; share: number; project: ProjectCard; image?: HomeMedia; video?: HomeVideo }
+export type HomeQuote = { kind: 'quote'; id?: string | null; share: number; text: string; attribution: string }
 /** `height`: photo height on larger screens as a share of the row's width (Homepage → row Height). */
-export type HomeRowData = { id?: string | null; layout: RowLayout; height?: number; items: (HomeTile | HomeQuote)[] }
+export type HomeRowData = { id?: string | null; layout: RowLayout; columns: number; height?: number; items: (HomeTile | HomeQuote)[] }
+
+/** Each place's share of the row's width, by layout: the old homepage's 24-column grid (13 + 9). */
+const SHARES: Record<RowLayout, number[]> = {
+  one: [1],
+  two: [1 / 2, 1 / 2],
+  three: [1 / 3, 1 / 3, 1 / 3],
+  'wide-narrow': [13 / 22, 9 / 22],
+  'narrow-wide': [9 / 22, 13 / 22],
+}
 
 const imageOf = (m: unknown): HomeMedia | undefined => {
   if (!isObject<Media>(m) || !m.url) return undefined
@@ -47,19 +57,22 @@ export async function getHomeRows(): Promise<HomeRowData[]> {
   ])
   const byId = new Map(projects.map((p) => [p.id, p]))
   return (home.rows ?? []).flatMap((row): HomeRowData[] => {
-    const items = (row.items ?? []).flatMap((item): (HomeTile | HomeQuote)[] => {
-      if (item.blockType === 'quote') return [{ kind: 'quote', id: item.id, text: item.text, attribution: item.attribution }]
+    const shares = SHARES[row.layout] ?? SHARES.three
+    const items = (row.items ?? []).flatMap((item, i): (HomeTile | HomeQuote)[] => {
+      const share = shares[i] ?? shares[shares.length - 1]
+      if (item.blockType === 'quote') return [{ kind: 'quote', id: item.id, share, text: item.text, attribution: item.attribution }]
       const id = typeof item.project === 'object' ? item.project.id : item.project
       const project = byId.get(id)
       if (!project) return []
       const video = isObject<Video>(item.video) && item.video.url
         ? { src: item.video.url, type: item.video.mimeType ?? 'video/mp4', poster: imageOf(item.video.poster)?.src }
         : undefined
-      return [{ kind: 'project', id: item.id, project, image: imageOf(item.image) ?? project.image, video }]
+      return [{ kind: 'project', id: item.id, share, project, image: imageOf(item.image) ?? project.image, video }]
     })
     if (!items.length) return []
-    const layout = items.length === 1 ? 'one' : items.length === 2 && row.layout === 'three' ? 'two' : row.layout
-    return [{ id: row.id, layout, height: row.height ? ROW_HEIGHTS[row.height]?.share : undefined, items }]
+    // A row whose project is unpublished keeps its layout: the others stay their size, centred,
+    // rather than stretching across the page.
+    return [{ id: row.id, layout: row.layout, columns: shares.length, height: row.height ? ROW_HEIGHTS[row.height]?.share : undefined, items }]
   })
 }
 

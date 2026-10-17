@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useRef, useState } from 'react'
+import { type CSSProperties, useEffect, useRef, useState } from 'react'
 
 /**
  * A project tile with a muted looping video, as on the old homepage. It plays only when the
@@ -15,12 +15,14 @@ export function VideoTile({
   src,
   type,
   poster,
+  style,
 }: {
   href: string
   name: string
   src: string
   type: string
   poster?: string
+  style?: CSSProperties
 }) {
   const ref = useRef<HTMLVideoElement>(null)
   const [playing, setPlaying] = useState(false)
@@ -41,7 +43,7 @@ export function VideoTile({
   }
 
   return (
-    <div className="home-tile">
+    <div className="home-tile" style={style}>
       <Link href={href} className="tile">
         <div className="tile-image">
           <video

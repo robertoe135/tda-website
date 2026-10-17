@@ -26,11 +26,11 @@ export default async function HomePage() {
             className="home-row"
             data-layout={row.layout}
             data-height={row.height ? '' : undefined}
-            style={row.height ? ({ '--h': row.height } as CSSProperties) : undefined}
+            style={{ '--n': row.columns, ...(row.height ? { '--h': row.height } : {}) } as CSSProperties}
           >
             {row.items.map((item, i) =>
               item.kind === 'quote' ? (
-                <figure key={item.id ?? i} className="home-quote">
+                <figure key={item.id ?? i} className="home-quote" style={{ '--w': item.share } as CSSProperties}>
                   <blockquote>&ldquo;{item.text}&rdquo;</blockquote>
                   <figcaption>{item.attribution}</figcaption>
                 </figure>
@@ -53,9 +53,10 @@ export default async function HomePage() {
 function Tile({ item, eager }: { item: HomeTile; eager: boolean }) {
   const { project, image, video } = item
   const href = `/projects/${project.slug}`
-  if (video) return <VideoTile href={href} name={project.name} src={video.src} type={video.type} poster={video.poster ?? image?.src} />
+  const style = { '--w': item.share } as CSSProperties
+  if (video) return <VideoTile href={href} name={project.name} src={video.src} type={video.type} poster={video.poster ?? image?.src} style={style} />
   return (
-    <div className="home-tile">
+    <div className="home-tile" style={style}>
       <Link href={href} className="tile">
         <div className="tile-image">
           {image && (
