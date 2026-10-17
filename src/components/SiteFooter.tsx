@@ -13,7 +13,8 @@ export async function SiteFooter() {
     <footer className="site-footer">
       <div>
         <Link href="/contact" className="footer-name">
-          Tillotson Design Associates
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/tda-logo.svg" alt="Tillotson Design Associates" width={1000} height={414} className="footer-logo" />
         </Link>
         {address?.lines.map((l) => (
           <span key={l} className="footer-line">

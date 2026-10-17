@@ -33,6 +33,18 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    // TDA's brand in the admin: wordmark, initials and DM Sans (styles in app/(payload)/custom.scss).
+    meta: {
+      titleSuffix: ' · TDA website',
+      icons: [{ rel: 'icon', type: 'image/svg+xml', url: '/admin-icon.svg' }],
+    },
+    components: {
+      graphics: {
+        Logo: '/components/admin/Logo',
+        Icon: '/components/admin/Icon',
+      },
+      beforeLogin: ['/components/admin/BeforeLogin'],
+    },
   },
   collections: [Projects, People, Media, Videos, Awards, Press, Typologies, Locations, Firms, Photographers, CreditRoles, Leads, Users],
   globals: [Home, About, SiteSettings],

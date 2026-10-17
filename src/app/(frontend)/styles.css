@@ -34,13 +34,16 @@ a:hover { text-decoration: underline; }
   display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem;
   padding: var(--gutter) var(--gutter) 0.75rem; border-bottom: 1px solid var(--line);
 }
-.site-name { font-weight: 400; color: var(--muted); }
+.site-name { display: block; line-height: 0; }
+.site-logo { display: block; height: 44px; width: auto; }
+.footer-logo { display: block; height: 30px; width: auto; margin-bottom: 0.6rem; }
 .site-nav { display: flex; gap: 1.5rem; text-transform: lowercase; font-weight: 300; font-size: 0.8rem; }
 .site-nav a[aria-current='page'] { text-decoration: underline; }
 /* Phones: name on the first line, the menu on the second, so neither wraps. */
 @media (max-width: 559px) {
   .site-header { flex-wrap: wrap; row-gap: 0.4rem; padding-top: 0.75rem; padding-bottom: 0.6rem; }
   .site-name { flex: 1 0 100%; }
+  .site-logo { height: 34px; }
   .site-nav { gap: 1.25rem; }
 }
 
@@ -123,7 +126,7 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
    never taller than the window minus the site header and caption line, so the whole photo is
    always in view; a photo that hits that limit narrows and is centred, and the arrows and
    caption line follow its edges. Size eases between photos of different shapes. */
-.slideshow { margin: 0 calc(-1 * var(--gutter)); --slideshow-chrome: 8.5rem; --slide-w: min(100%, calc((100svh - var(--slideshow-chrome)) * var(--r, 1.5))); }
+.slideshow { margin: 0 calc(-1 * var(--gutter)); --slideshow-chrome: 9.5rem; --slide-w: min(100%, calc((100svh - var(--slideshow-chrome)) * var(--r, 1.5))); }
 .slideshow:focus-visible { outline-offset: -2px; }
 .slideshow-frame {
   position: relative; overflow: hidden; touch-action: pan-y;
@@ -244,8 +247,8 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 /* Timeline, picture first: each year is a band of photographs at one height (--row), each
    keeping its own proportions (--r, set per photo) and growing to fill the row. The year is small
    and sticks below the site header while its band scrolls past. */
-.timeline { --row: 150px; --shot-gap: 6px; --year-top: 4.75rem; }
-.timeline-year { border-top: 1px solid var(--line); padding: 0 0 1.75rem; scroll-margin-top: 5rem; }
+.timeline { --row: 150px; --shot-gap: 6px; --year-top: 5.25rem; }
+.timeline-year { border-top: 1px solid var(--line); padding: 0 0 1.75rem; scroll-margin-top: 5.75rem; }
 .timeline-heading {
   position: sticky; top: var(--year-top); z-index: 1; background: var(--bg);
   margin: 0; padding: 0.6rem 0; font-weight: 400; font-size: 0.9rem; line-height: 1.2;
@@ -359,7 +362,7 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   .page-title-large { font-size: 3.25rem; margin-top: 3rem; }
   .page-head { padding-top: 3rem; padding-bottom: 1.5rem; }
   .year-nav { width: auto; max-width: 48rem; flex-wrap: wrap; justify-content: flex-end; gap: 0.1rem 0.9rem; overflow: visible; }
-  .timeline { --row: 220px; --shot-gap: 8px; --year-top: 4.4rem; }
+  .timeline { --row: 220px; --shot-gap: 8px; --year-top: 4.65rem; }
   .timeline-year { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: 1.25rem; padding: 0.9rem 0 2.5rem; }
   .timeline-heading { align-self: start; padding: 0; background: none; }
   .about-lede { font-size: 3.25rem; margin-top: 4.5rem; line-height: 1.12; }

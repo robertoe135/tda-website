@@ -1,0 +1,26 @@
+// TDA's brand in the admin: DM Sans, as on the website, and the logo (public/tda-logo.svg).
+// Payload's own colours are already greys; only the type and the logo change.
+:root {
+  --font-body: 'DM Sans Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+.tda-logo {
+  display: block;
+  width: 240px;
+  height: auto;
+}
+
+.tda-icon {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  color: #686868;
+}
+
+.tda-before-login {
+  font-family: var(--font-body);
+  font-weight: 300;
+  color: var(--theme-elevation-500);
+  margin: 0 0 1.5rem;
+}
