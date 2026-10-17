@@ -43,6 +43,37 @@ export function parsePhotoPath(relative: string): PhotoPath | undefined {
   }
 }
 
+/**
+ * Abbreviations marketing uses in folder names, read as the words they stand for when matching
+ * (never written anywhere): "NYU John A. Paulson Center" matches "New York University John A.
+ * Paulson Center", "Rice University Music & PAC" matches "...Performing Arts Center".
+ */
+const ABBREVIATIONS: Record<string, string> = {
+  nyu: 'new york university',
+  nyc: 'new york city',
+  ny: 'new york',
+  us: 'united states',
+  usa: 'united states',
+  moma: 'museum of modern art',
+  pac: 'performing arts center',
+  dma: 'dallas museum of art',
+  hq: 'headquarters',
+  ctr: 'center',
+}
+
+/** A name ready for matching: accents removed, "&" as "and", abbreviations spelled out. */
+export const matchText = (name: string) =>
+  name
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\bU\.\s?S\.(?:\s?A\.)?/g, 'US')
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean)
+    .map((w) => ABBREVIATIONS[w] ?? w)
+    .join(' ')
+
 export type Candidate = { slug: string; name: string }
 export type Match = { candidate: Candidate; score: number; exact: boolean }
 
@@ -55,10 +86,11 @@ export function matchProject(folderName: string, candidates: Candidate[]): Match
   const key = normalizeName(folderName)
   const exact = candidates.find((c) => normalizeName(c.name) === key || c.slug === key)
   if (exact) return { candidate: exact, score: 1, exact: true }
-  const folderTokens = tokens(folderName)
+  const folderTokens = tokens(matchText(folderName))
+  const spelled = normalizeName(matchText(folderName))
   let best: Match | undefined
   for (const candidate of candidates) {
-    const score = Math.max(similarity(normalizeName(candidate.name), key), jaccard(tokens(candidate.name), folderTokens))
+    const score = Math.max(similarity(normalizeName(matchText(candidate.name)), spelled), jaccard(tokens(matchText(candidate.name)), folderTokens))
     if (!best || score > best.score) best = { candidate, score, exact: false }
   }
   return best && best.score >= 0.6 ? best : undefined
@@ -159,19 +191,19 @@ export function sameWord(a: string, b: string): boolean {
 export function guessProject(folderName: string, category: string, candidates: GuessCandidate[]): Guess | undefined {
   const exact = matchProject(folderName, candidates)
   if (exact?.exact) return { candidate: exact.candidate as GuessCandidate, score: 1, exact: true, accepted: true }
-  const words = [...tokens(folderName)]
+  const words = [...tokens(matchText(folderName))]
   if (!words.length) return undefined
   const sameCategory = (c: GuessCandidate) =>
     (c.categories ?? []).some((n) => categoryKey(n) === categoryKey(category))
   const scored = candidates
     .map((candidate) => {
-      const theirs = [...tokens(candidate.name)]
+      const theirs = [...tokens(matchText(candidate.name))]
       if (!theirs.length) return { candidate, score: 0, coverage: 0 }
       const found = words.filter((w) => theirs.some((t) => sameWord(w, t))).length
       const used = theirs.filter((t) => words.some((w) => sameWord(w, t))).length
       const coverage = found / words.length
       const wordScore = 0.7 * coverage + 0.3 * (used / theirs.length)
-      const spelling = similarity(normalizeName(folderName), normalizeName(candidate.name))
+      const spelling = similarity(normalizeName(matchText(folderName)), normalizeName(matchText(candidate.name)))
       const score = Math.min(1, Math.max(wordScore, spelling) + (sameCategory(candidate) ? 0.05 : 0))
       return { candidate, score, coverage }
     })
