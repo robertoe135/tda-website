@@ -72,8 +72,19 @@ pnpm team:headshots "/Users/you/Desktop/Team photos" --write --publish --confirm
 - A photo belongs to a person when its file name, or a folder it sits in, holds their first name
   and surname, in either order and any spelling of accents: `Jane Smith.jpg`, `Smith_Jane.jpg`,
   `Jane Smith/IMG_0042.jpg`. Either part of a double surname is enough.
-- Initials work too (`JS.jpg`, `TDA_JS.jpg`), but only when no one else has them; those rows say
-  "initials: check".
+- A first name or initials work too (`TDA_Shan0157-C.jpg`, `ST 1 V2 No BG.png`, `SBH.png`), but
+  only when no one else has them; those rows say "first name: check" or "initials: check".
+  Labels such as No BG, FS, LS, Temporary, copy, DSC and numbers are ignored.
+- Nicknames and shared first names (Gaby, Jen, two Marias) are left for you. Open
+  `scripts/team/out/headshots.csv`, type the file name in the `file` column of each person, save
+  it, and run with `--map`: the list decides, even when the current photo is as large. A file
+  listed for two people, a name not in the admin or a file not in the folder is reported and
+  skipped. The list is never overwritten; the check goes to `headshots-checked.csv`.
+
+  ```bash
+  pnpm team:headshots "<folder>" --map scripts/team/out/headshots.csv
+  pnpm team:headshots "<folder>" --map scripts/team/out/headshots.csv --write --publish --confirm-backup
+  ```
 - Several photos for one person: the largest is used. A person whose current headshot is as
   large keeps it, so running it twice changes nothing.
 - Photos are scaled to 3000 px and stripped of camera data before upload. The old headshot

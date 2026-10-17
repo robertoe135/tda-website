@@ -4,6 +4,7 @@
  *   pnpm team:headshots "/Users/me/Desktop/Team photos"                  # list the matches
  *   pnpm team:headshots "<folder>" --write --confirm-backup              # upload, save as drafts
  *   pnpm team:headshots "<folder>" --write --publish --confirm-backup    # and publish them
+ *   pnpm team:headshots "<folder>" --map headshots.csv                  # use a list you filled in
  *
  * Looks through the folder and its subfolders for photos (JPEG, PNG, TIFF, WebP) and matches each
  * to a person by first and last name in the file or folder name (either order), or by initials
@@ -27,7 +28,8 @@ import config from '../../src/payload.config'
 import { csv } from '../migrate/lib'
 import { assertSafeTarget, uploadPhoto } from '../media/upload'
 
-import { matchHeadshots } from './headshots-lib'
+import { matchesFromList, matchHeadshots } from './headshots-lib'
+import { parseCsv } from './lib'
 
 const IMAGE = /\.(jpe?g|png|tiff?|webp)$/i
 const OUT = path.join(path.dirname(new URL(import.meta.url).pathname), 'out', 'headshots.csv')
@@ -49,7 +51,7 @@ async function main() {
   const write = args.includes('--write')
   const publish = args.includes('--publish')
   if (!folder) {
-    console.error('Usage: pnpm team:headshots "<folder of photos>" [--write] [--publish] [--confirm-backup]')
+    console.error('Usage: pnpm team:headshots "<folder of photos>" [--map list.csv] [--write] [--publish] [--confirm-backup]')
     process.exit(1)
   }
   if (write) assertSafeTarget(args.includes('--confirm-backup'))
@@ -66,7 +68,22 @@ async function main() {
     depth: 1,
     select: { name: true, slug: true, headshot: true, isCurrent: true },
   })
-  const { matches, unmatched } = matchHeadshots(photos, people.docs)
+  // A list someone filled in (person, file) decides; otherwise the names in the files do.
+  const mapPath = args.includes('--map') ? args[args.indexOf('--map') + 1] : undefined
+  let listed = false
+  let problems: string[] = []
+  let { matches, unmatched } = matchHeadshots(photos, people.docs)
+  if (mapPath) {
+    const [header, ...lines] = parseCsv(await readFile(mapPath, 'utf8'))
+    const col = (n: string) => header.map((h) => h.trim().toLowerCase()).indexOf(n)
+    if (col('person') < 0 || col('file') < 0) throw new Error(`${mapPath} needs a "person" and a "file" column.`)
+    const list = matchesFromList(lines.map((l) => ({ person: l[col('person')] ?? '', file: l[col('file')] ?? '' })), people.docs, photos)
+    const chosen = new Set(list.matches.map((m) => m.file))
+    matches = list.matches
+    unmatched = photos.filter((f) => !chosen.has(f))
+    problems = list.problems
+    listed = true
+  }
 
   // Per person: the largest matching photo.
   const sized = await Promise.all(matches.map(async (m) => ({ ...m, bytes: (await stat(path.join(folder, m.file))).size })))
@@ -93,9 +110,10 @@ async function main() {
     }
     const meta = await sharp(original).metadata()
     const newSize = meta.width && meta.height ? `${meta.width}×${meta.height}` : '?'
-    const larger = !current?.width || (meta.width ?? 0) * (meta.height ?? 0) > current.width * (current.height ?? current.width)
+    // A photo someone chose is used even when the current one is as large.
+    const larger = listed || !current?.width || (meta.width ?? 0) * (meta.height ?? 0) > current.width * (current.height ?? current.width)
     const action = !larger ? 'kept: current photo is as large' : write ? (publish ? 'replaced, published' : 'replaced, draft') : 'would replace'
-    rows.push({ person: person.name, action, file: m.file, by: m.by === 'initials' ? 'initials: check' : 'name', new: newSize, current: currentSize })
+    rows.push({ person: person.name, action, file: m.file, by: m.by === 'initials' || m.by === 'first name' ? `${m.by}: check` : m.by, new: newSize, current: currentSize })
     if (!larger || !write) continue
     const media = await uploadPhoto(payload, key, original, { alt: person.name })
     await payload.update({
@@ -106,17 +124,24 @@ async function main() {
     })
     replaced++
   }
-  for (const file of unmatched) rows.push({ person: '', action: 'matched no one (or two people)', file, by: '', new: '', current: '' })
+  for (const file of unmatched) rows.push({ person: '', action: listed ? 'not on your list' : 'matched no one (or two people)', file, by: '', new: '', current: '' })
 
-  await mkdir(path.dirname(OUT), { recursive: true })
-  await writeFile(OUT, csv(rows, ['person', 'action', 'file', 'by', 'new', 'current']))
+  // Never write over the list that was read.
+  const out = mapPath && path.resolve(mapPath) === OUT ? OUT.replace(/\.csv$/, '-checked.csv') : OUT
+  await mkdir(path.dirname(out), { recursive: true })
+  await writeFile(out, csv(rows, ['person', 'action', 'file', 'by', 'new', 'current']))
 
   const count = (a: string) => rows.filter((r) => String(r.action).startsWith(a)).length
   console.log(`${photos.length} photos in the folder${other.length ? ` (${other.length} HEIC/PSD/RAW files skipped: export JPEGs)` : ''}.`)
-  console.log(`${best.size} people matched (${[...best.values()].filter((m) => m.by === 'initials').length} by initials: check those).`)
+  const loose = [...best.values()].filter((m) => m.by === 'initials' || m.by === 'first name').length
+  console.log(`${best.size} people matched${listed ? ' from your list' : ''}${loose ? ` (${loose} by first name or initials: check those)` : ''}.`)
   console.log(`${write ? 'Replaced' : 'Would replace'}: ${write ? replaced : count('would replace')}. Kept (already that photo, or as large): ${count('kept')}.`)
   console.log(`Current staff with no photo found: ${count('no photo found')}. Photos that matched no one: ${unmatched.length}.`)
-  console.log(`\nPerson by person: ${path.relative(process.cwd(), OUT)}`)
+  if (problems.length) {
+    console.log(`\nNot used from your list (${problems.length}):`)
+    for (const p of problems) console.log(`  ${p}`)
+  }
+  console.log(`\nPerson by person: ${path.relative(process.cwd(), out)}`)
   if (write && !publish) console.log('Saved as drafts: publish each person in the admin, or rerun with --publish.')
   process.exit(0)
 }
