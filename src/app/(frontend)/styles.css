@@ -297,10 +297,10 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .about-facts dt { font-size: 0.7rem; font-weight: 300; color: var(--muted); }
 .about-facts dd { margin: 0.25rem 0 0; font-size: 1.2rem; font-weight: 300; }
 .about-section { margin-top: 3.5rem; }
-.about-image { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; display: block; margin-bottom: 1.4rem; }
-.about-number { margin: 0 0 0.35rem; font-size: 0.7rem; font-weight: 300; color: var(--muted); }
-.about-heading { margin: 0 0 1rem; font-weight: 300; font-size: 1.5rem; }
-.about-body { font-weight: 300; font-size: 0.95rem; line-height: 1.65; max-width: 34rem; }
+/* Photos keep their own proportions, as on the old page. */
+.about-image { width: 100%; height: auto; display: block; margin-bottom: 1.4rem; }
+.about-heading { margin: 0 0 1rem; font-weight: 300; font-size: 1.5rem; text-align: center; }
+.about-body { font-weight: 300; font-size: 0.95rem; line-height: 1.65; text-align: justify; hyphens: auto; }
 .about-body p { margin: 0 0 0.9rem; }
 
 /* Team */
@@ -365,13 +365,16 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   .about-lede { font-size: 3.25rem; margin-top: 4.5rem; line-height: 1.12; }
   .about-facts { margin-top: 4rem; padding: 1.75rem 0; gap: 2rem; }
   .about-facts dd { font-size: 2.1rem; font-weight: 200; }
-  .about-section { margin-top: 7rem; display: grid; grid-template-columns: 5fr 7fr; gap: 4.5rem; align-items: start; }
-  .about-section.is-flipped.has-image { grid-template-columns: 7fr 5fr; }
+  /* Photo and text side by side, the text centred on the photo; sides alternate. */
+  .about-section { margin-top: 5.5rem; display: grid; grid-template-columns: 2fr 3fr; gap: 3.5rem; align-items: center; }
+  .about-section.is-flipped.has-image { grid-template-columns: 3fr 2fr; }
   .about-section.is-flipped.has-image .about-image { order: 2; }
-  .about-section:not(.has-image) .about-text { grid-column: 2; }
-  .about-image { aspect-ratio: 4 / 5; margin: 0; }
-  .about-heading { font-size: 1.9rem; margin-bottom: 1.75rem; }
-  .about-body { font-size: 1rem; line-height: 1.7; }
+  .about-section:not(.has-image) { grid-template-columns: minmax(0, 1fr); }
+  .about-section:not(.has-image) .about-text { max-width: 40rem; margin: 0 auto; }
+  /* Tall photos stay within the window. */
+  .about-image { margin: 0; max-height: 80vh; width: auto; max-width: 100%; justify-self: center; }
+  .about-heading { font-size: 1.9rem; margin-bottom: 1.5rem; }
+  .about-body { font-size: 0.95rem; line-height: 1.7; }
   .team-group { margin-top: 4.5rem; }
   .group-head { margin-bottom: 1.75rem; padding-top: 0.9rem; }
   .team-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2.5rem 1.5rem; }
