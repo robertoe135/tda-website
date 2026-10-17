@@ -263,6 +263,9 @@ export function projectSlides(project: Project) {
     })
 }
 
+/** One project photograph, at Payload's sizes. */
+export type Slide = ReturnType<typeof projectSlides>[number]
+
 /**
  * The project's Photography credit: the photographers set on the project, then any credited
  * on a single image that are not already listed. In order, without repeats.
