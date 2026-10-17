@@ -29,6 +29,7 @@
     "migrate:check-redirects": "tsx scripts/migrate/check-redirects.ts",
     "team:import": "tsx scripts/team/import.ts",
     "team:worksheet": "tsx scripts/team/worksheet.ts",
+    "team:headshots": "tsx scripts/team/headshots.ts",
     "media:inventory": "tsx scripts/media/inventory.ts",
     "media:scan": "tsx scripts/media/scan.ts",
     "media:import": "tsx scripts/media/import.ts",
