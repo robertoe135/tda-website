@@ -81,7 +81,7 @@ async function main() {
     draft: true,
     pagination: false,
     depth: 1,
-    select: { name: true, slug: true, heroImage: true, gallery: true, legacyUrls: true, typologies: true },
+    select: { name: true, slug: true, heroImage: true, gallery: true, legacyUrls: true, typologies: true, photographers: true },
     populate: { typologies: { name: true } },
   })
   const live = new Set(
@@ -141,6 +141,15 @@ async function main() {
     const match = best.sure ? `sure (${best.score.toFixed(2)})` : best.score > 0.5 ? `unsure (${best.score.toFixed(2)})` : 'possible: shares a distinctive word'
     if (best.place.kind === 'blocked') {
       rows.push({ ...base, reason: best.place.reason, folder: where, photos, match, fix: best.place.fix })
+    } else if (best.sure && !p.photographers?.length) {
+      rows.push({
+        ...base,
+        reason: 'Matched, but the project has no photographer (the import skips it)',
+        folder: where,
+        photos,
+        match,
+        fix: 'Add the photographer in the admin (Images → Photographers), then pnpm media:scan --accept-guesses and pnpm media:import --write --confirm-backup.',
+      })
     } else if (best.sure) {
       rows.push({
         ...base,
@@ -148,7 +157,7 @@ async function main() {
         folder: where,
         photos,
         match,
-        fix: 'pnpm media:scan --accept-guesses, then pnpm media:import --write --confirm-backup. If the import skipped it for having no photographer, add one to the project first.',
+        fix: 'pnpm media:scan --accept-guesses, then pnpm media:import --write --confirm-backup.',
       })
     } else {
       rows.push({

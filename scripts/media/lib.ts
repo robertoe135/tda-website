@@ -84,10 +84,21 @@ export function skipReason(category: string, folder: string, categories: string[
   if (/no\s*rights?/i.test(both)) return 'marked NO RIGHTS: never imported'
   if (/^\s*!/.test(category) || /^\s*!/.test(folder) || /\b(removed|not used)\b/i.test(both))
     return 'marked removed, unused or temporary'
-  const key = normalizeName(category).replace(/s$/, '')
-  if (!categories.some((c) => normalizeName(c).replace(/s$/, '') === key)) return 'not a portfolio category'
+  const key = categoryKey(category)
+  if (!categories.some((c) => categoryKey(c) === key)) return 'not a portfolio category'
   return undefined
 }
+
+/**
+ * A category name with each word's plural ignored, so "Museum" matches "Museums" and
+ * "Place of Worship" matches "Places of Worship".
+ */
+export const categoryKey = (name: string) =>
+  name
+    .split(/[^A-Za-z0-9]+/)
+    .filter(Boolean)
+    .map((w) => normalizeName(w).replace(/s$/, ''))
+    .join('')
 
 /** The portfolio's categories, for when the database is not used (the inventory). */
 export const PORTFOLIO_CATEGORIES = [
@@ -151,7 +162,7 @@ export function guessProject(folderName: string, category: string, candidates: G
   const words = [...tokens(folderName)]
   if (!words.length) return undefined
   const sameCategory = (c: GuessCandidate) =>
-    (c.categories ?? []).some((n) => normalizeName(n).replace(/s$/, '') === normalizeName(category).replace(/s$/, ''))
+    (c.categories ?? []).some((n) => categoryKey(n) === categoryKey(category))
   const scored = candidates
     .map((candidate) => {
       const theirs = [...tokens(candidate.name)]

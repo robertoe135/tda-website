@@ -25,3 +25,11 @@ describe('why a photo folder did not reach the site', () => {
     expect(possibleProjects('Museum', projects)).toEqual([]) // too common to point anywhere
   })
 })
+
+describe('portfolio categories on the drive', () => {
+  it('accepts a singular category name, word by word', () => {
+    expect(reason('Photos/Place of Worship/1. Christ Church')).toBe('importable')
+    expect(reason('Photos/Museum/2. MIT Museum')).toBe('importable')
+    expect(reason('Photos/Site - Public Realm/3. East River')).toBe('importable')
+  })
+})

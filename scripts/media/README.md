@@ -184,7 +184,8 @@ pnpm media:why "/Volumes/T7/Website"
 
 | Reason | What to do |
 | --- | --- |
-| In Photos and matched; not imported yet | `pnpm media:scan --accept-guesses`, then `pnpm media:import --write --confirm-backup`. If the import skipped it for having no photographer, add one first. |
+| Matched, but the project has no photographer | Add the photographer in the admin, then scan and import as below. |
+| In Photos and matched; not imported yet | `pnpm media:scan --accept-guesses`, then `pnpm media:import --write --confirm-backup`. |
 | Folder name too different to match for sure | Rename the folder to the website name, or write `yes` and the slug in photos.csv. |
 | Outside Photos (Archive, another top folder) | Copy the approved web set into `Photos/<Category>/<Project>/`. |
 | In a subfolder of a project folder | Move the web set up one level: only images directly in the project folder are read. |
