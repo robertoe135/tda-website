@@ -24,7 +24,7 @@ export type ProjectCard = {
   typologies: Pick<Typology, 'name' | 'slug'>[]
   architects: Pick<Firm, 'name' | 'slug'>[]
   /** The main image, card-sized with larger sizes in srcSet, when one has been uploaded. */
-  image?: { src: string; srcSet?: string; alt: string }
+  image?: { src: string; srcSet?: string; alt: string; ratio?: number }
   /** Slugs of firms in the credits list and of clients, for the collaborator/client filters. */
   collaboratorSlugs: string[]
   clientSlugs: string[]
@@ -34,7 +34,9 @@ const isObject = <T>(value: unknown): value is T => typeof value === 'object' &&
 
 export const cardImage = (m: Media) => {
   const sizes = [m.sizes?.card, m.sizes?.gallery].filter((x): x is { url: string; width: number } => Boolean(x?.url && x?.width))
-  return { src: m.sizes?.card?.url ?? m.url!, srcSet: sizes.map((x) => `${x.url} ${x.width}w`).join(', ') || undefined, alt: m.alt }
+  // Width over height, for layouts that keep each photo's own proportions.
+  const ratio = m.width && m.height ? m.width / m.height : undefined
+  return { src: m.sizes?.card?.url ?? m.url!, srcSet: sizes.map((x) => `${x.url} ${x.width}w`).join(', ') || undefined, alt: m.alt, ratio }
 }
 
 /** All published projects, newest first, with only the fields cards and filters need. */
@@ -60,7 +62,7 @@ export async function getPublishedProjects(): Promise<ProjectCard[]> {
       heroImage: true,
     },
     populate: {
-      media: { url: true, alt: true, sizes: true },
+      media: { url: true, alt: true, sizes: true, width: true, height: true },
       locations: { displayName: true, slug: true, worldRegion: true },
       typologies: { name: true, slug: true, order: true },
       firms: { name: true, slug: true },
