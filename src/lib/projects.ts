@@ -259,6 +259,11 @@ export function projectSlides(project: Project) {
         height: media.sizes?.hero?.height ?? media.height ?? undefined,
         alt: media.alt,
         caption: caption ?? undefined, // only a caption someone wrote; alt text is not a caption
+        /** CSS object-position from the focal point set in the admin, for crops (the hero). */
+        position:
+          media.focalX != null && media.focalY != null && (media.focalX !== 50 || media.focalY !== 50)
+            ? `${media.focalX}% ${media.focalY}%`
+            : undefined,
       }
     })
 }
