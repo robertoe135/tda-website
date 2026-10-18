@@ -37,7 +37,7 @@ a:hover { text-decoration: underline; }
 }
 .site-name { display: block; line-height: 0; }
 .site-logo { display: block; height: 34px; width: auto; }
-.site-nav { font-weight: 300; }
+.site-nav { font-weight: 300; text-transform: lowercase; }
 .nav-list, .nav-sub { list-style: none; margin: 0; padding: 0; }
 .site-nav a[aria-current='page'], .nav-about-button[data-current] { text-decoration: underline; text-underline-offset: 4px; }
 /* Phones: a Menu button; the menu opens full screen under the header. */
@@ -72,7 +72,7 @@ a:hover { text-decoration: underline; }
   .nav-about-button svg { transition: transform 0.2s ease; }
   .nav-about[data-open] .nav-about-button svg { transform: rotate(180deg); }
   /* About's small menu: under "about", opened by a click or by pointing at it. */
-  .nav-sub { display: none; position: absolute; top: 100%; right: -0.9rem; z-index: 11; min-width: 11rem; margin-top: 0.6rem; padding: 0.4rem 0; background: var(--bg); border: 1px solid var(--line); box-shadow: 0 8px 24px rgb(0 0 0 / 0.06); text-transform: none; }
+  .nav-sub { display: none; position: absolute; top: 100%; right: -0.9rem; z-index: 11; min-width: 11rem; margin-top: 0.6rem; padding: 0.4rem 0; background: var(--bg); border: 1px solid var(--line); box-shadow: 0 8px 24px rgb(0 0 0 / 0.06); }
   .nav-sub::before { content: ''; position: absolute; left: 0; right: 0; top: -0.7rem; height: 0.7rem; }
   .nav-about[data-open] .nav-sub { display: block; }
   .nav-sub a { display: block; padding: 0.5rem 0.9rem; font-size: 0.85rem; }
