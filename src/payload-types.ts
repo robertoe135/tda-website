@@ -1328,7 +1328,7 @@ export interface About {
           [k: string]: unknown;
         };
         /**
-         * Optional. Shown above the section.
+         * Optional. Stays in view beside the text while this section is read (a band at the top on phones). Cropped to fill the frame: set the focal point on the photo to keep the subject in view.
          */
         image?: (number | null) | Media;
         id?: string | null;

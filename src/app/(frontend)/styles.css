@@ -34,13 +34,16 @@ a:hover { text-decoration: underline; }
   display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem;
   padding: var(--gutter) var(--gutter) 0.75rem; border-bottom: 1px solid var(--line);
 }
-.site-name { font-weight: 400; color: var(--muted); }
+.site-name { display: block; line-height: 0; }
+.site-logo { display: block; height: 44px; width: auto; }
+.footer-logo { display: block; height: 30px; width: auto; margin-bottom: 0.6rem; }
 .site-nav { display: flex; gap: 1.5rem; text-transform: lowercase; font-weight: 300; font-size: 0.8rem; }
 .site-nav a[aria-current='page'] { text-decoration: underline; }
 /* Phones: name on the first line, the menu on the second, so neither wraps. */
 @media (max-width: 559px) {
   .site-header { flex-wrap: wrap; row-gap: 0.4rem; padding-top: 0.75rem; padding-bottom: 0.6rem; }
   .site-name { flex: 1 0 100%; }
+  .site-logo { height: 34px; }
   .site-nav { gap: 1.25rem; }
 }
 
@@ -97,7 +100,7 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .project-header { text-align: center; margin: 2rem 0 1.5rem; }
 .project-title { font-weight: 400; font-size: 1.4rem; margin: 0 0 0.5rem; }
 .project-line { margin: 0; font-weight: 300; font-size: 0.7rem; }
-.project-description { max-width: 38rem; margin: 2rem auto 0; text-align: justify; hyphens: auto; font-weight: 300; font-size: 0.95rem; line-height: 1.65; }
+.project-description { max-width: 46rem; margin: 2rem auto 0; text-align: justify; hyphens: auto; font-weight: 300; font-size: 0.95rem; line-height: 1.65; }
 .project-description p { margin: 0 0 0.9rem; }
 .press ul { list-style: none; margin: 0; padding: 1.5rem 0; display: grid; gap: 1.5rem; text-align: center; }
 .press-title { margin: 0; font-weight: 300; font-size: 0.9rem; }
@@ -118,38 +121,41 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 
 .meta-link:hover { text-decoration: underline; }
 
-/* Slideshow: one photograph at a time, arrows over the image, caption and counter below. */
-/* The frame has the current photo's shape (--r: its width over height) at full width, but is
-   never taller than the window minus the site header and caption line, so the whole photo is
-   always in view; a photo that hits that limit narrows and is centred, and the arrows and
-   caption line follow its edges. Size eases between photos of different shapes. */
-.slideshow { margin: 0 calc(-1 * var(--gutter)); --slideshow-chrome: 8.5rem; --slide-w: min(100%, calc((100svh - var(--slideshow-chrome)) * var(--r, 1.5))); }
-.slideshow:focus-visible { outline-offset: -2px; }
-.slideshow-frame {
-  position: relative; overflow: hidden; touch-action: pan-y;
-  width: var(--slide-w); aspect-ratio: var(--r, 1.5); margin-inline: auto;
-  transition: width 0.45s ease, aspect-ratio 0.45s ease;
-}
-/* Slides stack and cross-fade; the current one sits on top. */
-.slideshow-slide { position: absolute; inset: 0; opacity: 0; transition: opacity 0.6s ease; }
-.slideshow-slide[data-current] { opacity: 1; z-index: 1; }
-.slideshow-slide img { width: 100%; height: 100%; object-fit: contain; display: block; }
-@media (prefers-reduced-motion: reduce) { .slideshow-slide, .slideshow-frame, .slideshow-meta { transition: none; } }
-.slideshow-arrow {
-  position: absolute; top: 50%; transform: translateY(-50%);
-  width: 44px; height: 44px; display: grid; place-items: center;
-  border: 0; border-radius: 50%; background: rgb(255 255 255 / 0.85); color: var(--text); cursor: pointer; z-index: 2;
-}
-.slideshow-prev { left: 0.5rem; }
-.slideshow-next { right: 0.5rem; }
-.slideshow-meta {
-  display: flex; justify-content: space-between; gap: 1rem; width: var(--slide-w); margin-inline: auto; transition: width 0.45s ease;
-  padding: 0.4rem var(--gutter) 0; font-weight: 300; font-size: 0.7rem; color: var(--muted);
-}
+/* Hero: the first photograph, whole, as wide as the page but never taller than the window
+   (less the header and title), so the page opens on one still image. */
+.project-hero { margin: 0 calc(-1 * var(--gutter)); }
+.photo-button { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
+.photo-button img { display: block; width: 100%; height: auto; transition: opacity 0.2s; }
+.photo-button:hover img { opacity: 0.92; }
+.project-hero img { width: auto; max-width: 100%; max-height: calc(100svh - 9.5rem); margin: 0 auto; }
+
+/* Rows of photos, each whole: on phones one per line; from 720px side by side, each as wide as
+   its shape needs (--r: width over height) so a row's photos share one height. */
+.project-story { margin-top: 2.5rem; display: grid; gap: 2.5rem; }
+.project-story > .project-description { margin: 0 auto; }
+.photo-row { display: grid; gap: 0.75rem; margin: 0 calc(-1 * var(--gutter)); }
+.photo { margin: 0; min-width: 0; }
+.photo figcaption { padding: 0.4rem var(--gutter) 0; font-weight: 300; font-size: 0.7rem; color: var(--muted); }
+.photo-row.is-single .photo-button img { width: auto; max-width: 100%; max-height: calc(100svh - 9.5rem); margin: 0 auto; }
+
+/* Full screen: the photo whole on a dark ground, arrows at the sides, close top right. */
+.lightbox { width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: #111; color: #eee; }
+.lightbox::backdrop { background: rgb(0 0 0 / 0.9); }
+.lightbox[open] { display: grid; grid-template-rows: minmax(0, 1fr) auto; place-items: center; touch-action: pan-y; }
+.lightbox-image { max-width: calc(100vw - 2 * var(--gutter)); max-height: calc(100dvh - 5rem); width: auto; height: auto; object-fit: contain; animation: lightbox-in 0.3s ease; }
+.lightbox-bar { justify-self: stretch; display: flex; justify-content: space-between; gap: 1rem; padding: 0.75rem var(--gutter) 1rem; font-weight: 300; font-size: 0.75rem; color: #bbb; }
+.lightbox-close, .lightbox-arrow { position: absolute; width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 50%; background: rgb(255 255 255 / 0.12); color: #fff; cursor: pointer; }
+.lightbox-close:hover, .lightbox-arrow:hover { background: rgb(255 255 255 / 0.25); }
+.lightbox-close { top: 0.75rem; right: 0.75rem; }
+.lightbox-arrow { top: 50%; transform: translateY(-50%); }
+.lightbox-prev { left: 0.75rem; }
+.lightbox-next { right: 0.75rem; }
+@keyframes lightbox-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .lightbox-image { animation: none; } .photo-button img { transition: none; } }
 
 /* Fact band: the key facts and the TDA team above the story, Project Info folded below them. */
-/* Same column as the description, so facts, Project Info and the text line up. */
-.fact-band { max-width: 38rem; margin: 2rem auto 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+/* As wide as the page; the write-up below is narrower so its lines stay readable. */
+.fact-band { margin: 2rem 0 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .facts-key { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem 1.5rem; margin: 0; padding: 1.25rem 0; }
 .fact dt { font-size: 0.72rem; font-weight: 400; color: var(--muted); letter-spacing: 0.04em; }
 .fact dd { margin: 0.15rem 0 0; font-weight: 300; font-size: 0.95rem; line-height: 1.45; }
@@ -244,8 +250,8 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 /* Timeline, picture first: each year is a band of photographs at one height (--row), each
    keeping its own proportions (--r, set per photo) and growing to fill the row. The year is small
    and sticks below the site header while its band scrolls past. */
-.timeline { --row: 150px; --shot-gap: 6px; --year-top: 4.75rem; }
-.timeline-year { border-top: 1px solid var(--line); padding: 0 0 1.75rem; scroll-margin-top: 5rem; }
+.timeline { --row: 150px; --shot-gap: 6px; --year-top: 5.25rem; }
+.timeline-year { border-top: 1px solid var(--line); padding: 0 0 1.75rem; scroll-margin-top: 5.75rem; }
 .timeline-heading {
   position: sticky; top: var(--year-top); z-index: 1; background: var(--bg);
   margin: 0; padding: 0.6rem 0; font-weight: 400; font-size: 0.9rem; line-height: 1.2;
@@ -296,12 +302,48 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .about-facts { margin: 2.25rem 0 0; padding: 1.1rem 0; border-top: 1px solid var(--text); border-bottom: 1px solid var(--line); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; }
 .about-facts dt { font-size: 0.7rem; font-weight: 300; color: var(--muted); }
 .about-facts dd { margin: 0.25rem 0 0; font-size: 1.2rem; font-weight: 300; }
-.about-section { margin-top: 3.5rem; }
-/* Photos keep their own proportions, as on the old page. */
-.about-image { width: 100%; height: auto; display: block; margin-bottom: 1.4rem; }
-.about-heading { margin: 0 0 1rem; font-weight: 300; font-size: 1.5rem; text-align: center; }
-.about-body { font-weight: 300; font-size: 0.95rem; line-height: 1.65; text-align: justify; hyphens: auto; }
-.about-body p { margin: 0 0 0.9rem; }
+/* Photo story: on phones the photo is a band under the header with the section name and dots;
+   from 820px it holds still on the left, beside the text, with a counter below. */
+.story { --header-h: 73px; }
+.about-body { font-weight: 300; font-size: 1rem; line-height: 1.7; }
+.about-body p { margin: 0 0 1rem; }
+.story-stage { position: sticky; top: var(--header-h); z-index: 2; background: var(--bg); padding: 0.75rem 0 0.6rem; margin-top: 1.5rem; }
+.story-frame { position: relative; height: 34svh; min-height: 220px; overflow: hidden; background: #f0f0ee; }
+.story-shot { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.7s ease; }
+.story-shot[data-current] { opacity: 1; }
+.story-meta { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 0.5rem; font-weight: 300; font-size: 0.75rem; color: var(--muted); }
+.story-count { display: none; font-variant-numeric: tabular-nums; }
+.story-dots { display: flex; gap: 5px; }
+.story-dots span { width: 6px; height: 6px; border-radius: 50%; background: #c4c4c4; }
+.story-dots span[data-current] { background: var(--text); }
+.story-chap { padding: 1.75rem 0 1.4rem; border-top: 1px solid #e6e6e6; scroll-margin-top: calc(var(--header-h) + 34svh + 3rem); }
+.story-chap:first-child { border-top: 0; padding-top: 1.25rem; }
+/* Room for the last section to reach the reading line, so its photo shows. */
+.story:not(.story-text-only) .story-chap:last-child { padding-bottom: 40svh; }
+.story-heading { margin: 0 0 0.75rem; font-weight: 400; font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+.story-text-only .story-text, .story-text-only .story-intro { max-width: 46rem; }
+@media (max-width: 559px) { .story { --header-h: 83px; } }
+@media (prefers-reduced-motion: reduce) { .story-shot { transition: none; } }
+@media (min-width: 820px) {
+  .story:not(.story-text-only) {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: clamp(2.5rem, 6vw, 4.5rem);
+    grid-template-areas: 'stage intro' 'stage text'; grid-template-rows: auto 1fr;
+  }
+  .story-intro { grid-area: intro; }
+  .story-text { grid-area: text; }
+  .story-stage { grid-area: stage; align-self: start; top: calc(var(--header-h) + 1.5rem); margin-top: 1.5rem; padding: 0; }
+  .story-frame { height: calc(100svh - var(--header-h) - 5rem); min-height: 420px; }
+  .story-title, .story-dots { display: none; }
+  .story-count { display: inline; }
+  .story-chap { padding: 2.75rem 0 2.25rem; scroll-margin-top: calc(var(--header-h) + 1rem); }
+  .story-chap:first-child { padding-top: 1.75rem; }
+  .story:not(.story-text-only) .story-chap:last-child { padding-bottom: 38svh; }
+  .story-heading { font-size: 0.85rem; margin-bottom: 1rem; }
+  .about-body { font-size: 1.05rem; }
+  .story .about-lede { margin-top: 1.75rem; font-size: clamp(2.4rem, 3.6vw, 3.25rem); }
+  .story .about-facts { margin-top: 2.5rem; gap: 1.25rem; }
+  .story .about-facts dd { font-size: clamp(1.3rem, 1.9vw, 1.65rem); line-height: 1.2; }
+}
 
 /* Team */
 .team-group { margin-top: 2.5rem; }
@@ -359,22 +401,12 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   .page-title-large { font-size: 3.25rem; margin-top: 3rem; }
   .page-head { padding-top: 3rem; padding-bottom: 1.5rem; }
   .year-nav { width: auto; max-width: 48rem; flex-wrap: wrap; justify-content: flex-end; gap: 0.1rem 0.9rem; overflow: visible; }
-  .timeline { --row: 220px; --shot-gap: 8px; --year-top: 4.4rem; }
+  .timeline { --row: 220px; --shot-gap: 8px; --year-top: 4.65rem; }
   .timeline-year { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: 1.25rem; padding: 0.9rem 0 2.5rem; }
   .timeline-heading { align-self: start; padding: 0; background: none; }
   .about-lede { font-size: 3.25rem; margin-top: 4.5rem; line-height: 1.12; }
   .about-facts { margin-top: 4rem; padding: 1.75rem 0; gap: 2rem; }
   .about-facts dd { font-size: 2.1rem; font-weight: 200; }
-  /* Photo and text side by side, the text centred on the photo; sides alternate. */
-  .about-section { margin-top: 5.5rem; display: grid; grid-template-columns: 2fr 3fr; gap: 3.5rem; align-items: center; }
-  .about-section.is-flipped.has-image { grid-template-columns: 3fr 2fr; }
-  .about-section.is-flipped.has-image .about-image { order: 2; }
-  .about-section:not(.has-image) { grid-template-columns: minmax(0, 1fr); }
-  .about-section:not(.has-image) .about-text { max-width: 40rem; margin: 0 auto; }
-  /* Tall photos stay within the window. */
-  .about-image { margin: 0; max-height: 80vh; width: auto; max-width: 100%; justify-self: center; }
-  .about-heading { font-size: 1.9rem; margin-bottom: 1.5rem; }
-  .about-body { font-size: 0.95rem; line-height: 1.7; }
   .team-group { margin-top: 4.5rem; }
   .group-head { margin-bottom: 1.75rem; padding-top: 0.9rem; }
   .team-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2.5rem 1.5rem; }
@@ -423,9 +455,13 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   .home-quote blockquote { font-size: 1.4rem; line-height: 1.4; }
   .press ul { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .other-projects ul { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .slideshow { margin: 0; }
-  .slideshow-meta { padding-inline: 0; }
-  .facts-key { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .project-hero, .photo-row { margin-inline: 0; }
+  .photo figcaption { padding-inline: 0; }
+  .photo-row { display: flex; }
+  .photo-row .photo { flex: var(--r, 1.5) 1 0; }
+  .photo-row.is-single .photo { flex: 1 1 auto; }
+  .facts-key { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .project-description { font-size: 1.02rem; line-height: 1.7; }
   .project-info-body { grid-template-columns: 1fr 1fr; }
   .portfolio-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
@@ -491,3 +527,24 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   .home-tile .tile:hover .tile-image img { opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) { .home-tile .tile-name { transition: none; } }
+
+/* Timeline: a column of dots, one per year, fixed beside the photos on larger screens. The
+   current year's dot is filled and larger; pointing at a dot shows its year. On phones the
+   years stick at the top of each band instead. */
+.year-rail { display: none; }
+@media (min-width: 900px) {
+  .timeline { padding-right: 2.5rem; }
+  .year-rail { display: block; position: fixed; right: 1.25rem; top: 50%; transform: translateY(-50%); z-index: 5; }
+  .year-rail ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+  .year-rail a { position: relative; display: grid; place-items: center; width: 24px; height: 18px; }
+  .year-rail a::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #c4c4c4; transition: transform 0.25s ease, background-color 0.25s ease; }
+  .year-rail a:hover::before, .year-rail a:focus-visible::before { background: var(--text); }
+  .year-rail a[aria-current]::before { background: var(--text); transform: scale(1.6); }
+  .year-rail-label {
+    position: absolute; right: 100%; top: 50%; transform: translate(4px, -50%); margin-right: 0.35rem;
+    font-size: 0.75rem; line-height: 1; white-space: nowrap; color: var(--text); background: var(--bg); padding: 0.2rem 0.35rem;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .year-rail a:hover .year-rail-label, .year-rail a:focus-visible .year-rail-label { opacity: 1; transform: translate(0, -50%); }
+}
+@media (prefers-reduced-motion: reduce) { .year-rail a::before, .year-rail-label { transition: none; } }

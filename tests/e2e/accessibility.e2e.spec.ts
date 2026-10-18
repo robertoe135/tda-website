@@ -14,8 +14,9 @@ async function firstLink(page: Page, from: string, selector: string) {
   return page.locator(selector).first().getAttribute('href').catch(() => null)
 }
 
-async function check(page: Page, path: string) {
+async function check(page: Page, path: string, before?: () => Promise<void>) {
   await page.goto(`${BASE}${path}`)
+  if (before) await before()
   const { violations } = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze()
   const report = violations.map((v) => `${v.id} (${v.impact}): ${v.help}\n  ${v.nodes.map((n) => n.target.join(' ')).slice(0, 5).join('\n  ')}`)
   expect(report, `${path}\n${report.join('\n')}`).toEqual([])
@@ -40,6 +41,18 @@ for (const [label, size] of [
       const href = await firstLink(page, '/projects', '.portfolio-grid a')
       test.skip(!href, 'no published projects')
       await check(page, href!)
+    })
+
+    test('a project photo opened full screen', async ({ page }) => {
+      const href = await firstLink(page, '/projects', '.portfolio-grid a')
+      test.skip(!href, 'no published projects')
+      await check(page, href!, async () => {
+        const photo = page.locator('.photo-button').first()
+        test.skip((await photo.count()) === 0, 'the first project has no photos')
+        await photo.click()
+        await expect(page.locator('dialog.lightbox')).toBeVisible()
+        await page.keyboard.press('ArrowRight')
+      })
     })
 
     test('a person page', async ({ page }) => {

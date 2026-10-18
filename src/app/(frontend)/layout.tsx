@@ -31,9 +31,9 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
           Skip to content
         </a>
         <header className="site-header">
-          {/* TDA logo goes here once marketing supplies the logo file. */}
           <Link href="/" className="site-name">
-            Tillotson Design Associates
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/tda-logo.svg" alt="Tillotson Design Associates" width={1000} height={414} className="site-logo" />
           </Link>
           {/* Menu as on tillotsondesign.com. */}
           <nav aria-label="Main" className="site-nav">

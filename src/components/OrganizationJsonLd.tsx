@@ -13,6 +13,7 @@ export async function OrganizationJsonLd() {
     '@type': 'ProfessionalService',
     name: 'Tillotson Design Associates',
     url: siteUrl(),
+    logo: `${siteUrl()}/tda-logo.svg`,
     ...(a.street
       ? {
           address: {
