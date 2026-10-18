@@ -16,19 +16,17 @@ const storyImage = (m: Media) => {
   const sizes = [m.sizes?.card, m.sizes?.gallery, m.sizes?.hero].filter((x): x is { url: string; width: number } =>
     Boolean(x?.url && x?.width),
   )
-  const focal = m.focalX != null && m.focalY != null && (m.focalX !== 50 || m.focalY !== 50)
   return {
     src: m.sizes?.gallery?.url ?? m.url!,
     srcSet: sizes.map((x) => `${x.url} ${x.width}w`).join(', ') || undefined,
     alt: m.alt,
-    position: focal ? `${m.focalX}% ${m.focalY}%` : undefined,
   }
 }
 
 /**
  * Profile as a photo story (mockup C): the opening line, then each section's text beside a
  * photo that holds still and changes as the visitor reads. Text and photos come from
- * About in the admin, unchanged; the crop follows each photo's focal point.
+ * About in the admin, unchanged; photos show whole, never cropped.
  */
 export default async function AboutPage() {
   const about = await getAbout()

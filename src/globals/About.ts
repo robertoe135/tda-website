@@ -41,7 +41,7 @@ export const About: GlobalConfig = {
       fields: [
         { name: 'heading', type: 'text', required: true },
         { name: 'body', type: 'richText', required: true },
-        { name: 'image', type: 'upload', relationTo: 'media', admin: { description: 'Optional. Stays in view beside the text while this section is read (a band at the top on phones). Cropped to fill the frame: set the focal point on the photo to keep the subject in view.' } },
+        { name: 'image', type: 'upload', relationTo: 'media', admin: { description: 'Optional. Stays in view beside the text while this section is read (a band at the top on phones). Shown whole, never cropped.' } },
       ],
     },
   ],

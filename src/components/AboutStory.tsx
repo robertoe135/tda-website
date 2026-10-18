@@ -1,17 +1,19 @@
 'use client'
 
-import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { type ReactNode, useRef } from 'react'
 
-export type StoryImage = { src: string; srcSet?: string; alt: string; position?: string }
+import { useScrollSpy } from '@/hooks/useScrollSpy'
+
+export type StoryImage = { src: string; srcSet?: string; alt: string }
 export type StoryChapter = { id: string; heading: string; image?: StoryImage; body: ReactNode }
 
 /**
  * Profile as a photo story: the photo holds still beside the text and changes to the section
- * being read. On phones the photo is a band under the header. A section without a photo keeps
- * the one before it (or the next one, at the top). With no photos at all, it is plain text.
+ * being read. Each photo shows whole, at its own shape, within a frame that does not move.
+ * On phones the photo is a band under the header. A section without a photo keeps the one
+ * before it (or the next one, at the top). With no photos at all, it is plain text.
  */
 export function AboutStory({ intro, chapters }: { intro: ReactNode; chapters: StoryChapter[] }) {
-  const [current, setCurrent] = useState(0)
   const textRef = useRef<HTMLDivElement>(null)
 
   // Which photo each section shows.
@@ -25,23 +27,12 @@ export function AboutStory({ intro, chapters }: { intro: ReactNode; chapters: St
   const firstShot = shotFor.find((s) => s >= 0) ?? -1
   const shotOf = (i: number) => (shotFor[i] >= 0 ? shotFor[i] : firstShot)
 
-  useEffect(() => {
-    const root = textRef.current
-    if (!root || typeof IntersectionObserver === 'undefined') return
-    const phone = window.matchMedia('(max-width: 819px)').matches
-    const seen = new Map<number, boolean>()
-    // A thin line across the screen: the section crossing it is the one being read.
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) seen.set(Number((e.target as HTMLElement).dataset.i), e.isIntersecting)
-        const first = [...seen].filter(([, v]) => v).map(([k]) => k).sort((a, b) => a - b)[0]
-        if (first !== undefined) setCurrent(first)
-      },
-      { rootMargin: phone ? '-62% 0px -30% 0px' : '-45% 0px -45% 0px' },
-    )
-    root.querySelectorAll<HTMLElement>('[data-i]').forEach((s) => io.observe(s))
-    return () => io.disconnect()
-  }, [chapters.length])
+  const { current } = useScrollSpy(
+    () => Array.from(textRef.current?.querySelectorAll<HTMLElement>('[data-i]') ?? []),
+    [chapters.length],
+    // On phones the photo band covers the top of the screen, so read lower down.
+    () => (window.matchMedia('(max-width: 819px)').matches ? 0.62 : 0.4),
+  )
 
   const hasShots = shots.length > 0
   const shown = shotOf(current)
@@ -64,7 +55,6 @@ export function AboutStory({ intro, chapters }: { intro: ReactNode; chapters: St
                 sizes="(min-width: 820px) 50vw, 100vw"
                 alt={s.alt}
                 aria-hidden={i !== shown}
-                style={s.position ? { objectPosition: s.position } : undefined}
                 loading={i === 0 ? 'eager' : 'lazy'}
               />
             ))}
