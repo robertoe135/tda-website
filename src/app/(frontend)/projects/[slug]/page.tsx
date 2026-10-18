@@ -5,9 +5,7 @@ import { notFound } from 'next/navigation'
 import { cache } from 'react'
 
 import { MetaLine, MetaLink } from '@/components/MetaLink'
-import { ProjectPhotos, type StoryBlock } from '@/components/ProjectPhotos'
-import { photoLayout } from '@/lib/photoLayout'
-import { relatedProjects } from '@/lib/related'
+import { HeroPhoto, PhotoViewer, ProjectSlideshow } from '@/components/PhotoViewer'
 import {
   describeProject,
   filterHref,
@@ -17,6 +15,7 @@ import {
   projectSlides,
   SQ_FT_TO_M2,
 } from '@/lib/projects'
+import { otherProjects } from '@/lib/related'
 import type {
   Award,
   CreditRole,
@@ -59,9 +58,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 const ROLE_LABEL = {
   principal: 'Principal in Charge',
   'project-manager': 'Project Manager',
-  designer: 'Designer',
+  designer: 'Designers',
 } as const
-
+const STATUS: Record<Project['status'], string> = {
+  completed: 'Completed',
+  'in-progress': 'In Progress',
+  unbuilt: 'Unbuilt',
+}
 const LEVEL: Record<string, string> = {
   certified: 'Certified',
   silver: 'Silver',
@@ -86,11 +89,68 @@ function PersonName({ person }: { person: Person }) {
   )
 }
 
+/** Items joined by commas. */
+function List<T extends { id: number | string }>({
+  items,
+  render,
+}: {
+  items: T[]
+  render: (item: T) => React.ReactNode
+}) {
+  return items.map((item, i) => (
+    <span key={item.id}>
+      {i > 0 && ', '}
+      {render(item)}
+    </span>
+  ))
+}
+
+/** "nytimes.com" from a link, for press items with no outlet name. */
+const hostOf = (url: string) => {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '')
+  } catch {
+    return url
+  }
+}
+
+/** One row of the credits table. */
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="credit-row">
+      <dt>{label}</dt>
+      <dd>{children}</dd>
+    </div>
+  )
+}
+
+/** A row whose list opens in place (TDA Team, Collaborators, Awards). */
+function OpenRow({
+  label,
+  summary,
+  children,
+}: {
+  label: string
+  summary: string
+  children: React.ReactNode
+}) {
+  return (
+    <details className="credit-more">
+      <summary>
+        <span className="credit-label">{label}</span>
+        <span className="credit-summary">{summary}</span>
+        <span className="credit-sign" aria-hidden="true" />
+      </summary>
+      <div className="credit-list">{children}</div>
+    </details>
+  )
+}
+
 /**
- * Project page: TDA's name and "location | architect" line, the hero photo, a fact band
- * (Design Architect, Location, Project Completed, then the TDA team) with "Project Info"
- * holding everything else, then the write-up with rows of photos between its passages and
- * the remaining photos after it (any photo opens full screen), press, related projects.
+ * Project page (mockup F3): the hero with the name on it; the facts and credits beside the
+ * write-up (facts first on a phone); every other photo in a slideshow whose frame never
+ * changes size; press; other projects by the same architect, else in the same category.
+ * Any photo opens full screen.
  */
 export default async function ProjectPage({ params }: Props) {
   const project = await getProject((await params).slug)
@@ -101,7 +161,8 @@ export default async function ProjectPage({ params }: Props) {
   const typologies = (project.typologies ?? []).filter(isObject<Typology>)
   const owners = (project.clients ?? []).filter(isObject<Firm>) // absent when confidential
   const credits = (project.credits ?? [])
-    .map((c) => ({
+    .map((c, i) => ({
+      id: i,
       role: isObject<CreditRole>(c.role) ? c.role : undefined,
       firms: c.firms.filter(isObject<Firm>),
     }))
@@ -115,27 +176,10 @@ export default async function ProjectPage({ params }: Props) {
   const press = (project.press?.docs ?? []).filter(isObject<Press>)
   const slides = projectSlides(project)
   const photographers = projectPhotographers(project)
-  const description = project.description
-  const passages = description?.root?.children ?? []
-  const blocks: StoryBlock[] = photoLayout(passages.length, slides.length).map((b) =>
-    b.kind === 'photos'
-      ? b
-      : {
-          kind: 'text',
-          node: (
-            <RichText
-              data={{
-                ...description!,
-                root: { ...description!.root, children: passages.slice(b.from, b.to) },
-              }}
-            />
-          ),
-        },
-  )
 
   const all = await getPublishedProjects()
   const card = all.find((p) => p.id === project.id)
-  const related = card ? relatedProjects(card, all) : []
+  const other = card ? otherProjects(card, all) : undefined
 
   const line = [
     ...(location?.slug
@@ -143,216 +187,236 @@ export default async function ProjectPage({ params }: Props) {
       : []),
     ...architects.map((a) => ({ href: filterHref('architect', a.slug ?? ''), label: a.name })),
   ]
-  const firmLinks = (firms: Firm[], key: 'architect' | 'client' | 'collaborator') =>
-    firms.map((f, i) => (
-      <span key={f.id}>
-        {i > 0 && ', '}
-        <MetaLink href={filterHref(key, f.slug ?? '')}>{f.name}</MetaLink>
-      </span>
-    ))
-  const people = (list: Person[]) =>
-    list.map((p, i) => (
-      <span key={p.id}>
-        {i > 0 && ', '}
-        <PersonName person={p} />
-      </span>
-    ))
+  const firmLink = (key: 'architect' | 'client' | 'collaborator', f: Firm) => (
+    <MetaLink href={filterHref(key, f.slug ?? '')}>{f.name}</MetaLink>
+  )
+  const people = (list: Person[]) => <List items={list} render={(p) => <PersonName person={p} />} />
+  const category = typologies[0]
+  const firmCount = credits.reduce((n, c) => n + c.firms.length, 0)
 
-  const hasInfo =
-    owners.length > 0 ||
-    typologies.length > 0 ||
-    Boolean(project.areaSqFt) ||
-    (project.certifications ?? []).length > 0 ||
-    photographers.length > 0 ||
-    Boolean(project.predecessorFirm) ||
-    credits.length > 0 ||
-    awards.length > 0
-
-  return (
-    <article className="project">
-      <header className="project-header">
+  const title = (
+    <div className="project-title-band">
+      <div>
         <h1 className="project-title">{project.name}</h1>
         {line.length > 0 && (
           <p className="project-line">
             <MetaLine items={line} />
           </p>
         )}
-      </header>
+      </div>
+      {category?.slug && (
+        <Link className="project-chip" href={filterHref('typology', category.slug)}>
+          {category.name}
+        </Link>
+      )}
+    </div>
+  )
 
-      <ProjectPhotos slides={slides} name={project.name} blocks={blocks}>
-        <section className="fact-band" aria-label="Project facts">
-          <dl className="facts-key">
-            {architects.length > 0 && (
-              <Fact label={architects.length > 1 ? 'Design Architects' : 'Design Architect'}>
-                {firmLinks(architects, 'architect')}
-              </Fact>
-            )}
-            {location?.slug && (
-              <Fact label="Location">
-                <MetaLink href={filterHref('location', location.slug)}>
-                  {location.displayName}
-                </MetaLink>
-              </Fact>
-            )}
-            {project.year && (
-              <Fact
-                label={
-                  project.status === 'in-progress' ? 'Expected Completion' : 'Project Completed'
-                }
+  return (
+    <article className="project">
+      <nav aria-label="Breadcrumb" className="breadcrumb">
+        <Link href="/projects">Portfolio</Link>
+        {category?.slug && (
+          <>
+            {' / '}
+            <Link href={filterHref('typology', category.slug)}>{category.name}</Link>
+          </>
+        )}
+        {' / '}
+        <span aria-current="page">{project.name}</span>
+      </nav>
+
+      <PhotoViewer slides={slides} name={project.name}>
+        {slides[0] ? (
+          <header className="project-hero">
+            <HeroPhoto slide={slides[0]} count={slides.length} />
+            {title}
+          </header>
+        ) : (
+          <header className="project-hero no-photo">{title}</header>
+        )}
+
+        <div className="project-body">
+          <section className="credits" aria-labelledby="credits-heading">
+            <h2 id="credits-heading" className="credits-heading">
+              Facts and Credits
+            </h2>
+            <dl>
+              {location?.slug && (
+                <Row label="Location">
+                  <MetaLink href={filterHref('location', location.slug)}>
+                    {location.displayName}
+                  </MetaLink>
+                </Row>
+              )}
+              {architects.length > 0 && (
+                <Row label={architects.length > 1 ? 'Design Architects' : 'Design Architect'}>
+                  <List items={architects} render={(f) => firmLink('architect', f)} />
+                </Row>
+              )}
+              {project.year && (
+                <Row label={project.status === 'in-progress' ? 'Expected Completion' : 'Year'}>
+                  {project.year}
+                </Row>
+              )}
+              <Row label="Status">{STATUS[project.status]}</Row>
+              {typologies.length > 0 && (
+                <Row label={typologies.length > 1 ? 'Categories' : 'Category'}>
+                  <List
+                    items={typologies}
+                    render={(t) => (
+                      <MetaLink href={filterHref('typology', t.slug ?? '')}>{t.name}</MetaLink>
+                    )}
+                  />
+                </Row>
+              )}
+              {owners.length > 0 && (
+                <Row label="Owner">
+                  <List items={owners} render={(f) => firmLink('client', f)} />
+                </Row>
+              )}
+              {project.areaSqFt && (
+                <Row label="Area">
+                  {Math.round(project.areaSqFt).toLocaleString('en-US')} SF /{' '}
+                  {Math.round(project.areaSqFt * SQ_FT_TO_M2).toLocaleString('en-US')} m²
+                  {project.areaNote && ` (${project.areaNote})`}
+                </Row>
+              )}
+              {(project.certifications ?? []).length > 0 && (
+                <Row label="LEED / WELL">
+                  {project.certifications!.map(certification).join(', ')}
+                </Row>
+              )}
+              {project.predecessorFirm && <Row label="Completed As">{project.predecessorFirm}</Row>}
+            </dl>
+            {team.length > 0 && (
+              <OpenRow
+                label="TDA Team"
+                summary={`${team.length} ${team.length === 1 ? 'person' : 'people'}`}
               >
-                {project.year}
-              </Fact>
+                {(['principal', 'project-manager', 'designer'] as const).map(
+                  (role) =>
+                    byRole(role).length > 0 && (
+                      <p key={role}>
+                        {role === 'designer' && byRole(role).length === 1
+                          ? 'Designer'
+                          : ROLE_LABEL[role]}
+                        : {people(byRole(role))}
+                      </p>
+                    ),
+                )}
+              </OpenRow>
             )}
-          </dl>
-
-          {team.length > 0 && (
-            <div className="facts-team">
-              <h2 className="facts-heading">TDA Team</h2>
-              <dl className="facts-key">
-                {byRole('principal').length > 0 && (
-                  <Fact label={ROLE_LABEL.principal}>{people(byRole('principal'))}</Fact>
-                )}
-                {byRole('project-manager').length > 0 && (
-                  <Fact label={ROLE_LABEL['project-manager']}>
-                    {people(byRole('project-manager'))}
-                  </Fact>
-                )}
-                {byRole('designer').length > 0 && (
-                  <Fact label={byRole('designer').length > 1 ? 'Designers' : 'Designer'} wide>
-                    {people(byRole('designer'))}
-                  </Fact>
-                )}
+            {credits.length > 0 && (
+              <OpenRow
+                label="Collaborators"
+                summary={`${firmCount} ${firmCount === 1 ? 'firm' : 'firms'}`}
+              >
+                {credits.map((c) => (
+                  <p key={c.id}>
+                    {c.role!.name}:{' '}
+                    <List items={c.firms} render={(f) => firmLink('collaborator', f)} />
+                  </p>
+                ))}
+                <p>
+                  Lighting Design: <Link href="/">Tillotson Design Associates</Link>
+                </p>
+              </OpenRow>
+            )}
+            {awards.length > 0 && (
+              <OpenRow label="Awards" summary={String(awards.length)}>
+                {awards.map((a) => (
+                  <p key={a.id}>{[a.year, a.issuer, a.name].filter(Boolean).join(' ')}</p>
+                ))}
+              </OpenRow>
+            )}
+            {photographers.length > 0 && (
+              <dl>
+                <Row label="Photography">{photographers.join(' / ')}</Row>
               </dl>
+            )}
+          </section>
+
+          {project.description && (
+            <div className="project-description">
+              <RichText data={project.description} />
             </div>
           )}
+        </div>
 
-          {hasInfo && (
-            <details className="project-info">
-              <summary>
-                <span>Project Info</span>
-                <span className="project-info-sign" aria-hidden="true" />
-              </summary>
-              <div className="project-info-body">
-                <div>
-                  {owners.length > 0 && <p>Owner: {firmLinks(owners, 'client')}</p>}
-                  {typologies.length > 0 && (
-                    <p>
-                      Category:{' '}
-                      {typologies.map((t, i) => (
-                        <span key={t.id}>
-                          {i > 0 && ', '}
-                          <MetaLink href={filterHref('typology', t.slug ?? '')}>{t.name}</MetaLink>
-                        </span>
-                      ))}
-                    </p>
-                  )}
-                  {project.areaSqFt && (
-                    <p>
-                      Area: {Math.round(project.areaSqFt).toLocaleString('en-US')} SF /{' '}
-                      {Math.round(project.areaSqFt * SQ_FT_TO_M2).toLocaleString('en-US')} m²
-                      {project.areaNote && ` (${project.areaNote})`}
-                    </p>
-                  )}
-                  {(project.certifications ?? []).length > 0 && (
-                    <p>LEED/Well Status: {project.certifications!.map(certification).join(', ')}</p>
-                  )}
-                  {photographers.length > 0 && <p>Photography: {photographers.join(' / ')}</p>}
-                  {project.predecessorFirm && <p>Completed as: {project.predecessorFirm}</p>}
-                  {awards.length > 0 && (
-                    <>
-                      <p className="project-info-heading">Awards:</p>
-                      {awards.map((a) => (
-                        <p key={a.id}>{[a.year, a.issuer, a.name].filter(Boolean).join(' ')}</p>
-                      ))}
-                    </>
-                  )}
-                </div>
-                {credits.length > 0 && (
-                  <div>
-                    <p className="project-info-heading">Consultants:</p>
-                    {credits.map((c, i) => (
-                      <p key={i}>
-                        {c.role!.name}: {firmLinks(c.firms, 'collaborator')}
-                      </p>
-                    ))}
-                    <p>
-                      Lighting Design: <Link href="/">Tillotson Design Associates</Link>
-                    </p>
-                  </div>
-                )}
-              </div>
-            </details>
-          )}
-        </section>
-      </ProjectPhotos>
+        {slides.length > 1 && (
+          <ProjectSlideshow slides={slides.slice(1)} offset={1} name={project.name} />
+        )}
+      </PhotoViewer>
 
       {press.length > 0 && (
         <section className="press" aria-labelledby="press-heading">
-          <h2 id="press-heading" className="visually-hidden">
+          <h2 id="press-heading" className="block-heading">
             Press
           </h2>
           <ul>
             {press.map((p) => (
               <li key={p.id}>
-                <p className="press-title">&ldquo;{p.title}&rdquo;</p>
-                <p className="press-outlet">
-                  <a href={p.url} rel="noopener">
-                    {p.outlet || p.url}
-                  </a>
-                </p>
+                <a href={p.url} rel="noopener">
+                  <span className="press-outlet">{p.outlet || hostOf(p.url)}</span>
+                  <span className="press-title">&ldquo;{p.title}&rdquo;</span>
+                  <span className="press-out" aria-hidden="true">
+                    ↗
+                  </span>
+                </a>
               </li>
             ))}
           </ul>
         </section>
       )}
 
-      {related.length > 0 && (
-        <section className="other-projects" aria-labelledby="related-heading">
-          <h2 id="related-heading" className="section-heading">
-            Related Projects
-          </h2>
+      {other && (
+        <section className="other-projects" aria-labelledby="other-heading">
+          <div className="other-head">
+            <h2 id="other-heading" className="block-heading">
+              {other.by === 'architect' ? (
+                <>
+                  Other projects with <Link href={other.href}>{other.name}</Link>
+                </>
+              ) : (
+                <>
+                  Other <Link href={other.href}>{other.name}</Link> projects
+                </>
+              )}
+            </h2>
+            <Link href={other.href} className="other-all">
+              All {other.total} projects
+            </Link>
+          </div>
           <ul>
-            {related.map(({ project: p, reason }) => (
+            {other.projects.map((p) => (
               <li key={p.id}>
-                <Link href={`/projects/${p.slug}`} className="other-project">
-                  <span className="other-project-image">
+                <Link href={`/projects/${p.slug}`} className="other-card">
+                  <span className="other-card-image">
                     {p.image && (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={p.image.src}
                         srcSet={p.image.srcSet}
-                        sizes="(min-width: 720px) 25vw, 50vw"
+                        sizes="(min-width: 720px) 50vw, 100vw"
                         style={p.image.position ? { objectPosition: p.image.position } : undefined}
                         alt=""
                         loading="lazy"
                       />
                     )}
                   </span>
-                  <span className="other-project-name">{p.name}</span>
+                  <span className="other-card-text">
+                    <span className="other-card-name">{p.name}</span>
+                    <span className="other-card-meta">
+                      {[p.year, p.location?.displayName].filter(Boolean).join(' · ')}
+                    </span>
+                  </span>
                 </Link>
-                <MetaLink href={reason.href}>{reason.label}</MetaLink>
               </li>
             ))}
           </ul>
         </section>
       )}
     </article>
-  )
-}
-
-function Fact({
-  label,
-  children,
-  wide,
-}: {
-  label: string
-  children: React.ReactNode
-  wide?: boolean
-}) {
-  return (
-    <div className={wide ? 'fact fact-wide' : 'fact'}>
-      <dt>{label}</dt>
-      <dd>{children}</dd>
-    </div>
   )
 }

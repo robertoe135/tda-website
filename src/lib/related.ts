@@ -25,7 +25,11 @@ function shuffled<T>(list: T[], seed: number): T[] {
  * Projects with photographs come first. Each pick carries why it was picked, as a link to the
  * matching filtered view (or that year on the Timeline).
  */
-export function relatedProjects(project: ProjectCard, all: ProjectCard[], count = 4): RelatedProject[] {
+export function relatedProjects(
+  project: ProjectCard,
+  all: ProjectCard[],
+  count = 4,
+): RelatedProject[] {
   const others = all.filter((p) => p.id !== project.id)
   const withPhotosFirst = (list: ProjectCard[], salt: number) => {
     const order = shuffled(list, project.id * 31 + salt)
@@ -35,7 +39,9 @@ export function relatedProjects(project: ProjectCard, all: ProjectCard[], count 
   const groups: { pick: (p: ProjectCard) => RelatedProject['reason'] | undefined }[] = [
     {
       pick: (p) => {
-        const a = project.architects.find((x) => x.slug && p.architects.some((y) => y.slug === x.slug))
+        const a = project.architects.find(
+          (x) => x.slug && p.architects.some((y) => y.slug === x.slug),
+        )
         return a ? { label: a.name, href: filterHref('architect', a.slug!) } : undefined
       },
     },
@@ -62,7 +68,11 @@ export function relatedProjects(project: ProjectCard, all: ProjectCard[], count 
   const chosen: RelatedProject[] = []
   const taken = new Set<number>()
   // Start the rotation at a different group per project, so the first tile varies too.
-  for (let g = project.id % groups.length; chosen.length < count && queues.some((q) => q.length); g = (g + 1) % groups.length) {
+  for (
+    let g = project.id % groups.length;
+    chosen.length < count && queues.some((q) => q.length);
+    g = (g + 1) % groups.length
+  ) {
     const queue = queues[g]
     while (queue.length && taken.has(queue[0].project.id)) queue.shift()
     const next = queue.shift()
@@ -72,4 +82,55 @@ export function relatedProjects(project: ProjectCard, all: ProjectCard[], count 
     }
   }
   return chosen
+}
+
+/** The "Other projects" block: projects by the same architect, else in the same category. */
+export type OtherProjects = {
+  by: 'architect' | 'typology'
+  /** The architect or category, linking to its filtered portfolio. */
+  name: string
+  href: string
+  /** How many projects that filtered view lists, this one included. */
+  total: number
+  projects: ProjectCard[]
+}
+
+/**
+ * Projects for the bottom of a project page: by the first listed architect who has others, else
+ * in the first category that has others. Newest first (the order `all` arrives in), with
+ * photographs before projects without. Undefined when neither has another project.
+ */
+export function otherProjects(
+  project: ProjectCard,
+  all: ProjectCard[],
+  count = 2,
+): OtherProjects | undefined {
+  const others = all.filter((p) => p.id !== project.id)
+  const pick = (list: ProjectCard[]) =>
+    [...list.filter((p) => p.image), ...list.filter((p) => !p.image)].slice(0, count)
+  for (const a of project.architects) {
+    if (!a.slug) continue
+    const list = others.filter((p) => p.architects.some((x) => x.slug === a.slug))
+    if (list.length)
+      return {
+        by: 'architect',
+        name: a.name,
+        href: filterHref('architect', a.slug),
+        total: list.length + 1,
+        projects: pick(list),
+      }
+  }
+  for (const t of project.typologies) {
+    if (!t.slug) continue
+    const list = others.filter((p) => p.typologies.some((x) => x.slug === t.slug))
+    if (list.length)
+      return {
+        by: 'typology',
+        name: t.name,
+        href: filterHref('typology', t.slug),
+        total: list.length + 1,
+        projects: pick(list),
+      }
+  }
+  return undefined
 }

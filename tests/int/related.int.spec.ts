@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import type { ProjectCard } from '@/lib/projects'
-import { relatedProjects } from '@/lib/related'
+import { otherProjects, relatedProjects } from '@/lib/related'
 
 const card = (id: number, o: Partial<ProjectCard> = {}): ProjectCard => ({
   id,
@@ -43,7 +43,8 @@ describe('related projects', () => {
 
   it('links every reason to a filtered view or the Timeline year', () => {
     const hrefs = relatedProjects(me, all).map((p) => p.reason.href)
-    for (const h of hrefs) expect(h).toMatch(/^\/projects\?(architect=kpf|typology=corporate)$|^\/timeline#year-2020$/)
+    for (const h of hrefs)
+      expect(h).toMatch(/^\/projects\?(architect=kpf|typology=corporate)$|^\/timeline#year-2020$/)
   })
 
   it('gives the same set every time for one project, and puts projects with photos first', () => {
@@ -55,5 +56,35 @@ describe('related projects', () => {
 
   it('returns nothing for a project with nothing in common', () => {
     expect(relatedProjects(card(9), [card(9), card(10)])).toEqual([])
+  })
+})
+
+describe('otherProjects', () => {
+  const dsr = { name: 'DS+R', slug: 'dsr' }
+  const museums = { name: 'Museums', slug: 'museums' }
+  it('takes the architect first, newest first, photos before none', () => {
+    const me = card(1, { architects: [dsr], typologies: [museums] })
+    const all = [
+      me,
+      card(2, { architects: [dsr] }),
+      card(3, { architects: [dsr], image: { src: 'x', alt: '' } }),
+      card(4, { architects: [dsr] }),
+    ]
+    const o = otherProjects(me, all)!
+    expect(o.by).toBe('architect')
+    expect(o.total).toBe(4)
+    expect(o.projects.map((p) => p.id)).toEqual([3, 2])
+    expect(o.href).toContain('dsr')
+  })
+  it('falls back to the category when the architect has no other project', () => {
+    const me = card(1, { architects: [dsr], typologies: [museums] })
+    const o = otherProjects(me, [me, card(5, { typologies: [museums] })])!
+    expect(o.by).toBe('typology')
+    expect(o.name).toBe('Museums')
+    expect(o.total).toBe(2)
+  })
+  it('is undefined when nothing else matches', () => {
+    const me = card(1, { architects: [dsr], typologies: [museums] })
+    expect(otherProjects(me, [me, card(6)])).toBeUndefined()
   })
 })

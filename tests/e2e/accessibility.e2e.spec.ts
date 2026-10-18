@@ -47,7 +47,7 @@ for (const [label, size] of [
       const href = await firstLink(page, '/projects', '.portfolio-grid a')
       test.skip(!href, 'no published projects')
       await check(page, href!, async () => {
-        const photo = page.locator('.photo-button').first()
+        const photo = page.locator('.hero-button').first()
         test.skip((await photo.count()) === 0, 'the first project has no photos')
         await photo.click()
         await expect(page.locator('dialog.lightbox')).toBeVisible()
