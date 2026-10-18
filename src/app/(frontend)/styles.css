@@ -39,7 +39,10 @@ a:hover { text-decoration: underline; }
 .site-logo { display: block; height: 34px; width: auto; }
 .site-nav { font-weight: 300; text-transform: lowercase; }
 .nav-list, .nav-sub { list-style: none; margin: 0; padding: 0; }
-.site-nav a[aria-current='page'], .nav-about-button[data-current] { text-decoration: underline; text-underline-offset: 4px; }
+/* Menu A: the page you are on in black, the rest grey (#767676 keeps small text readable). */
+.site-nav a, .nav-about-button { color: #767676; }
+.site-nav a:hover, .nav-about-button:hover { color: var(--text); text-decoration: none; }
+.site-nav a[aria-current='page'], .nav-about-button[data-current] { color: var(--text); }
 /* Phones: a Menu button; the menu opens full screen under the header. */
 .menu-button { display: inline-flex; align-items: center; gap: 0.55rem; min-height: 44px; padding: 0 0 0 0.5rem; border: 0; background: none; font: inherit; font-weight: 300; font-size: 0.85rem; color: var(--text); text-transform: lowercase; cursor: pointer; }
 .menu-icon { position: relative; width: 22px; height: 12px; }
@@ -54,7 +57,7 @@ a:hover { text-decoration: underline; }
   .site-nav[data-open] { display: block; animation: menu-in 0.2s ease; }
   .nav-list > li { border-bottom: 1px solid var(--line); }
   .nav-list > li > a, .nav-about-label { display: block; padding: 0.85rem 0; font-size: 1.75rem; font-weight: 200; line-height: 1.2; }
-  .nav-about-label { color: var(--muted); }
+  .nav-about-label { color: var(--text); }
   .nav-sub { padding: 0 0 0.9rem 0.1rem; }
   .nav-sub a { display: block; padding: 0.5rem 0; font-size: 1.1rem; }
 }
@@ -111,6 +114,42 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .chip-clear { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
 .empty { font-weight: 300; }
 
+/* Grid / Map, and the map's area switch: two joined buttons, the chosen one black. */
+.segmented { display: inline-flex; border: 1px solid #c8c8c8; }
+.segmented a, .segmented button { display: inline-flex; align-items: center; min-height: 2.25rem; padding: 0 0.85rem; border: 0; background: var(--bg); font: inherit; font-weight: 300; font-size: 0.85rem; color: var(--muted); cursor: pointer; }
+.segmented a:hover, .segmented button:hover { color: var(--text); text-decoration: none; }
+.segmented a[aria-current='page'], .segmented button[aria-pressed='true'] { background: var(--text); color: var(--bg); }
+
+/* Portfolio map: grey countries, a dot per city; the picked city's projects beside it. */
+.project-map { display: grid; gap: 1.5rem; }
+.map-bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.5rem 1rem; margin-bottom: 0.6rem; }
+.map-summary { font-weight: 300; font-size: 0.75rem; color: var(--muted); }
+.map-frame { position: relative; aspect-ratio: 1200 / 620; background: #f1f1ef; overflow: hidden; margin-inline: calc(-1 * var(--gutter)); }
+.map-frame svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.map-frame path { fill: #d6d6d3; stroke: #f1f1ef; stroke-width: 0.6; }
+.map-dot { position: absolute; transform: translate(-50%, -50%); display: grid; place-items: center; padding: 0; border: 2px solid #fff; border-radius: 50%; background: #1a1a1a; color: #fff; font: inherit; font-size: 0.65rem; cursor: pointer; box-shadow: 0 1px 3px rgb(0 0 0 / 0.25); transition: transform 0.15s ease; }
+/* A small dot still gets a finger-sized target. */
+.map-dot::after { content: ''; position: absolute; inset: -6px; border-radius: 50%; }
+.map-dot:hover { transform: translate(-50%, -50%) scale(1.12); }
+/* Several cities in one dot: a ring marks it as one to zoom into. */
+.map-dot.is-group { box-shadow: 0 0 0 3px rgb(26 26 26 / 0.18), 0 1px 3px rgb(0 0 0 / 0.25); }
+.map-dot[aria-pressed='true'] { background: #fff; color: var(--text); border-color: var(--text); }
+.map-panel { border-top: 1px solid var(--text); padding-top: 0.9rem; }
+.map-panel h2 { margin: 0; font-weight: 300; font-size: 1.25rem; }
+.map-panel-count { margin: 0.2rem 0 0.8rem; font-weight: 300; font-size: 0.8rem; color: var(--muted); }
+.map-panel ul { list-style: none; margin: 0; padding: 0; border-bottom: 1px solid #e6e6e6; }
+.map-panel li a { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.75rem; padding: 0.65rem 0; border-top: 1px solid #e6e6e6; font-weight: 300; font-size: 0.9rem; }
+.map-panel li a:hover { text-decoration: none; }
+.map-panel li a:hover span:first-child { text-decoration: underline; }
+.map-panel-year { color: var(--muted); }
+.map-panel-all { display: inline-block; margin-top: 0.75rem; padding: 0.4rem 0; font-size: 0.82rem; text-decoration: underline; text-underline-offset: 4px; }
+@media (prefers-reduced-motion: reduce) { .map-dot { transition: none; } }
+@media (min-width: 900px) {
+  .project-map { grid-template-columns: minmax(0, 1fr) 18.5rem; gap: 2rem; align-items: start; }
+  .map-frame { margin-inline: 0; }
+  .map-panel { margin-top: 2.85rem; }
+}
+
 /* Phones: the categories become one line that scrolls sideways, the two menus share a row. */
 @media (max-width: 639px) {
   .portfolio-filters { flex-direction: column; flex-wrap: nowrap; align-items: stretch; margin-inline: calc(-1 * var(--gutter)); padding-bottom: 0; border-bottom: 0; }
@@ -133,6 +172,7 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 
 /* Project page (mockup F3) */
 .breadcrumb { padding: 0.25rem 0 0.75rem; font-weight: 300; font-size: 0.75rem; color: var(--muted); }
+.breadcrumb a { text-transform: lowercase; }
 .breadcrumb a { color: var(--muted); }
 .breadcrumb [aria-current] { color: var(--text); }
 /* Hero: the first photo across the full window width, cropped to its focal point, with the
@@ -226,8 +266,7 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 
 /* Team pages */
 /* Person page: name, then headshot and bio side by side at the same size, then project tiles */
-.person-header { margin: 2rem 0 1.5rem; }
-.person-name { font-weight: 300; font-size: 1.9rem; line-height: 1.15; margin: 0; }
+.person-header { margin: 0 0 1.5rem; }
 .person-title { margin: 0.35rem 0 0; font-weight: 300; color: var(--muted); }
 .person-intro { display: grid; gap: 1.5rem; }
 .person-headshot img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; }
@@ -246,7 +285,6 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .person-project-name { font-weight: 400; font-size: 0.95rem; line-height: 1.35; margin: 0.6rem 0 0; }
 .person-project-meta { display: block; color: var(--muted); font-weight: 300; font-size: 0.8rem; }
 @media (min-width: 768px) {
-  .person-name { font-size: 2.8rem; }
   .person-intro { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   /* The bio column is as tall as the headshot; a longer bio simply runs on. */
   .person-headshot + .person-bio { min-height: 100%; }
@@ -287,7 +325,8 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 /* Page heads: a title, and on the Timeline a row of years to jump to. */
 .page-head { padding-top: 1.75rem; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 0.75rem 1.5rem; padding-bottom: 1rem; }
 .page-head .page-title { margin: 0; }
-.page-title-large { font-weight: 200; font-size: 2.1rem; letter-spacing: -0.015em; margin: 1.75rem 0 0; }
+/* Page titles, one style: Team, Collaborators, Careers, a person. Under a breadcrumb. */
+.page-title-large, .person-name { font-weight: 300; font-size: 2rem; line-height: 1.1; letter-spacing: -0.01em; margin: 1.5rem 0 0; }
 .year-nav { display: flex; gap: 1rem; overflow-x: auto; white-space: nowrap; font-weight: 300; font-size: 0.8rem; width: 100%; }
 .year-nav a { color: var(--muted); padding: 0.5rem 0; }
 
@@ -337,7 +376,8 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 }
 
 /* Profile */
-.about-lede { margin: 2.25rem 0 0; font-weight: 200; font-size: 2.1rem; line-height: 1.15; letter-spacing: -0.015em; max-width: 56rem; }
+/* The opening statement (About › Profile, Contact): one size. */
+.about-lede, .contact-intro { margin: 0; font-weight: 300; font-size: 1.6rem; line-height: 1.3; letter-spacing: -0.01em; max-width: 48rem; }
 .about-facts { margin: 2.25rem 0 0; padding: 1.1rem 0; border-top: 1px solid var(--text); border-bottom: 1px solid var(--line); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; }
 .about-facts dt { font-size: 0.7rem; font-weight: 300; color: var(--muted); }
 .about-facts dd { margin: 0.25rem 0 0; font-size: 1.2rem; font-weight: 300; }
@@ -375,7 +415,7 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   .story-chap:first-child { padding-top: 1.75rem; }
   .story-heading { font-size: 0.85rem; margin-bottom: 1rem; }
   .about-body { font-size: 1.05rem; }
-  .story .about-lede { margin-top: 1.75rem; font-size: clamp(2.4rem, 3.6vw, 3.25rem); }
+  .story .about-lede { margin-top: 1.5rem; }
   .story .about-facts { margin-top: 2.5rem; gap: 1.25rem; }
   .story .about-facts dd { font-size: clamp(1.3rem, 1.9vw, 1.65rem); line-height: 1.2; }
 }
@@ -407,7 +447,6 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 
 /* Contact */
 .contact-top { display: grid; gap: 2.25rem; padding-top: 1.75rem; }
-.contact-intro { margin: 0; font-weight: 300; font-size: 1.6rem; line-height: 1.3; letter-spacing: -0.01em; }
 .contact-list { margin: 0; display: grid; gap: 1.75rem; }
 .contact-list dt { margin-bottom: 0.6rem; font-size: 0.72rem; letter-spacing: 0.07em; text-transform: uppercase; font-weight: 400; color: var(--muted); }
 .contact-list dd { margin: 0; font-weight: 300; font-size: 1.05rem; line-height: 1.6; }
@@ -458,13 +497,13 @@ body:has(.contact-intro) .footer-statement { display: none; }
 .footer-legal a { color: #a8a8a8; padding: 0.6rem 0; margin: -0.6rem 0; }
 
 @media (min-width: 720px) {
-  .page-title-large { font-size: 3.25rem; margin-top: 3rem; }
+  .page-title-large, .person-name { font-size: 2.75rem; margin-top: 2.25rem; }
   .page-head { padding-top: 3rem; padding-bottom: 1.5rem; }
   .year-nav { width: auto; max-width: 48rem; flex-wrap: wrap; justify-content: flex-end; gap: 0.1rem 0.9rem; overflow: visible; }
   .timeline { --row: 220px; --shot-gap: 8px; }
   .timeline-year { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: 1.25rem; padding: 0.9rem 0 2.5rem; }
   .timeline-heading { align-self: start; padding: 0; background: none; }
-  .about-lede { font-size: 3.25rem; margin-top: 4.5rem; line-height: 1.12; }
+  .about-lede, .contact-intro { font-size: 2.15rem; }
   .about-facts { margin-top: 4rem; padding: 1.75rem 0; gap: 2rem; }
   .about-facts dd { font-size: 2.1rem; font-weight: 200; }
   .team-group { margin-top: 4.5rem; }
@@ -539,7 +578,6 @@ body:has(.contact-intro) .footer-statement { display: none; }
   .contact-top.has-map > :not(.contact-map) { grid-column: 1; }
   .contact-top.has-map .contact-map { grid-column: 2; grid-row: 1 / span 3; align-self: stretch; display: flex; flex-direction: column; }
   .contact-map iframe { flex: 1; aspect-ratio: auto; min-height: 560px; }
-  .contact-intro { font-size: 2.15rem; line-height: 1.3; }
   .contact-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2.5rem 2rem; }
 }
 @media (min-width: 1080px) {

@@ -2,6 +2,7 @@ import { RichText } from '@payloadcms/richtext-lexical/react'
 import type { Metadata } from 'next'
 
 import { AboutStory, type StoryChapter } from '@/components/AboutStory'
+import { Breadcrumb } from '@/components/Breadcrumb'
 import { getAbout } from '@/lib/site'
 import type { Media } from '@/payload-types'
 
@@ -59,6 +60,7 @@ export default async function AboutPage() {
   )
   return (
     <div className="about">
+      <Breadcrumb trail={[{ href: '/about', label: 'about' }]} current="profile" />
       <AboutStory intro={intro} chapters={chapters} />
     </div>
   )

@@ -66,8 +66,8 @@ export default async function PersonPage({ params }: Props) {
     <article className="person">
       <Breadcrumb
         trail={[
-          { href: '/about', label: 'About' },
-          { href: '/about/team', label: 'Team' },
+          { href: '/about', label: 'about' },
+          { href: '/about/team', label: 'team' },
         ]}
         current={person.name}
       />

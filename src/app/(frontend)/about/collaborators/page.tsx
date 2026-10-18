@@ -21,7 +21,7 @@ export default async function CollaboratorsPage() {
   const groups = await getCollaborators()
   return (
     <div className="collaborators">
-      <Breadcrumb trail={[{ href: '/about', label: 'About' }]} current="Collaborators" />
+      <Breadcrumb trail={[{ href: '/about', label: 'about' }]} current="collaborators" />
       <h1 className="page-title page-title-large">Collaborators</h1>
       <nav aria-label="Jump to letter" className="letter-nav">
         {LETTERS.map((l) =>
