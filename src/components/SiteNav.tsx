@@ -18,20 +18,19 @@ const ABOUT = [
  */
 export function SiteNav() {
   const pathname = usePathname()
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [aboutOpen, setAboutOpen] = useState(false)
+  // Each menu remembers the page it was opened on, so going to a new page closes it.
+  const [menuAt, setMenuAt] = useState<string | null>(null)
+  const [aboutAt, setAboutAt] = useState<string | null>(null)
+  const menuOpen = menuAt === pathname
+  const aboutOpen = aboutAt === pathname
+  const setMenuOpen = (open: boolean) => setMenuAt(open ? pathname : null)
+  const setAboutOpen = (open: boolean) => setAboutAt(open ? pathname : null)
   const about = useRef<HTMLLIElement>(null)
 
   const is = (href: string, exact?: boolean) =>
     pathname === href || (!exact && pathname.startsWith(`${href}/`))
   const current = (href: string, exact?: boolean) =>
     is(href, exact) ? ('page' as const) : undefined
-
-  // A new page closes both menus.
-  useEffect(() => {
-    setMenuOpen(false)
-    setAboutOpen(false)
-  }, [pathname])
 
   // While the phone menu is open the page behind it does not scroll.
   useEffect(() => {
@@ -45,13 +44,12 @@ export function SiteNav() {
     if (!menuOpen && !aboutOpen) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        setMenuOpen(false)
-        setAboutOpen(false)
+        setMenuAt(null)
+        setAboutAt(null)
       }
     }
     const onClick = (e: MouseEvent) => {
-      if (aboutOpen && about.current && !about.current.contains(e.target as Node))
-        setAboutOpen(false)
+      if (aboutOpen && about.current && !about.current.contains(e.target as Node)) setAboutAt(null)
     }
     document.addEventListener('keydown', onKey)
     document.addEventListener('click', onClick)
@@ -68,7 +66,7 @@ export function SiteNav() {
         className="menu-button"
         aria-expanded={menuOpen}
         aria-controls="site-menu"
-        onClick={() => setMenuOpen((o) => !o)}
+        onClick={() => setMenuOpen(!menuOpen)}
       >
         <span className="menu-icon" data-open={menuOpen ? '' : undefined} aria-hidden="true">
           <span />
@@ -101,7 +99,7 @@ export function SiteNav() {
               aria-expanded={aboutOpen}
               aria-controls="about-menu"
               data-current={is('/about') ? '' : undefined}
-              onClick={() => setAboutOpen((o) => !o)}
+              onClick={() => setAboutOpen(!aboutOpen)}
             >
               About
               <svg
