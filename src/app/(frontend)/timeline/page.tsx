@@ -31,12 +31,15 @@ export default async function TimelinePage() {
   const years = await getTimeline()
   return (
     <div className="timeline">
-      <div className="page-head">
-        <h1 className="page-title page-title-large">Timeline</h1>
-      </div>
+      <h1 className="visually-hidden">Timeline</h1>
       {years.length > 1 && <YearRail years={years.map(({ year }) => year)} />}
       {years.map(({ year, projects }) => (
-        <section key={year} id={`year-${year}`} className="timeline-year" aria-labelledby={`year-${year}-h`}>
+        <section
+          key={year}
+          id={`year-${year}`}
+          className="timeline-year"
+          aria-labelledby={`year-${year}-h`}
+        >
           <h2 id={`year-${year}-h`} className="timeline-heading">
             {year}
           </h2>

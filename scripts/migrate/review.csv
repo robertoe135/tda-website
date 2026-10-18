@@ -376,3 +376,6 @@ https://www.tillotsondesign.com/timeline,year,School of American Ballet: 2007 on
 https://www.tillotsondesign.com/timeline,year,Mixed Greens Gallery: 2006 on the timeline,,Project page says 2007. Left at 2007; confirm which is right.
 https://www.tillotsondesign.com/timeline,year,Alessi Flagship Store: 2005 on the timeline,,Project page says 2015. Left at 2015; confirm which is right.
 https://www.tillotsondesign.com/timeline,year,Prada Beverly Hills: 2004 on the timeline,,Project page says 2001. Left at 2001; confirm which is right.
+admin: Locations,location,"Lightfair 2023 New York, NY",,"Not a place: an event name sits in the location (on Circular Economy “Seeds of Light”). Marketing to choose the real location (New York, NY?) and fix the project; nothing changed here."
+admin: Locations,location,"London, England / London, UK",,"The same city entered twice, so the portfolio's Location filter and the map show London twice. Marketing to pick one and move both projects to it; nothing changed here."
+admin: Locations,lat / lng,(empty on every location),,"The portfolio map only shows cities with coordinates. Fill Lat and Lng on each location used by a published project (about 15): right-click the city in Google Maps and copy the two numbers. Until any are filled, the Grid / Map switch stays hidden."

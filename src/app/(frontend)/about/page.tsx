@@ -1,8 +1,8 @@
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import type { Metadata } from 'next'
 
-import { AboutNav } from '@/components/AboutNav'
 import { AboutStory, type StoryChapter } from '@/components/AboutStory'
+import { Breadcrumb } from '@/components/Breadcrumb'
 import { getAbout } from '@/lib/site'
 import type { Media } from '@/payload-types'
 
@@ -13,8 +13,8 @@ export const metadata: Metadata = {
 }
 
 const storyImage = (m: Media) => {
-  const sizes = [m.sizes?.card, m.sizes?.gallery, m.sizes?.hero].filter((x): x is { url: string; width: number } =>
-    Boolean(x?.url && x?.width),
+  const sizes = [m.sizes?.card, m.sizes?.gallery, m.sizes?.hero].filter(
+    (x): x is { url: string; width: number } => Boolean(x?.url && x?.width),
   )
   return {
     src: m.sizes?.gallery?.url ?? m.url!,
@@ -32,11 +32,20 @@ export default async function AboutPage() {
   const about = await getAbout()
   const chapters: StoryChapter[] = (about.sections ?? []).map((s, i) => {
     const image = typeof s.image === 'object' && s.image?.url ? (s.image as Media) : undefined
-    return { id: s.id ?? String(i), heading: s.heading, image: image ? storyImage(image) : undefined, body: <RichText data={s.body} /> }
+    return {
+      id: s.id ?? String(i),
+      heading: s.heading,
+      image: image ? storyImage(image) : undefined,
+      body: <RichText data={s.body} />,
+    }
   })
   const intro = (
     <>
-      {about.lede ? <h1 className="about-lede">{about.lede}</h1> : <h1 className="page-title">About</h1>}
+      {about.lede ? (
+        <h1 className="about-lede">{about.lede}</h1>
+      ) : (
+        <h1 className="page-title">About</h1>
+      )}
       {(about.facts ?? []).length > 0 && (
         <dl className="about-facts">
           {about.facts!.map((f) => (
@@ -51,7 +60,7 @@ export default async function AboutPage() {
   )
   return (
     <div className="about">
-      <AboutNav />
+      <Breadcrumb trail={[{ href: '/about', label: 'about' }]} current="profile" />
       <AboutStory intro={intro} chapters={chapters} />
     </div>
   )

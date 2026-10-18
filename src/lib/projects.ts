@@ -20,7 +20,7 @@ export type ProjectCard = {
   year?: number | null
   status?: Project['status']
   featured?: boolean | null
-  location?: Pick<Location, 'displayName' | 'slug' | 'worldRegion'>
+  location?: Pick<Location, 'displayName' | 'slug' | 'worldRegion' | 'lat' | 'lng'>
   typologies: Pick<Typology, 'name' | 'slug'>[]
   architects: Pick<Firm, 'name' | 'slug'>[]
   /** The main image, card-sized with larger sizes in srcSet, when one has been uploaded. */
@@ -69,7 +69,7 @@ export async function getPublishedProjects(): Promise<ProjectCard[]> {
     populate: {
       // Photos are loaded whole: the storage plugin builds each address from the file name and
       // storage key when a photo is read, so a narrowed field list gives addresses that 404.
-      locations: { displayName: true, slug: true, worldRegion: true },
+      locations: { displayName: true, slug: true, worldRegion: true, lat: true, lng: true },
       typologies: { name: true, slug: true, order: true },
       firms: { name: true, slug: true },
     },

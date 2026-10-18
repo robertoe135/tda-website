@@ -88,3 +88,19 @@ describe('otherProjects', () => {
     expect(otherProjects(me, [me, card(6)])).toBeUndefined()
   })
 })
+
+describe('otherProjects, year fallback', () => {
+  it('uses projects completed the same year when architect and category have none', () => {
+    const me = card(1, { year: 2015, typologies: [] })
+    const o = otherProjects(me, [
+      me,
+      card(7, { year: 2015 }),
+      card(8, { year: 2015, status: 'in-progress' }),
+      card(9, { year: 2014 }),
+    ])!
+    expect(o.by).toBe('year')
+    expect(o.href).toBe('/timeline#year-2015')
+    expect(o.projects.map((p) => p.id)).toEqual([7])
+    expect(o.total).toBe(2)
+  })
+})

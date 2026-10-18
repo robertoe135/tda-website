@@ -28,22 +28,61 @@ a:hover { text-decoration: underline; }
 .skip-link:focus { left: var(--gutter); top: var(--gutter); background: var(--bg); padding: 0.5rem; z-index: 1; }
 
 /* Header and menu: logo left, small lowercase menu right, current page underlined, thin rule.
-   Sticky at the top while scrolling, as on the current site. */
+   Sticky at the top while scrolling. --header-h is its height, for things that stick under it. */
+:root { --header-h: 59px; }
 .site-header {
-  position: sticky; top: 0; z-index: 10; background: var(--bg);
-  display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem;
-  padding: var(--gutter) var(--gutter) 0.75rem; border-bottom: 1px solid var(--line);
+  position: sticky; top: 0; z-index: 10; background: var(--bg); height: var(--header-h); box-sizing: border-box;
+  display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+  padding: 0 var(--gutter); border-bottom: 1px solid var(--line);
 }
 .site-name { display: block; line-height: 0; }
-.site-logo { display: block; height: 44px; width: auto; }
-.site-nav { display: flex; gap: 1.5rem; text-transform: lowercase; font-weight: 300; font-size: 0.8rem; }
-.site-nav a[aria-current='page'] { text-decoration: underline; }
-/* Phones: name on the first line, the menu on the second, so neither wraps. */
-@media (max-width: 559px) {
-  .site-header { flex-wrap: wrap; row-gap: 0.4rem; padding-top: 0.75rem; padding-bottom: 0.6rem; }
-  .site-name { flex: 1 0 100%; }
-  .site-logo { height: 34px; }
-  .site-nav { gap: 1.25rem; }
+.site-logo { display: block; height: 34px; width: auto; }
+.site-nav { font-weight: 300; text-transform: lowercase; }
+.nav-list, .nav-sub { list-style: none; margin: 0; padding: 0; }
+/* Menu A: the page you are on in black, the rest grey (#767676 keeps small text readable). */
+.site-nav a, .nav-about-button { color: #767676; }
+.site-nav a:hover, .nav-about-button:hover { color: var(--text); text-decoration: none; }
+.site-nav a[aria-current='page'], .nav-about-button[data-current] { color: var(--text); }
+/* Phones: a Menu button; the menu opens full screen under the header. */
+.menu-button { display: inline-flex; align-items: center; gap: 0.55rem; min-height: 44px; padding: 0 0 0 0.5rem; border: 0; background: none; font: inherit; font-weight: 300; font-size: 0.85rem; color: var(--text); text-transform: lowercase; cursor: pointer; }
+.menu-icon { position: relative; width: 22px; height: 12px; }
+.menu-icon span { position: absolute; left: 0; right: 0; height: 1.5px; background: currentColor; transition: transform 0.25s ease, top 0.25s ease; }
+.menu-icon span:first-child { top: 1px; }
+.menu-icon span:last-child { top: 9px; }
+.menu-icon[data-open] span:first-child { top: 5px; transform: rotate(45deg); }
+.menu-icon[data-open] span:last-child { top: 5px; transform: rotate(-45deg); }
+.nav-about-button, .nav-about-label { display: none; }
+@media (max-width: 719px) {
+  .site-nav { display: none; position: fixed; top: var(--header-h); left: 0; right: 0; bottom: 0; z-index: 9; overflow-y: auto; background: var(--bg); padding: 1.5rem var(--gutter) 2.5rem; }
+  .site-nav[data-open] { display: block; animation: menu-in 0.2s ease; }
+  .nav-list > li { border-bottom: 1px solid var(--line); }
+  .nav-list > li > a, .nav-about-label { display: block; padding: 0.85rem 0; font-size: 1.75rem; font-weight: 200; line-height: 1.2; }
+  .nav-about-label { color: var(--text); }
+  .nav-sub { padding: 0 0 0.9rem 0.1rem; }
+  .nav-sub a { display: block; padding: 0.5rem 0; font-size: 1.1rem; }
+}
+@keyframes menu-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .menu-icon span { transition: none; } .site-nav[data-open] { animation: none; } }
+@media (min-width: 720px) {
+  :root { --header-h: 73px; }
+  .site-header { align-items: flex-end; padding: var(--gutter) var(--gutter) 0.75rem; }
+  .site-logo { height: 44px; }
+  .menu-button { display: none; }
+  .nav-list { display: flex; gap: 1.5rem; text-transform: lowercase; font-size: 0.8rem; }
+  .nav-list > li > a, .nav-about-button { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.35rem 0; }
+  .nav-about { position: relative; }
+  .nav-about-button { border: 0; background: none; font: inherit; color: inherit; text-transform: lowercase; cursor: pointer; }
+  .nav-about-button svg { transition: transform 0.2s ease; }
+  .nav-about[data-open] .nav-about-button svg { transform: rotate(180deg); }
+  /* About's small menu: under "about", opened by a click or by pointing at it. */
+  .nav-sub { display: none; position: absolute; top: 100%; right: -0.9rem; z-index: 11; min-width: 11rem; margin-top: 0.6rem; padding: 0.4rem 0; background: var(--bg); border: 1px solid var(--line); box-shadow: 0 8px 24px rgb(0 0 0 / 0.06); }
+  .nav-sub::before { content: ''; position: absolute; left: 0; right: 0; top: -0.7rem; height: 0.7rem; }
+  .nav-about[data-open] .nav-sub { display: block; }
+  .nav-sub a { display: block; padding: 0.5rem 0.9rem; font-size: 0.85rem; }
+  .nav-sub a:hover { background: #f5f5f3; text-decoration: none; }
+}
+@media (min-width: 720px) and (hover: hover) {
+  .nav-about:hover .nav-sub { display: block; }
 }
 
 main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
@@ -75,6 +114,42 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .chip-clear { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
 .empty { font-weight: 300; }
 
+/* Grid / Map, and the map's area switch: two joined buttons, the chosen one black. */
+.segmented { display: inline-flex; border: 1px solid #c8c8c8; }
+.segmented a, .segmented button { display: inline-flex; align-items: center; min-height: 2.25rem; padding: 0 0.85rem; border: 0; background: var(--bg); font: inherit; font-weight: 300; font-size: 0.85rem; color: var(--muted); cursor: pointer; }
+.segmented a:hover, .segmented button:hover { color: var(--text); text-decoration: none; }
+.segmented a[aria-current='page'], .segmented button[aria-pressed='true'] { background: var(--text); color: var(--bg); }
+
+/* Portfolio map: grey countries, a dot per city; the picked city's projects beside it. */
+.project-map { display: grid; gap: 1.5rem; }
+.map-bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.5rem 1rem; margin-bottom: 0.6rem; }
+.map-summary { font-weight: 300; font-size: 0.75rem; color: var(--muted); }
+.map-frame { position: relative; aspect-ratio: 1200 / 620; background: #f1f1ef; overflow: hidden; margin-inline: calc(-1 * var(--gutter)); }
+.map-frame svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.map-frame path { fill: #d6d6d3; stroke: #f1f1ef; stroke-width: 0.6; }
+.map-dot { position: absolute; transform: translate(-50%, -50%); display: grid; place-items: center; padding: 0; border: 2px solid #fff; border-radius: 50%; background: #1a1a1a; color: #fff; font: inherit; font-size: 0.65rem; cursor: pointer; box-shadow: 0 1px 3px rgb(0 0 0 / 0.25); transition: transform 0.15s ease; }
+/* A small dot still gets a finger-sized target. */
+.map-dot::after { content: ''; position: absolute; inset: -6px; border-radius: 50%; }
+.map-dot:hover { transform: translate(-50%, -50%) scale(1.12); }
+/* Several cities in one dot: a ring marks it as one to zoom into. */
+.map-dot.is-group { box-shadow: 0 0 0 3px rgb(26 26 26 / 0.18), 0 1px 3px rgb(0 0 0 / 0.25); }
+.map-dot[aria-pressed='true'] { background: #fff; color: var(--text); border-color: var(--text); }
+.map-panel { border-top: 1px solid var(--text); padding-top: 0.9rem; }
+.map-panel h2 { margin: 0; font-weight: 300; font-size: 1.25rem; }
+.map-panel-count { margin: 0.2rem 0 0.8rem; font-weight: 300; font-size: 0.8rem; color: var(--muted); }
+.map-panel ul { list-style: none; margin: 0; padding: 0; border-bottom: 1px solid #e6e6e6; }
+.map-panel li a { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.75rem; padding: 0.65rem 0; border-top: 1px solid #e6e6e6; font-weight: 300; font-size: 0.9rem; }
+.map-panel li a:hover { text-decoration: none; }
+.map-panel li a:hover span:first-child { text-decoration: underline; }
+.map-panel-year { color: var(--muted); }
+.map-panel-all { display: inline-block; margin-top: 0.75rem; padding: 0.4rem 0; font-size: 0.82rem; text-decoration: underline; text-underline-offset: 4px; }
+@media (prefers-reduced-motion: reduce) { .map-dot { transition: none; } }
+@media (min-width: 900px) {
+  .project-map { grid-template-columns: minmax(0, 1fr) 18.5rem; gap: 2rem; align-items: start; }
+  .map-frame { margin-inline: 0; }
+  .map-panel { margin-top: 2.85rem; }
+}
+
 /* Phones: the categories become one line that scrolls sideways, the two menus share a row. */
 @media (max-width: 639px) {
   .portfolio-filters { flex-direction: column; flex-wrap: nowrap; align-items: stretch; margin-inline: calc(-1 * var(--gutter)); padding-bottom: 0; border-bottom: 0; }
@@ -97,6 +172,7 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 
 /* Project page (mockup F3) */
 .breadcrumb { padding: 0.25rem 0 0.75rem; font-weight: 300; font-size: 0.75rem; color: var(--muted); }
+.breadcrumb a { text-transform: lowercase; }
 .breadcrumb a { color: var(--muted); }
 .breadcrumb [aria-current] { color: var(--text); }
 /* Hero: the first photo across the full window width, cropped to its focal point, with the
@@ -190,8 +266,7 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 
 /* Team pages */
 /* Person page: name, then headshot and bio side by side at the same size, then project tiles */
-.person-header { margin: 2rem 0 1.5rem; }
-.person-name { font-weight: 300; font-size: 1.9rem; line-height: 1.15; margin: 0; }
+.person-header { margin: 0 0 1.5rem; }
 .person-title { margin: 0.35rem 0 0; font-weight: 300; color: var(--muted); }
 .person-intro { display: grid; gap: 1.5rem; }
 .person-headshot img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; }
@@ -210,7 +285,6 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .person-project-name { font-weight: 400; font-size: 0.95rem; line-height: 1.35; margin: 0.6rem 0 0; }
 .person-project-meta { display: block; color: var(--muted); font-weight: 300; font-size: 0.8rem; }
 @media (min-width: 768px) {
-  .person-name { font-size: 2.8rem; }
   .person-intro { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   /* The bio column is as tall as the headshot; a longer bio simply runs on. */
   .person-headshot + .person-bio { min-height: 100%; }
@@ -251,15 +325,16 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 /* Page heads: a title, and on the Timeline a row of years to jump to. */
 .page-head { padding-top: 1.75rem; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 0.75rem 1.5rem; padding-bottom: 1rem; }
 .page-head .page-title { margin: 0; }
-.page-title-large { font-weight: 200; font-size: 2.1rem; letter-spacing: -0.015em; margin: 1.75rem 0 0; }
+/* Page titles, one style: Team, Collaborators, Careers, a person. Under a breadcrumb. */
+.page-title-large, .person-name { font-weight: 300; font-size: 2rem; line-height: 1.1; letter-spacing: -0.01em; margin: 1.5rem 0 0; }
 .year-nav { display: flex; gap: 1rem; overflow-x: auto; white-space: nowrap; font-weight: 300; font-size: 0.8rem; width: 100%; }
 .year-nav a { color: var(--muted); padding: 0.5rem 0; }
 
 /* Timeline, picture first: each year is a band of photographs at one height (--row), each
    keeping its own proportions (--r, set per photo) and growing to fill the row. The year is small
    and sticks below the site header while its band scrolls past. */
-.timeline { --row: 150px; --shot-gap: 6px; --year-top: 5.25rem; }
-.timeline-year { border-top: 1px solid var(--line); padding: 0 0 1.75rem; scroll-margin-top: 5.75rem; }
+.timeline { --row: 150px; --shot-gap: 6px; --year-top: calc(var(--header-h) + 1px); }
+.timeline-year { border-top: 1px solid var(--line); padding: 0 0 1.75rem; scroll-margin-top: calc(var(--header-h) + 1rem); }
 .timeline-heading {
   position: sticky; top: var(--year-top); z-index: 1; background: var(--bg);
   margin: 0; padding: 0.6rem 0; font-weight: 400; font-size: 0.9rem; line-height: 1.2;
@@ -300,19 +375,14 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   .shot img, .shot-name { transition: none; }
 }
 
-/* About sub-menu */
-.sub-nav { display: flex; gap: 1.4rem; font-weight: 300; font-size: 0.9rem; margin: 0.25rem 0 0; }
-.sub-nav a { padding: 0.6rem 0; }
-.sub-nav a[aria-current='page'] { text-decoration: underline; text-underline-offset: 4px; }
-
 /* Profile */
-.about-lede { margin: 2.25rem 0 0; font-weight: 200; font-size: 2.1rem; line-height: 1.15; letter-spacing: -0.015em; max-width: 56rem; }
+/* The opening statement (About › Profile, Contact): one size. */
+.about-lede, .contact-intro { margin: 0; font-weight: 300; font-size: 1.6rem; line-height: 1.3; letter-spacing: -0.01em; max-width: 48rem; }
 .about-facts { margin: 2.25rem 0 0; padding: 1.1rem 0; border-top: 1px solid var(--text); border-bottom: 1px solid var(--line); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; }
 .about-facts dt { font-size: 0.7rem; font-weight: 300; color: var(--muted); }
 .about-facts dd { margin: 0.25rem 0 0; font-size: 1.2rem; font-weight: 300; }
 /* Photo story: on phones the photo is a band under the header with the section name and dots;
    from 820px it holds still on the left, beside the text, with a counter below. */
-.story { --header-h: 73px; }
 .about-body { font-weight: 300; font-size: 1rem; line-height: 1.7; }
 .about-body p { margin: 0 0 1rem; }
 .story-stage { position: sticky; top: var(--header-h); z-index: 2; background: var(--bg); padding: 0.75rem 0 0.6rem; margin-top: 1.5rem; }
@@ -329,7 +399,6 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .story-chap:first-child { border-top: 0; padding-top: 1.25rem; }
 .story-heading { margin: 0 0 0.75rem; font-weight: 400; font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
 .story-text-only .story-text, .story-text-only .story-intro { max-width: 46rem; }
-@media (max-width: 559px) { .story { --header-h: 83px; } }
 @media (prefers-reduced-motion: reduce) { .story-shot { transition: none; } }
 @media (min-width: 820px) {
   .story:not(.story-text-only) {
@@ -346,7 +415,7 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   .story-chap:first-child { padding-top: 1.75rem; }
   .story-heading { font-size: 0.85rem; margin-bottom: 1rem; }
   .about-body { font-size: 1.05rem; }
-  .story .about-lede { margin-top: 1.75rem; font-size: clamp(2.4rem, 3.6vw, 3.25rem); }
+  .story .about-lede { margin-top: 1.5rem; }
   .story .about-facts { margin-top: 2.5rem; gap: 1.25rem; }
   .story .about-facts dd { font-size: clamp(1.3rem, 1.9vw, 1.65rem); line-height: 1.2; }
 }
@@ -378,20 +447,20 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 
 /* Contact */
 .contact-top { display: grid; gap: 2.25rem; padding-top: 1.75rem; }
-.contact-label { margin: 0 0 1.1rem; font-size: 0.8rem; font-weight: 400; }
-.contact-intro { margin: 0; font-weight: 200; font-size: 1.7rem; line-height: 1.22; }
-.contact-list { margin: 0; display: flex; flex-direction: column; gap: 1.4rem; }
-.contact-list > div { border-top: 1px solid var(--line); padding-top: 0.75rem; }
-.contact-list > div:first-child { border-top-color: var(--text); }
-.contact-list dt { font-size: 0.75rem; font-weight: 300; color: var(--muted); }
-.contact-list dd { margin: 0.4rem 0 0; font-weight: 300; font-size: 1.05rem; line-height: 1.5; }
+.contact-list { margin: 0; display: grid; gap: 1.75rem; }
+.contact-list dt { margin-bottom: 0.6rem; font-size: 0.72rem; letter-spacing: 0.07em; text-transform: uppercase; font-weight: 400; color: var(--muted); }
+.contact-list dd { margin: 0; font-weight: 300; font-size: 1.05rem; line-height: 1.6; }
 .contact-list address { font-style: normal; }
 .contact-line { display: block; }
 .contact-list dd a { display: inline-block; padding: 0.2rem 0; }
-.contact-action { display: inline-flex !important; align-items: center; gap: 0.5rem; min-height: 44px; font-size: 0.85rem; font-weight: 400; text-decoration: underline; text-underline-offset: 4px; text-decoration-color: #bbb; }
-.contact-careers { margin-top: 3rem; border-top: 1px solid var(--text); padding-top: 1rem; display: grid; gap: 0.9rem; }
-.contact-careers h2 { margin: 0; font-weight: 200; font-size: 1.5rem; }
-.contact-careers-text { font-weight: 300; font-size: 0.95rem; line-height: 1.65; max-width: 34rem; }
+.contact-action { display: inline-flex !important; align-items: center; gap: 0.5rem; min-height: 44px; margin-top: 0.4rem; font-size: 0.8rem; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 400; text-decoration: underline; text-underline-offset: 5px; }
+/* The map in greys, the studio's marker at its centre. */
+.contact-map { margin: 0; }
+.contact-map iframe { display: block; width: 100%; aspect-ratio: 4 / 3; border: 0; background: #e6e6e4; filter: grayscale(1) contrast(1.05); }
+.contact-map figcaption { margin-top: 0.5rem; font-weight: 300; font-size: 0.8rem; }
+.contact-careers { border-top: 1px solid var(--text); padding-top: 1.1rem; display: grid; gap: 0.9rem; justify-items: start; }
+.contact-careers h2 { margin: 0; font-weight: 500; font-size: 0.95rem; }
+.contact-careers-text { font-weight: 300; font-size: 1rem; line-height: 1.7; max-width: 36rem; }
 .contact-careers-text p { margin: 0; }
 .button-outline { display: inline-flex; align-items: center; justify-content: space-between; gap: 0.6rem; min-height: 48px; margin-top: 1.25rem; padding: 0 1.25rem; border: 1px solid var(--text); font-size: 0.85rem; }
 .button-outline:hover { background: var(--text); color: var(--bg); text-decoration: none; }
@@ -403,6 +472,8 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .footer-top { display: grid; gap: 1.5rem; }
 .footer-home { display: block; width: fit-content; line-height: 0; }
 .footer-logo { display: block; height: 52px; width: auto; filter: brightness(0) invert(1); }
+/* Contact opens with the same statement, so the footer leaves it out there. */
+body:has(.contact-intro) .footer-statement { display: none; }
 .footer-statement { margin: 0; max-width: 40rem; font-size: 1.35rem; line-height: 1.4; font-weight: 200; color: #e8e8e8; }
 .footer-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2.25rem 1.5rem; border-top: 1px solid #2e2e2e; padding-top: 2rem; }
 .footer-cols > * { grid-column: 1 / -1; }
@@ -426,13 +497,13 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .footer-legal a { color: #a8a8a8; padding: 0.6rem 0; margin: -0.6rem 0; }
 
 @media (min-width: 720px) {
-  .page-title-large { font-size: 3.25rem; margin-top: 3rem; }
+  .page-title-large, .person-name { font-size: 2.75rem; margin-top: 2.25rem; }
   .page-head { padding-top: 3rem; padding-bottom: 1.5rem; }
   .year-nav { width: auto; max-width: 48rem; flex-wrap: wrap; justify-content: flex-end; gap: 0.1rem 0.9rem; overflow: visible; }
-  .timeline { --row: 220px; --shot-gap: 8px; --year-top: 4.65rem; }
+  .timeline { --row: 220px; --shot-gap: 8px; }
   .timeline-year { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: 1.25rem; padding: 0.9rem 0 2.5rem; }
   .timeline-heading { align-self: start; padding: 0; background: none; }
-  .about-lede { font-size: 3.25rem; margin-top: 4.5rem; line-height: 1.12; }
+  .about-lede, .contact-intro { font-size: 2.15rem; }
   .about-facts { margin-top: 4rem; padding: 1.75rem 0; gap: 2rem; }
   .about-facts dd { font-size: 2.1rem; font-weight: 200; }
   .team-group { margin-top: 4.5rem; }
@@ -446,14 +517,6 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   .collaborator-letter { font-size: 2.5rem; margin-bottom: 0.75rem; }
   .collaborator-list li { padding: 0.3rem 0; }
   .collaborator-list li a { margin: -0.3rem 0; padding: 0.3rem 0; }
-  .contact-top { grid-template-columns: 7fr 5fr; gap: 5rem; padding-top: 4.5rem; align-items: start; }
-  .contact-label { margin-bottom: 1.75rem; }
-  .contact-intro { font-size: 2.75rem; line-height: 1.18; letter-spacing: -0.015em; }
-  .contact-list { padding-top: 2.75rem; gap: 2rem; }
-  .contact-list dd { font-size: 1.1rem; }
-  .contact-careers { margin-top: 6rem; grid-template-columns: 5fr 7fr; gap: 5rem; padding-top: 1.25rem; }
-  .contact-careers h2 { font-size: 1.9rem; }
-  .contact-careers-text { font-size: 1.05rem; }
   .site-footer { padding: 4.5rem 2.5rem 1.75rem; margin-top: 7rem; }
   .footer-inner { gap: 4rem; }
   .footer-top { grid-template-columns: auto minmax(0, 1fr); align-items: end; justify-items: end; gap: 2rem; }
@@ -467,7 +530,6 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   .tile-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .team-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .collaborator-list { columns: 3; }
-  .contact-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .home { gap: 4.5rem; padding-top: 1.5rem; }
   /* A row is a line of items, each its share (--w) of the row's width in its layout (--n
      places), so a row missing a project keeps the others at their size, centred. */
@@ -495,6 +557,11 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   .project-title { font-size: 2.5rem; }
   .project-line { font-size: 0.88rem; }
   .project-body { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 4rem; padding: 3.5rem 0 4.5rem; }
+  /* No write-up: the credits take the full width. */
+  .project-body.no-text { grid-template-columns: minmax(0, 1fr); }
+  .no-text .credit-row, .no-text .credit-more > summary { grid-template-columns: 14rem minmax(0, 1fr); }
+  .no-text .credit-more > summary { grid-template-columns: 14rem minmax(0, 1fr) 24px; }
+  .no-text .credit-list { padding-left: 14.75rem; }
   .project-description { font-size: 1.02rem; }
   .slideshow { margin: 0 0 5.5rem; }
   .slideshow-meta { padding-inline: 0; }
@@ -504,6 +571,14 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   .press-outlet { font-size: 0.82rem; color: var(--text); }
   .press-out { grid-column: 3; grid-row: auto; }
   .other-projects ul { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 900px) {
+  /* Statement, details and Careers on the left; the map beside them, as tall as they are. */
+  .contact-top { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: clamp(3rem, 7vw, 6rem); row-gap: 3.5rem; padding-top: 4.5rem; align-items: start; }
+  .contact-top.has-map > :not(.contact-map) { grid-column: 1; }
+  .contact-top.has-map .contact-map { grid-column: 2; grid-row: 1 / span 3; align-self: stretch; display: flex; flex-direction: column; }
+  .contact-map iframe { flex: 1; aspect-ratio: auto; min-height: 560px; }
+  .contact-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2.5rem 2rem; }
 }
 @media (min-width: 1080px) {
   .footer-cols { grid-template-columns: 1.2fr 1fr 1.4fr 1.4fr; }
