@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-import { AboutNav } from '@/components/AboutNav'
+import { Breadcrumb } from '@/components/Breadcrumb'
 import { getTeam } from '@/lib/site'
 
 export const metadata: Metadata = {
@@ -15,7 +15,7 @@ export default async function TeamPage() {
   const groups = await getTeam()
   return (
     <div className="team">
-      <AboutNav />
+      <Breadcrumb trail={[{ href: '/about', label: 'About' }]} current="Team" />
       <h1 className="page-title page-title-large">Team</h1>
       {groups.length === 0 && <p className="empty">The team will be introduced here soon.</p>}
       {groups.map((g) => (

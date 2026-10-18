@@ -236,7 +236,7 @@ export default async function ProjectPage({ params }: Props) {
           <header className="project-hero no-photo">{title}</header>
         )}
 
-        <div className="project-body">
+        <div className={project.description ? 'project-body' : 'project-body no-text'}>
           <section className="credits" aria-labelledby="credits-heading">
             <h2 id="credits-heading" className="credits-heading">
               Facts and Credits
@@ -379,13 +379,15 @@ export default async function ProjectPage({ params }: Props) {
                   Other projects with <Link href={other.href}>{other.name}</Link>
                 </>
               ) : (
-                <>
-                  Other <Link href={other.href}>{other.name}</Link> projects
-                </>
+                'Other projects'
               )}
             </h2>
             <Link href={other.href} className="other-all">
-              All {other.total} projects
+              {other.by === 'architect'
+                ? `All ${other.total} projects`
+                : other.by === 'typology'
+                  ? `All ${other.total} ${other.name} projects`
+                  : `All ${other.total} projects completed in ${other.name}`}
             </Link>
           </div>
           <ul>

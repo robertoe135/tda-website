@@ -2,9 +2,9 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import React from 'react'
 
-import { NavLink } from '@/components/NavLink'
 import { OrganizationJsonLd } from '@/components/OrganizationJsonLd'
 import { SiteFooter } from '@/components/SiteFooter'
+import { SiteNav } from '@/components/SiteNav'
 import { indexingAllowed } from '@/lib/seo'
 import '@fontsource-variable/dm-sans'
 import './styles.css'
@@ -33,15 +33,15 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
         <header className="site-header">
           <Link href="/" className="site-name">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/tda-logo.svg" alt="Tillotson Design Associates" width={1000} height={414} className="site-logo" />
+            <img
+              src="/tda-logo.svg"
+              alt="Tillotson Design Associates"
+              width={1000}
+              height={414}
+              className="site-logo"
+            />
           </Link>
-          {/* Menu as on tillotsondesign.com. */}
-          <nav aria-label="Main" className="site-nav">
-            <NavLink href="/projects">Portfolio</NavLink>
-            <NavLink href="/timeline">Timeline</NavLink>
-            <NavLink href="/about">About</NavLink>
-            <NavLink href="/contact">Contact</NavLink>
-          </nav>
+          <SiteNav />
         </header>
         <main id="main">{children}</main>
         <SiteFooter />

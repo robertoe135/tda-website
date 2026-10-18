@@ -28,22 +28,58 @@ a:hover { text-decoration: underline; }
 .skip-link:focus { left: var(--gutter); top: var(--gutter); background: var(--bg); padding: 0.5rem; z-index: 1; }
 
 /* Header and menu: logo left, small lowercase menu right, current page underlined, thin rule.
-   Sticky at the top while scrolling, as on the current site. */
+   Sticky at the top while scrolling. --header-h is its height, for things that stick under it. */
+:root { --header-h: 59px; }
 .site-header {
-  position: sticky; top: 0; z-index: 10; background: var(--bg);
-  display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem;
-  padding: var(--gutter) var(--gutter) 0.75rem; border-bottom: 1px solid var(--line);
+  position: sticky; top: 0; z-index: 10; background: var(--bg); height: var(--header-h); box-sizing: border-box;
+  display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+  padding: 0 var(--gutter); border-bottom: 1px solid var(--line);
 }
 .site-name { display: block; line-height: 0; }
-.site-logo { display: block; height: 44px; width: auto; }
-.site-nav { display: flex; gap: 1.5rem; text-transform: lowercase; font-weight: 300; font-size: 0.8rem; }
-.site-nav a[aria-current='page'] { text-decoration: underline; }
-/* Phones: name on the first line, the menu on the second, so neither wraps. */
-@media (max-width: 559px) {
-  .site-header { flex-wrap: wrap; row-gap: 0.4rem; padding-top: 0.75rem; padding-bottom: 0.6rem; }
-  .site-name { flex: 1 0 100%; }
-  .site-logo { height: 34px; }
-  .site-nav { gap: 1.25rem; }
+.site-logo { display: block; height: 34px; width: auto; }
+.site-nav { font-weight: 300; }
+.nav-list, .nav-sub { list-style: none; margin: 0; padding: 0; }
+.site-nav a[aria-current='page'], .nav-about-button[data-current] { text-decoration: underline; text-underline-offset: 4px; }
+/* Phones: a Menu button; the menu opens full screen under the header. */
+.menu-button { display: inline-flex; align-items: center; gap: 0.55rem; min-height: 44px; padding: 0 0 0 0.5rem; border: 0; background: none; font: inherit; font-weight: 300; font-size: 0.85rem; color: var(--text); text-transform: lowercase; cursor: pointer; }
+.menu-icon { position: relative; width: 22px; height: 12px; }
+.menu-icon span { position: absolute; left: 0; right: 0; height: 1.5px; background: currentColor; transition: transform 0.25s ease, top 0.25s ease; }
+.menu-icon span:first-child { top: 1px; }
+.menu-icon span:last-child { top: 9px; }
+.menu-icon[data-open] span:first-child { top: 5px; transform: rotate(45deg); }
+.menu-icon[data-open] span:last-child { top: 5px; transform: rotate(-45deg); }
+.nav-about-button, .nav-about-label { display: none; }
+@media (max-width: 719px) {
+  .site-nav { display: none; position: fixed; top: var(--header-h); left: 0; right: 0; bottom: 0; z-index: 9; overflow-y: auto; background: var(--bg); padding: 1.5rem var(--gutter) 2.5rem; }
+  .site-nav[data-open] { display: block; animation: menu-in 0.2s ease; }
+  .nav-list > li { border-bottom: 1px solid var(--line); }
+  .nav-list > li > a, .nav-about-label { display: block; padding: 0.85rem 0; font-size: 1.75rem; font-weight: 200; line-height: 1.2; }
+  .nav-about-label { color: var(--muted); }
+  .nav-sub { padding: 0 0 0.9rem 0.1rem; }
+  .nav-sub a { display: block; padding: 0.5rem 0; font-size: 1.1rem; }
+}
+@keyframes menu-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .menu-icon span { transition: none; } .site-nav[data-open] { animation: none; } }
+@media (min-width: 720px) {
+  :root { --header-h: 73px; }
+  .site-header { align-items: flex-end; padding: var(--gutter) var(--gutter) 0.75rem; }
+  .site-logo { height: 44px; }
+  .menu-button { display: none; }
+  .nav-list { display: flex; gap: 1.5rem; text-transform: lowercase; font-size: 0.8rem; }
+  .nav-list > li > a, .nav-about-button { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.35rem 0; }
+  .nav-about { position: relative; }
+  .nav-about-button { border: 0; background: none; font: inherit; color: inherit; text-transform: lowercase; cursor: pointer; }
+  .nav-about-button svg { transition: transform 0.2s ease; }
+  .nav-about[data-open] .nav-about-button svg { transform: rotate(180deg); }
+  /* About's small menu: under "about", opened by a click or by pointing at it. */
+  .nav-sub { display: none; position: absolute; top: 100%; right: -0.9rem; z-index: 11; min-width: 11rem; margin-top: 0.6rem; padding: 0.4rem 0; background: var(--bg); border: 1px solid var(--line); box-shadow: 0 8px 24px rgb(0 0 0 / 0.06); text-transform: none; }
+  .nav-sub::before { content: ''; position: absolute; left: 0; right: 0; top: -0.7rem; height: 0.7rem; }
+  .nav-about[data-open] .nav-sub { display: block; }
+  .nav-sub a { display: block; padding: 0.5rem 0.9rem; font-size: 0.85rem; }
+  .nav-sub a:hover { background: #f5f5f3; text-decoration: none; }
+}
+@media (min-width: 720px) and (hover: hover) {
+  .nav-about:hover .nav-sub { display: block; }
 }
 
 main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
@@ -258,8 +294,8 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 /* Timeline, picture first: each year is a band of photographs at one height (--row), each
    keeping its own proportions (--r, set per photo) and growing to fill the row. The year is small
    and sticks below the site header while its band scrolls past. */
-.timeline { --row: 150px; --shot-gap: 6px; --year-top: 5.25rem; }
-.timeline-year { border-top: 1px solid var(--line); padding: 0 0 1.75rem; scroll-margin-top: 5.75rem; }
+.timeline { --row: 150px; --shot-gap: 6px; --year-top: calc(var(--header-h) + 1px); }
+.timeline-year { border-top: 1px solid var(--line); padding: 0 0 1.75rem; scroll-margin-top: calc(var(--header-h) + 1rem); }
 .timeline-heading {
   position: sticky; top: var(--year-top); z-index: 1; background: var(--bg);
   margin: 0; padding: 0.6rem 0; font-weight: 400; font-size: 0.9rem; line-height: 1.2;
@@ -300,11 +336,6 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   .shot img, .shot-name { transition: none; }
 }
 
-/* About sub-menu */
-.sub-nav { display: flex; gap: 1.4rem; font-weight: 300; font-size: 0.9rem; margin: 0.25rem 0 0; }
-.sub-nav a { padding: 0.6rem 0; }
-.sub-nav a[aria-current='page'] { text-decoration: underline; text-underline-offset: 4px; }
-
 /* Profile */
 .about-lede { margin: 2.25rem 0 0; font-weight: 200; font-size: 2.1rem; line-height: 1.15; letter-spacing: -0.015em; max-width: 56rem; }
 .about-facts { margin: 2.25rem 0 0; padding: 1.1rem 0; border-top: 1px solid var(--text); border-bottom: 1px solid var(--line); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; }
@@ -312,7 +343,6 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .about-facts dd { margin: 0.25rem 0 0; font-size: 1.2rem; font-weight: 300; }
 /* Photo story: on phones the photo is a band under the header with the section name and dots;
    from 820px it holds still on the left, beside the text, with a counter below. */
-.story { --header-h: 73px; }
 .about-body { font-weight: 300; font-size: 1rem; line-height: 1.7; }
 .about-body p { margin: 0 0 1rem; }
 .story-stage { position: sticky; top: var(--header-h); z-index: 2; background: var(--bg); padding: 0.75rem 0 0.6rem; margin-top: 1.5rem; }
@@ -329,7 +359,6 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .story-chap:first-child { border-top: 0; padding-top: 1.25rem; }
 .story-heading { margin: 0 0 0.75rem; font-weight: 400; font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
 .story-text-only .story-text, .story-text-only .story-intro { max-width: 46rem; }
-@media (max-width: 559px) { .story { --header-h: 83px; } }
 @media (prefers-reduced-motion: reduce) { .story-shot { transition: none; } }
 @media (min-width: 820px) {
   .story:not(.story-text-only) {
@@ -404,6 +433,8 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .footer-top { display: grid; gap: 1.5rem; }
 .footer-home { display: block; width: fit-content; line-height: 0; }
 .footer-logo { display: block; height: 52px; width: auto; filter: brightness(0) invert(1); }
+/* Contact opens with the same statement, so the footer leaves it out there. */
+body:has(.contact-intro) .footer-statement { display: none; }
 .footer-statement { margin: 0; max-width: 40rem; font-size: 1.35rem; line-height: 1.4; font-weight: 200; color: #e8e8e8; }
 .footer-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2.25rem 1.5rem; border-top: 1px solid #2e2e2e; padding-top: 2rem; }
 .footer-cols > * { grid-column: 1 / -1; }
@@ -430,7 +461,7 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   .page-title-large { font-size: 3.25rem; margin-top: 3rem; }
   .page-head { padding-top: 3rem; padding-bottom: 1.5rem; }
   .year-nav { width: auto; max-width: 48rem; flex-wrap: wrap; justify-content: flex-end; gap: 0.1rem 0.9rem; overflow: visible; }
-  .timeline { --row: 220px; --shot-gap: 8px; --year-top: 4.65rem; }
+  .timeline { --row: 220px; --shot-gap: 8px; }
   .timeline-year { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: 1.25rem; padding: 0.9rem 0 2.5rem; }
   .timeline-heading { align-self: start; padding: 0; background: none; }
   .about-lede { font-size: 3.25rem; margin-top: 4.5rem; line-height: 1.12; }
@@ -487,6 +518,11 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   .project-title { font-size: 2.5rem; }
   .project-line { font-size: 0.88rem; }
   .project-body { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 4rem; padding: 3.5rem 0 4.5rem; }
+  /* No write-up: the credits take the full width. */
+  .project-body.no-text { grid-template-columns: minmax(0, 1fr); }
+  .no-text .credit-row, .no-text .credit-more > summary { grid-template-columns: 14rem minmax(0, 1fr); }
+  .no-text .credit-more > summary { grid-template-columns: 14rem minmax(0, 1fr) 24px; }
+  .no-text .credit-list { padding-left: 14.75rem; }
   .project-description { font-size: 1.02rem; }
   .slideshow { margin: 0 0 5.5rem; }
   .slideshow-meta { padding-inline: 0; }

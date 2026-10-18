@@ -86,8 +86,8 @@ export function relatedProjects(
 
 /** The "Other projects" block: projects by the same architect, else in the same category. */
 export type OtherProjects = {
-  by: 'architect' | 'typology'
-  /** The architect or category, linking to its filtered portfolio. */
+  by: 'architect' | 'typology' | 'year'
+  /** The architect, category or year, linking to its filtered portfolio (a year: the Timeline). */
   name: string
   href: string
   /** How many projects that filtered view lists, this one included. */
@@ -97,8 +97,9 @@ export type OtherProjects = {
 
 /**
  * Projects for the bottom of a project page: by the first listed architect who has others, else
- * in the first category that has others. Newest first (the order `all` arrives in), with
- * photographs before projects without. Undefined when neither has another project.
+ * in the first category that has others, else completed in the same year. Newest first (the
+ * order `all` arrives in), with photographs before projects without. Undefined when none of the
+ * three has another project.
  */
 export function otherProjects(
   project: ProjectCard,
@@ -129,6 +130,17 @@ export function otherProjects(
         name: t.name,
         href: filterHref('typology', t.slug),
         total: list.length + 1,
+        projects: pick(list),
+      }
+  }
+  if (project.year) {
+    const list = others.filter((p) => p.year === project.year && p.status === 'completed')
+    if (list.length)
+      return {
+        by: 'year',
+        name: String(project.year),
+        href: `/timeline#year-${project.year}`,
+        total: list.length + (project.status === 'completed' ? 1 : 0),
         projects: pick(list),
       }
   }

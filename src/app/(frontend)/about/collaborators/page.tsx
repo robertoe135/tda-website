@@ -1,12 +1,13 @@
 import type { Metadata } from 'next'
 
-import { AboutNav } from '@/components/AboutNav'
+import { Breadcrumb } from '@/components/Breadcrumb'
 import { MetaLink } from '@/components/MetaLink'
 import { getCollaborators } from '@/lib/site'
 
 export const metadata: Metadata = {
   title: 'Collaborators — Tillotson Design Associates',
-  description: 'Architects, landscape architects and designers Tillotson Design Associates has worked with.',
+  description:
+    'Architects, landscape architects and designers Tillotson Design Associates has worked with.',
   alternates: { canonical: '/about/collaborators' },
 }
 
@@ -20,7 +21,7 @@ export default async function CollaboratorsPage() {
   const groups = await getCollaborators()
   return (
     <div className="collaborators">
-      <AboutNav />
+      <Breadcrumb trail={[{ href: '/about', label: 'About' }]} current="Collaborators" />
       <h1 className="page-title page-title-large">Collaborators</h1>
       <nav aria-label="Jump to letter" className="letter-nav">
         {LETTERS.map((l) =>
@@ -37,13 +38,19 @@ export default async function CollaboratorsPage() {
       </nav>
       <div className="collaborator-list">
         {groups.map(({ letter, firms }) => (
-          <section key={letter} id={`letter-${letter === '#' ? 'other' : letter}`} aria-label={letter === '#' ? 'Other' : letter}>
+          <section
+            key={letter}
+            id={`letter-${letter === '#' ? 'other' : letter}`}
+            aria-label={letter === '#' ? 'Other' : letter}
+          >
             <h3 className="collaborator-letter" aria-hidden="true">
               {letter}
             </h3>
             <ul>
               {firms.map((f) => (
-                <li key={f.slug}>{f.href ? <MetaLink href={f.href}>{f.name}</MetaLink> : f.name}</li>
+                <li key={f.slug}>
+                  {f.href ? <MetaLink href={f.href}>{f.name}</MetaLink> : f.name}
+                </li>
               ))}
             </ul>
           </section>
