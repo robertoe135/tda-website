@@ -4,7 +4,6 @@ import config from '@/payload.config'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { senderHash, submitApplication } from '@/lib/careers'
-import { subscribe } from '@/lib/mailchimp'
 
 let payload: Payload
 const ip = `203.0.113.${Math.floor(Math.random() * 250)}`
@@ -104,28 +103,5 @@ describe('career applications', () => {
   it('is never readable or creatable through the public API', async () => {
     await expect(payload.find({ collection: 'leads', overrideAccess: false })).rejects.toThrow()
     await expect(payload.create({ collection: 'leads', overrideAccess: false, data: { type: 'career', status: 'new', name: 'x', email: 'x@example.com' } })).rejects.toThrow()
-  })
-})
-
-describe('newsletter signup', () => {
-  it('adds the address to the Mailchimp audience as pending (double opt-in)', async () => {
-    vi.stubEnv('MAILCHIMP_API_KEY', 'abc123-us21')
-    vi.stubEnv('MAILCHIMP_AUDIENCE_ID', 'list42')
-    const fetchMock = vi.fn().mockResolvedValue(new Response('{}', { status: 200 }))
-    expect(await subscribe(' Person@Example.com ', fetchMock)).toEqual({ ok: true })
-    const [url, init] = fetchMock.mock.calls[0]
-    expect(url).toMatch(/^https:\/\/us21\.api\.mailchimp\.com\/3\.0\/lists\/list42\/members\/[0-9a-f]{32}$/)
-    expect(init.method).toBe('PUT')
-    expect(JSON.parse(init.body)).toEqual({ email_address: 'person@example.com', status_if_new: 'pending' })
-    vi.unstubAllEnvs()
-  })
-
-  it('does nothing until Mailchimp is set up, and checks the address first', async () => {
-    vi.stubEnv('MAILCHIMP_API_KEY', '')
-    const fetchMock = vi.fn()
-    expect(await subscribe('person@example.com', fetchMock)).toMatchObject({ ok: false })
-    expect(await subscribe('not-an-email', fetchMock)).toMatchObject({ ok: false, error: expect.stringMatching(/valid/) })
-    expect(fetchMock).not.toHaveBeenCalled()
-    vi.unstubAllEnvs()
   })
 })

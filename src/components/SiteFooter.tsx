@@ -1,7 +1,7 @@
 import Link from 'next/link'
 
 import { NewsletterSignup } from '@/components/NewsletterSignup'
-import { mailchimpConfigured } from '@/lib/mailchimp'
+import { signupConfigured } from '@/lib/subscribe'
 import { filterHref, getPublishedProjects, getTypologies } from '@/lib/projects'
 import { formatAddress, getSettings, telHref } from '@/lib/site'
 
@@ -9,7 +9,7 @@ const SOCIAL_LABEL: Record<string, string> = { x: 'X', linkedin: 'LinkedIn', you
 
 /**
  * Footer 1 (black): the logo and the studio's statement, then the studio's details, the site's
- * pages, every category that has published work, the newsletter (when Mailchimp is set up) and
+ * pages, every category that has published work, the newsletter (when Resend is set up) and
  * social links, and the legal line. Everything comes from Site settings and the portfolio, so
  * marketing edits it in the admin.
  */
@@ -23,7 +23,7 @@ export async function SiteFooter() {
   const social = settings.socialLinks ?? []
   const used = new Set(projects.flatMap((p) => p.typologies.map((t) => t.slug)))
   const categories = typologies.filter((t) => t.slug && used.has(t.slug))
-  const newsletter = mailchimpConfigured()
+  const newsletter = signupConfigured()
 
   return (
     <footer className="site-footer">

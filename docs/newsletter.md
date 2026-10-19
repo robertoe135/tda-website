@@ -34,8 +34,8 @@ Arial, and the design is drawn to work in either).
 1. Create a Resend account for TDA. Add and verify a sending domain: a subdomain such as
    `news.tillotsondesign.com` is better than the main domain, so newsletter complaints can't
    affect everyday office email. Resend lists the DNS records to add.
-2. In Resend, create a segment for the newsletter and import the current subscribers, keeping
-   only people who signed up (export them from the current list with their consent dates).
+2. In Resend, create a segment for the newsletter (Audience → Segments; its id is on its page).
+   Then bring over the old list (below).
 3. In Vercel → Settings → Environment Variables (Production), set:
    - `RESEND_API_KEY`: an API key with sending access.
    - `RESEND_SEGMENT_ID`: the segment's id.
@@ -43,13 +43,45 @@ Arial, and the design is drawn to work in either).
    Redeploy. Until all three are set, the sidebar says what is missing and nothing can be sent
    to the list. Tests work with `RESEND_API_KEY` and `NEWSLETTER_FROM`, or the site's SMTP settings.
 
-## Open decisions
+## Sign-ups (the footer box)
 
-- **Where sign-ups go.** The footer's sign-up box still adds people to Mailchimp
-  (docs/forms-and-email.md). Once Resend holds the list, the box should add them to the Resend
-  segment instead, with a confirmation email (double opt-in). Not built yet.
-- **Before launch**, links in an issue lead to the password page, and "View in browser" pages
-  (`/newsletter/<id>`) are behind it too. Send the first issue after launch.
+The box at the bottom of every page appears once `RESEND_API_KEY`, `RESEND_SEGMENT_ID` and
+`NEWSLETTER_FROM` are set. It uses **double opt-in**:
+
+1. The visitor enters their address; the site emails them a link ("Confirm your subscription").
+2. The link opens `/subscribe/confirm`, which asks them to press **Confirm subscription**.
+   Opening the link alone changes nothing, because office mail scanners open links by themselves.
+3. Only then are they added to the Resend segment. Someone who had unsubscribed and signs up
+   again is resubscribed, since they just confirmed.
+
+Nothing about sign-ups is stored on the site: the link carries the address, signed with the
+site's secret, and works for 7 days. The confirmation page works before launch too (it is not
+behind the site password). Unsubscribing is handled by Resend's own page, linked in every issue.
+
+## Bringing over the old list (once)
+
+Export the subscribers from the old newsletter (Mailchimp: Audience → Export, the *subscribed*
+file; Squarespace: Email Campaigns → Mailing lists → Export). Then, on a computer with the
+repository and `RESEND_API_KEY` and `RESEND_SEGMENT_ID` in `.env.local`:
+
+```
+pnpm newsletter:import ~/Downloads/subscribers.csv          # check it; nothing is sent
+pnpm newsletter:import ~/Downloads/subscribers.csv --write  # add them to Resend
+```
+
+It keeps only people the file shows as subscribed. Unsubscribed, bounced, pending, unclear and
+duplicate rows are skipped and counted. Someone already in Resend who unsubscribed stays
+unsubscribed. It also writes a cleaned file (`scripts/newsletter/out/subscribers-clean.csv`,
+never committed) that can be uploaded in Resend instead (Contacts → Import).
+The export holds people's addresses: keep it out of the repository and chat, and delete it after.
+
+Only import people who signed up for TDA's newsletter. The first issue to the imported list
+should say the newsletter has a new look, so nobody is surprised.
+
+## Before launch
+
+Links in an issue lead to the password page, and "View in browser" pages (`/newsletter/<id>`)
+are behind it too. Send the first issue after launch.
 
 ## How it works (developers)
 
@@ -61,5 +93,8 @@ Arial, and the design is drawn to work in either).
   (`public/tda-logo-email.png`) because Gmail and Outlook don't show SVG.
 - Sending: `src/lib/resend.ts`, Resend's Broadcast API (`segment_id`, `send: true`); Resend
   fills in `{{{RESEND_UNSUBSCRIBE_URL}}}` per recipient.
+- Sign-ups: `src/lib/subscribe.ts` (token, confirmation email `src/emails/ConfirmSignup.tsx`),
+  page `/subscribe/confirm`; contacts are created with `POST /contacts`, then added to the segment.
+- Import: `scripts/newsletter/` (`import-lib.ts` holds the rules).
 - Preview: `/newsletter-preview/<id>` (editors only, outside the site password);
   "View in browser": `/newsletter/<id>` (sent issues only).

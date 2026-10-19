@@ -38,7 +38,8 @@
     "media:check": "tsx scripts/media/check.ts",
     "media:why": "tsx scripts/media/why.ts",
     "content:check": "tsx scripts/content/check.ts",
-    "locations:geocode": "tsx scripts/locations/geocode.ts"
+    "locations:geocode": "tsx scripts/locations/geocode.ts",
+    "newsletter:import": "tsx scripts/newsletter/import-subscribers.ts"
   },
   "dependencies": {
     "@fontsource-variable/dm-sans": "5.3.0",

@@ -3,11 +3,14 @@
 import { useActionState } from 'react'
 
 import { subscribeAction } from '@/app/(frontend)/newsletter-actions'
-import type { SignupResult } from '@/lib/mailchimp'
+import type { SignupResult } from '@/lib/subscribe'
 
-/** Footer newsletter signup (Mailchimp, double opt-in). Rendered only when Mailchimp is set up. */
+/** Footer newsletter signup (Resend, double opt-in: lib/subscribe.ts). Rendered only once Resend is set up. */
 export function NewsletterSignup() {
-  const [state, action, pending] = useActionState<SignupResult | null, FormData>(subscribeAction, null)
+  const [state, action, pending] = useActionState<SignupResult | null, FormData>(
+    subscribeAction,
+    null,
+  )
   if (state?.ok) {
     return (
       <p className="newsletter-done" role="status">

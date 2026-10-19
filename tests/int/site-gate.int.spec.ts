@@ -74,6 +74,7 @@ describe('the password on the site before launch', () => {
       '/api/users/me',
       '/cron/purge-leads',
       '/newsletter-preview/1',
+      '/subscribe/confirm',
       '/tda-logo.svg',
       '/robots.txt',
     ])
