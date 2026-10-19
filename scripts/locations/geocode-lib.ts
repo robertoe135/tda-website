@@ -105,3 +105,46 @@ export const nominatim: Lookup = async (query) => {
   if (!res.ok) throw new Error(`OpenStreetMap answered ${res.status}`)
   return (await res.json()) as Hit[]
 }
+
+/** A location as the edited list can name it: by id, or by its name as the list shows it. */
+export type Known = { id: number; displayName?: string | null; city: string }
+export type Save = { id: number; name: string; lat: number; lng: number }
+
+/**
+ * The rows of an edited geocode.csv to save: those whose result someone set to "ok", with a
+ * latitude and longitude in range. Rows are matched to locations by id, else by name; anything
+ * that can't be saved is listed with the reason, so nothing is skipped silently.
+ */
+export function fromList(rows: Record<string, string>[], locations: Known[]) {
+  const byName = new Map(locations.map((l) => [fold(l.displayName ?? l.city), l]))
+  const byId = new Map(locations.map((l) => [l.id, l]))
+  const save: Save[] = []
+  const problems: string[] = []
+  for (const r of rows) {
+    const name = (r.location ?? '').trim()
+    if ((r.result ?? '').trim().toLowerCase() !== 'ok') continue
+    const loc = (r.id && byId.get(Number(r.id))) || byName.get(fold(name))
+    const lat = Number((r.lat ?? '').trim())
+    const lng = Number((r.lng ?? '').trim())
+    if (!loc) problems.push(`${name || '(no name)'}: no location by that name`)
+    else if (
+      !(r.lat ?? '').trim() ||
+      !(r.lng ?? '').trim() ||
+      !Number.isFinite(lat) ||
+      !Number.isFinite(lng)
+    )
+      problems.push(`${name}: marked ok but lat / lng are empty or not numbers`)
+    else if (Math.abs(lat) > 90 || Math.abs(lng) > 180)
+      problems.push(
+        `${name}: ${lat}, ${lng} is not a place on Earth (latitude first, then longitude?)`,
+      )
+    else
+      save.push({
+        id: loc.id,
+        name: loc.displayName ?? loc.city,
+        lat: Math.round(lat * 1e5) / 1e5,
+        lng: Math.round(lng * 1e5) / 1e5,
+      })
+  }
+  return { save, problems }
+}

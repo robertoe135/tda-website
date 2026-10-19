@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { geocode, type Hit, pick, queryFor } from '../../scripts/locations/geocode-lib'
+import { fromList, geocode, type Hit, pick, queryFor } from '../../scripts/locations/geocode-lib'
 
 const place = (city: string, region: string | null, country: string) => ({
   id: 1,
@@ -61,5 +61,40 @@ describe('locations:geocode', () => {
     expect(out.map((f) => f.result)).toEqual(['ok', 'none'])
     expect(out[1].note).toContain('timeout')
     expect(waits).toEqual([1100])
+  })
+})
+
+describe('locations:geocode --from (a corrected list)', () => {
+  const locs = [
+    { id: 1, displayName: 'New York, NY', city: 'New York' },
+    { id: 2, displayName: 'Kennett Square, PA', city: 'Kennett Square' },
+    { id: 3, displayName: 'Lightfair 2023 New York, NY', city: 'Lightfair 2023 New York' },
+  ]
+  it('saves rows marked ok, matched by id or by name, and lists the rest', () => {
+    const { save, problems } = fromList(
+      [
+        { id: '1', location: 'New York, NY', result: 'ok', lat: '40.712776', lng: '-74.005974' },
+        { location: 'kennett square, pa', result: 'OK ', lat: '39.8468', lng: '-75.7116' },
+        { location: 'Lightfair 2023 New York, NY', result: 'check', lat: '40.75', lng: '-74.0' },
+        { location: 'Somewhere, ZZ', result: 'ok', lat: '1', lng: '2' },
+        { location: 'Kennett Square, PA', result: 'ok', lat: '', lng: '' },
+        { location: 'New York, NY', result: 'ok', lat: '-74.0', lng: '140.7' },
+      ],
+      locs,
+    )
+    expect(save).toEqual([
+      { id: 1, name: 'New York, NY', lat: 40.71278, lng: -74.00597 },
+      { id: 2, name: 'Kennett Square, PA', lat: 39.8468, lng: -75.7116 },
+      { id: 1, name: 'New York, NY', lat: -74, lng: 140.7 },
+    ])
+    expect(problems).toHaveLength(2)
+    expect(problems[0]).toContain('no location')
+    expect(problems[1]).toContain('empty')
+  })
+  it('refuses a latitude past the poles', () => {
+    expect(
+      fromList([{ location: 'New York, NY', result: 'ok', lat: '-140', lng: '40' }], locs)
+        .problems[0],
+    ).toContain('not a place')
   })
 })

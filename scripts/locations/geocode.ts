@@ -4,6 +4,12 @@
  *
  *   pnpm locations:geocode                          # list what it finds
  *   pnpm locations:geocode --write --confirm-backup # save the clear matches
+ *   pnpm locations:geocode --from scripts/locations/out/geocode.csv --write --confirm-backup
+ *                                                   # save the list after you corrected it
+ *
+ * Correcting the list: set "result" to ok on a row you checked, and fix its lat and lng if
+ * they are wrong (latitude first; New York is 40.71, -74.01). With --from only rows marked ok
+ * are saved, nothing is looked up again, and rows that can't be saved are listed.
  *
  * Looks at locations that projects use and that have no coordinates yet (--all: every location;
  * --redo: also ones that have them). A clear match is a city, town or village with the location's
@@ -15,7 +21,7 @@
  */
 import '../env'
 
-import { mkdir, writeFile } from 'fs/promises'
+import { mkdir, readFile, writeFile } from 'fs/promises'
 import path from 'path'
 
 import { getPayload } from 'payload'
@@ -24,7 +30,9 @@ import config from '../../src/payload.config'
 import { dbHost, isLocalDatabase } from '../media/upload'
 import { csv } from '../migrate/lib'
 
-import { type Found, geocode, nominatim, type Place } from './geocode-lib'
+import { parseCsv } from '../team/lib'
+
+import { type Found, fromList, geocode, nominatim, type Place } from './geocode-lib'
 
 const OUT = path.join(path.dirname(new URL(import.meta.url).pathname), 'out', 'geocode.csv')
 
@@ -44,6 +52,39 @@ async function main() {
     depth: 0,
     overrideAccess: true,
   })
+
+  // An edited list: save the rows marked ok, as written.
+  const listPath = args.includes('--from') ? args[args.indexOf('--from') + 1] : undefined
+  if (listPath) {
+    const [header, ...lines] = parseCsv(await readFile(listPath, 'utf8'))
+    // Excel and Numbers often start a saved CSV with an invisible mark (BOM); drop it.
+    const cols = header.map((h) =>
+      h
+        .replace(/^\uFEFF/, '')
+        .trim()
+        .toLowerCase(),
+    )
+    const rows = lines.map((l) => Object.fromEntries(cols.map((c, i) => [c, l[i] ?? ''])))
+    const { save, problems } = fromList(rows, locations.docs)
+    for (const s of save)
+      console.log(`${write ? 'save ' : 'would save'}  ${s.name.padEnd(32)}  ${s.lat}, ${s.lng}`)
+    for (const p of problems) console.log(`skip   ${p}`)
+    if (write)
+      for (const s of save)
+        await payload.update({
+          collection: 'locations',
+          id: s.id,
+          data: { lat: s.lat, lng: s.lng },
+          overrideAccess: true,
+        })
+    console.log(
+      `\n${save.length} marked ok${problems.length ? `, ${problems.length} skipped (above)` : ''}. ` +
+        (write
+          ? 'Saved. The map shows them at once (no redeploy).'
+          : 'Nothing saved: add --write --confirm-backup.'),
+    )
+    process.exit(0)
+  }
   const projects = await payload.find({
     collection: 'projects',
     pagination: false,
@@ -97,6 +138,7 @@ async function main() {
     OUT,
     csv(
       found.map((f) => ({
+        id: f.place.id,
         location: f.place.displayName ?? f.place.city,
         result: f.result,
         lat: f.lat,
@@ -105,7 +147,7 @@ async function main() {
         saved: write && save(f) ? 'yes' : 'no',
         note: f.note,
       })),
-      ['location', 'result', 'lat', 'lng', 'found', 'saved', 'note'],
+      ['id', 'location', 'result', 'lat', 'lng', 'found', 'saved', 'note'],
     ),
   )
 
@@ -120,7 +162,7 @@ async function main() {
   console.log(
     write
       ? `Saved ${saved}. The map shows them at once (no redeploy).`
-      : 'Nothing saved. Rerun with --write --confirm-backup to save the clear matches.',
+      : 'Nothing saved. Rerun with --write --confirm-backup to save the clear matches, or correct the\nlist and save it with --from scripts/locations/out/geocode.csv --write --confirm-backup.',
   )
   process.exit(0)
 }
