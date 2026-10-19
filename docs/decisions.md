@@ -95,3 +95,14 @@ deploy and restore.
    and which address is canonical (Suite 703)?
 10. Launch scope: is the map view, news, press archive or careers listing required on day one?
 11. Should AI assistants and search crawlers be allowed to index the site?
+
+## Before launch: a password on the public site (October 2026)
+
+The public pages ask for a shared password while `SITE_PASSWORD` is set in Vercel (Production
+and Preview), so staff can review the site before it is announced. It is in the site's own code
+(`src/proxy.ts`), not Vercel's Password Protection, which is a paid add-on. The admin keeps its
+own login and is never behind it. Uploaded photos (under `/api`) are reachable by direct address,
+so the password hides the site, not the files.
+
+On launch day: delete `SITE_PASSWORD` in Vercel and redeploy, then set `ALLOW_INDEXING=true`.
+Changing the password signs everyone out.
