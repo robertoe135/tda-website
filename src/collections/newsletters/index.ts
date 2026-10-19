@@ -3,7 +3,7 @@ import type { Access, CollectionConfig } from 'payload'
 import { authenticated } from '../../access/authenticated'
 import { userIsAdmin } from '../../access/isAdmin'
 import { NEWSLETTER_BLOCKS, TEMPLATE } from './blocks'
-import { sendingStatus, sendNewsletter, sendTest } from './endpoints'
+import { previewBlocks, sendingStatus, sendNewsletter, sendTest } from './endpoints'
 
 /**
  * Newsletter issues, written in the admin from blocks and sent through Resend (docs/newsletter.md).
@@ -25,6 +25,18 @@ export const Newsletters: CollectionConfig = {
     group: 'Newsletter',
     description:
       'Issues of the newsletter. Build an issue from blocks, check it in the preview, send yourself a test, then send it to the list.',
+    components: {
+      views: {
+        edit: {
+          // The visual editor: drag blocks into the email (components/admin/NewsletterDesign).
+          design: {
+            Component: '/components/admin/NewsletterDesignView#NewsletterDesignView',
+            path: '/design',
+            tab: { label: 'Design', href: '/design', order: 150 },
+          },
+        },
+      },
+    },
     livePreview: {
       // Same address as the admin, so the preview refreshes on each autosave.
       url: ({ data }) => (data?.id ? `/newsletter-preview/${data.id}` : null),
@@ -46,6 +58,7 @@ export const Newsletters: CollectionConfig = {
   },
   endpoints: [
     { path: '/sending-status', method: 'get', handler: sendingStatus },
+    { path: '/preview-blocks', method: 'post', handler: previewBlocks },
     { path: '/:id/test', method: 'post', handler: sendTest },
     { path: '/:id/send', method: 'post', handler: sendNewsletter },
   ],
@@ -102,7 +115,7 @@ export const Newsletters: CollectionConfig = {
       defaultValue: TEMPLATE,
       admin: {
         description:
-          'Add, remove, reorder or duplicate blocks. Empty blocks and headings with nothing under them are left out of the email.',
+          'Add, remove, reorder or duplicate blocks here, or visually in the Design tab. Empty blocks and headings with nothing under them are left out of the email.',
         initCollapsed: false,
       },
     },

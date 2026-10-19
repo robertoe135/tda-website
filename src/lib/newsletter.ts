@@ -12,6 +12,7 @@ import type {
   SiteSetting,
 } from '../payload-types'
 import { blobFileURL } from './blob'
+import { emailLogo } from './email-logo'
 import { siteUrl } from './seo'
 import { formatAddress } from './address'
 
@@ -23,7 +24,7 @@ import { formatAddress } from './address'
 
 export type EmailImage = { src: string; alt: string }
 export type Credit = { label: string; value: string }
-export type IssueItem =
+export type IssueItem = (
   | { kind: 'letter'; paragraphs: string[]; signatureName?: string; signatureTitle?: string }
   | { kind: 'section'; number: string; title: string }
   | {
@@ -51,9 +52,15 @@ export type IssueItem =
   | { kind: 'events'; rows: { date?: string; title: string; place?: string; href?: string }[] }
   | { kind: 'text'; heading?: string; paragraphs: string[]; href?: string; linkLabel: string }
   | { kind: 'image'; image: EmailImage; caption?: string; href?: string }
+) & {
+  /** The block it was built from, so the visual editor can show each block's part. */
+  blockId?: string
+}
 
 export type Issue = {
   subject: string
+  /** The logo's address: Blob storage when available (lib/email-logo.ts). */
+  logo: string
   preheader?: string
   masthead?: string
   issueLine?: string
@@ -147,6 +154,7 @@ export function buildItems(
   const out: (IssueItem | { kind: 'section'; title: string })[] = []
   const href = (p: Project) => `${site}/projects/${p.slug}`
   for (const b of blocks ?? []) {
+    const before = out.length
     switch (b.blockType) {
       case 'letter': {
         const paragraphs = toParagraphs(b.body)
@@ -262,6 +270,7 @@ export function buildItems(
         break
       }
     }
+    if (out.length > before && b.id) (out[out.length - 1] as { blockId?: string }).blockId = b.id
   }
   // A heading with nothing under it (before the next heading, or at the end) is dropped; the rest
   // are numbered in order.
@@ -291,6 +300,7 @@ export function buildIssue(
   l: Lookups,
   settings: Partial<SiteSetting>,
   site = siteUrl(),
+  logo = `${site}/tda-logo-email.png`,
 ): Issue {
   const issueLine = [
     doc.issueNumber ? `No. ${doc.issueNumber}` : undefined,
@@ -301,6 +311,7 @@ export function buildIssue(
     .join(' · ')
   return {
     subject: doc.subject,
+    logo,
     preheader: clean(doc.preheader),
     masthead: clean(doc.masthead),
     issueLine: issueLine || undefined,
@@ -324,7 +335,13 @@ export function buildIssue(
  * confidential project's client is never read. The issue itself is read by the caller.
  */
 export async function loadIssue(payload: Payload, doc: Newsletter): Promise<Issue> {
-  const blocks = doc.content ?? []
+  const { lookups, settings } = await loadLookups(payload, doc.content)
+  return buildIssue(doc, lookups, settings, siteUrl(), await emailLogo())
+}
+
+/** What some blocks point at, and the studio's details for the footer, read as the public sees them. */
+export async function loadLookups(payload: Payload, content: Newsletter['content']) {
+  const blocks = content ?? []
   const want = {
     projects: new Set<number>(),
     awards: new Set<number>(),
@@ -370,5 +387,5 @@ export async function loadIssue(payload: Payload, doc: Newsletter): Promise<Issu
     read<Media>('media', want.media, 0),
     payload.findGlobal({ slug: 'siteSettings', depth: 0, overrideAccess: false }),
   ])
-  return buildIssue(doc, { projects, awards, press, media: mediaDocs }, settings)
+  return { lookups: { projects, awards, press, media: mediaDocs } as Lookups, settings }
 }

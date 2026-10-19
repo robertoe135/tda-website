@@ -136,7 +136,7 @@ const More = ({ href, children }: { href: string; children: React.ReactNode }) =
   </Text>
 )
 
-function Item({ item }: { item: IssueItem }) {
+export function Item({ item }: { item: IssueItem }) {
   switch (item.kind) {
     case 'letter':
       return (
@@ -401,11 +401,125 @@ export type Links = {
   unsubscribeHref?: string
 }
 
-export function NewsletterEmail({ issue, links = {} }: { issue: Issue; links?: Links }) {
+/** Logo, newsletter name and issue line. */
+export function Masthead({ issue }: { issue: Issue }) {
+  // A PNG (Gmail and Outlook don't show SVG), in Blob storage so every inbox reaches it.
+  const logo = issue.logo
+  return (
+    <>
+      <Section
+        style={{
+          padding: `40px ${PAD}px 36px`,
+          textAlign: 'center',
+          borderBottom: `1px solid ${C.text}`,
+        }}
+      >
+        <Link href={issue.site}>
+          <Img
+            src={logo}
+            alt="Tillotson Design Associates"
+            width={87}
+            height={36}
+            style={{ display: 'inline-block', height: 36, width: 'auto', border: 0 }}
+          />
+        </Link>
+        {issue.masthead && (
+          <Text
+            style={p({
+              marginTop: 28,
+              fontSize: 40,
+              lineHeight: '44px',
+              letterSpacing: '-0.01em',
+              textAlign: 'center',
+            })}
+          >
+            {issue.masthead}
+          </Text>
+        )}
+        {issue.issueLine && (
+          <Text style={p({ marginTop: 10, color: C.muted, textAlign: 'center' })}>
+            {issue.issueLine}
+          </Text>
+        )}
+      </Section>
+    </>
+  )
+}
+
+/** The studio's address and contacts, then the unsubscribe line (none in the browser version). */
+export function StudioFooter({ issue, links = {} }: { issue: Issue; links?: Links }) {
   const f = issue.footer
-  // A PNG: Gmail and Outlook don't show SVG images.
-  const logo = `${issue.site}/tda-logo-email.png`
   const white: React.CSSProperties = { color: '#ffffff', textDecoration: 'underline' }
+  return (
+    <>
+      <Section style={{ height: 48 }} />
+      <Section style={{ backgroundColor: '#000000', padding: `36px ${PAD}px` }}>
+        <Row>
+          <Column
+            className="stack"
+            style={{ width: '50%', verticalAlign: 'top', paddingRight: 14, paddingBottom: 20 }}
+          >
+            <Text
+              style={p({ fontSize: 12, lineHeight: '20px', color: '#ffffff', fontWeight: 400 })}
+            >
+              Tillotson Design Associates
+            </Text>
+            {[...f.addressLines, f.phone].filter(Boolean).map((line) => (
+              <Text key={line} style={p({ fontSize: 12, lineHeight: '20px', color: '#d4d4d4' })}>
+                {line}
+              </Text>
+            ))}
+          </Column>
+          <Column className="stack" style={{ verticalAlign: 'top' }}>
+            {f.generalEmail && (
+              <Text style={p({ fontSize: 12, lineHeight: '20px', color: '#bdbdbd' })}>
+                General{' '}
+                <Link href={`mailto:${f.generalEmail}`} style={white}>
+                  {f.generalEmail}
+                </Link>
+              </Text>
+            )}
+            {f.pressEmail && (
+              <Text style={p({ fontSize: 12, lineHeight: '20px', color: '#bdbdbd' })}>
+                Press{' '}
+                <Link href={`mailto:${f.pressEmail}`} style={white}>
+                  {f.pressEmail}
+                </Link>
+              </Text>
+            )}
+            <Text style={p({ marginTop: 12, fontSize: 12, lineHeight: '20px', color: '#ffffff' })}>
+              {[{ label: 'tillotsondesign.com', url: issue.site }, ...f.social].map((s, i) => (
+                <React.Fragment key={s.url}>
+                  {i > 0 && ' · '}
+                  <Link href={s.url} style={white}>
+                    {s.label}
+                  </Link>
+                </React.Fragment>
+              ))}
+            </Text>
+          </Column>
+        </Row>
+      </Section>
+      {links.unsubscribeHref && (
+        <Section style={{ backgroundColor: '#f4f4f4', padding: `16px ${PAD}px` }}>
+          <Text
+            style={p({ fontSize: 11, lineHeight: '16px', color: C.muted, textAlign: 'center' })}
+          >
+            You are getting this because you signed up at tillotsondesign.com.{' '}
+            <Link
+              href={links.unsubscribeHref}
+              style={{ color: C.muted, textDecoration: 'underline' }}
+            >
+              Unsubscribe
+            </Link>
+          </Text>
+        </Section>
+      )}
+    </>
+  )
+}
+
+export function NewsletterEmail({ issue, links = {} }: { issue: Issue; links?: Links }) {
   return (
     <Html lang="en">
       <Head>
@@ -435,114 +549,13 @@ export function NewsletterEmail({ issue, links = {} }: { issue: Issue; links?: L
           </Text>
         )}
         <Container style={{ width: '100%', maxWidth: W, backgroundColor: C.paper }}>
-          <Section
-            style={{
-              padding: `40px ${PAD}px 36px`,
-              textAlign: 'center',
-              borderBottom: `1px solid ${C.text}`,
-            }}
-          >
-            <Link href={issue.site}>
-              <Img
-                src={logo}
-                alt="Tillotson Design Associates"
-                width={87}
-                height={36}
-                style={{ display: 'inline-block', height: 36, width: 'auto', border: 0 }}
-              />
-            </Link>
-            {issue.masthead && (
-              <Text
-                style={p({
-                  marginTop: 28,
-                  fontSize: 40,
-                  lineHeight: '44px',
-                  letterSpacing: '-0.01em',
-                  textAlign: 'center',
-                })}
-              >
-                {issue.masthead}
-              </Text>
-            )}
-            {issue.issueLine && (
-              <Text style={p({ marginTop: 10, color: C.muted, textAlign: 'center' })}>
-                {issue.issueLine}
-              </Text>
-            )}
-          </Section>
+          <Masthead issue={issue} />
 
           {issue.items.map((item, i) => (
             <Item key={i} item={item} />
           ))}
 
-          <Section style={{ height: 48 }} />
-          <Section style={{ backgroundColor: '#000000', padding: `36px ${PAD}px` }}>
-            <Row>
-              <Column
-                className="stack"
-                style={{ width: '50%', verticalAlign: 'top', paddingRight: 14, paddingBottom: 20 }}
-              >
-                <Text
-                  style={p({ fontSize: 12, lineHeight: '20px', color: '#ffffff', fontWeight: 400 })}
-                >
-                  Tillotson Design Associates
-                </Text>
-                {[...f.addressLines, f.phone].filter(Boolean).map((line) => (
-                  <Text
-                    key={line}
-                    style={p({ fontSize: 12, lineHeight: '20px', color: '#d4d4d4' })}
-                  >
-                    {line}
-                  </Text>
-                ))}
-              </Column>
-              <Column className="stack" style={{ verticalAlign: 'top' }}>
-                {f.generalEmail && (
-                  <Text style={p({ fontSize: 12, lineHeight: '20px', color: '#bdbdbd' })}>
-                    General{' '}
-                    <Link href={`mailto:${f.generalEmail}`} style={white}>
-                      {f.generalEmail}
-                    </Link>
-                  </Text>
-                )}
-                {f.pressEmail && (
-                  <Text style={p({ fontSize: 12, lineHeight: '20px', color: '#bdbdbd' })}>
-                    Press{' '}
-                    <Link href={`mailto:${f.pressEmail}`} style={white}>
-                      {f.pressEmail}
-                    </Link>
-                  </Text>
-                )}
-                <Text
-                  style={p({ marginTop: 12, fontSize: 12, lineHeight: '20px', color: '#ffffff' })}
-                >
-                  {[{ label: 'tillotsondesign.com', url: issue.site }, ...f.social].map((s, i) => (
-                    <React.Fragment key={s.url}>
-                      {i > 0 && ' · '}
-                      <Link href={s.url} style={white}>
-                        {s.label}
-                      </Link>
-                    </React.Fragment>
-                  ))}
-                </Text>
-              </Column>
-            </Row>
-          </Section>
-          {links.unsubscribeHref && (
-            <Section style={{ backgroundColor: '#f4f4f4', padding: `16px ${PAD}px` }}>
-              <Text
-                style={p({ fontSize: 11, lineHeight: '16px', color: C.muted, textAlign: 'center' })}
-              >
-                You are getting this because you signed up at tillotsondesign.com.{' '}
-                <Link
-                  href={links.unsubscribeHref}
-                  style={{ color: C.muted, textDecoration: 'underline' }}
-                >
-                  Unsubscribe
-                </Link>
-              </Text>
-            </Section>
-          )}
+          <StudioFooter issue={issue} links={links} />
         </Container>
       </Body>
     </Html>
@@ -556,4 +569,23 @@ export async function renderNewsletter(issue: Issue, links: Links = {}) {
   const element = <NewsletterEmail issue={issue} links={links} />
   const [html, text] = await Promise.all([render(element), render(element, { plainText: true })])
   return { html, text }
+}
+
+const fragment = async (el: React.ReactElement) =>
+  (await render(el)).replace(/^<!DOCTYPE[^>]*>/i, '').trim()
+
+/**
+ * The email in parts, for the visual editor's canvas: each block's HTML by block id (blocks
+ * left out of the email have none), plus the masthead and footer. Drawn by the same components
+ * as the email, so the canvas shows exactly what will be sent.
+ */
+export async function renderParts(issue: Issue) {
+  const blocks: Record<string, string> = {}
+  for (const item of issue.items)
+    if (item.blockId) blocks[item.blockId] = await fragment(<Item item={item} />)
+  const [header, footer] = await Promise.all([
+    fragment(<Masthead issue={issue} />),
+    fragment(<StudioFooter issue={issue} links={{ unsubscribeHref: '#' }} />),
+  ])
+  return { blocks, header, footer }
 }

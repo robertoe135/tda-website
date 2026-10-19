@@ -19,8 +19,13 @@ removes addresses that bounce or complain. The design is option D ("Journal") fr
    - *Awards* and *Press*: choose from what is already on the site.
    - *Conversation*, *Talks and events*, *Text*, *Image*: written in the issue itself.
    Empty blocks, and headings with nothing under them, are left out; sections renumber themselves.
-3. **Check it in the preview**: the eye button at the top opens the email beside the form, with
-   Desktop and Phone sizes. It follows what you type (drafts save on their own).
+   Or use the **Design tab** (next to Edit): drag blocks from the list on the left into the email,
+   move them up or down on the page, and fill in the selected block on the right. The email in
+   the middle is drawn exactly as it will be sent. Changes save on their own into the same
+   blocks the Edit tab shows; use one tab at a time. Images are chosen from the site's Images;
+   upload a new one there first.
+3. **Check it in the preview**: on the Edit tab, the eye button opens the email beside the form,
+   with Desktop and Phone sizes. It follows what you type (drafts save on their own).
 4. **Send a test** to yourself from the sidebar. Check it on a phone and in Outlook if you can.
 5. **Publish changes**, then **Send to the list**. Only the published version goes out, and only
    once. A sent issue can't be changed or deleted by editors; to send a correction, duplicate it.
@@ -41,7 +46,11 @@ Arial, and the design is drawn to work in either).
    - `RESEND_SEGMENT_ID`: the segment's id.
    - `NEWSLETTER_FROM`: e.g. `Tillotson Design Associates <news@news.tillotsondesign.com>`.
    Redeploy. Until all three are set, the sidebar says what is missing and nothing can be sent
-   to the list. Tests work with `RESEND_API_KEY` and `NEWSLETTER_FROM`, or the site's SMTP settings.
+   to the list.
+4. Check `NEXT_PUBLIC_SERVER_URL`: links in the email (projects, View in browser) are built from
+   it, so it must be the address this site is served at. Before launch that is the Vercel address
+   (e.g. `https://tda-website.vercel.app`), not tillotsondesign.com, which is still Squarespace.
+   The sidebar warns when it is wrong. The logo and photos load from Blob storage either way. Tests work with `RESEND_API_KEY` and `NEWSLETTER_FROM`, or the site's SMTP settings.
 
 ## Sign-ups (the footer box)
 
@@ -96,5 +105,9 @@ are behind it too. Send the first issue after launch.
 - Sign-ups: `src/lib/subscribe.ts` (token, confirmation email `src/emails/ConfirmSignup.tsx`),
   page `/subscribe/confirm`; contacts are created with `POST /contacts`, then added to the segment.
 - Import: `scripts/newsletter/` (`import-lib.ts` holds the rules).
+- Design tab: `components/admin/NewsletterDesign.tsx`, built with Puck (open source, MIT). It
+  converts between Puck's data and the blocks (`src/lib/newsletter-puck.ts`) and draws each block
+  with the email's own components (`POST /api/newsletters/preview-blocks`).
+- Logo: `src/lib/email-logo.ts` puts it in Blob storage on first use (`src/emails/logo.ts`).
 - Preview: `/newsletter-preview/<id>` (editors only, outside the site password);
   "View in browser": `/newsletter/<id>` (sent issues only).

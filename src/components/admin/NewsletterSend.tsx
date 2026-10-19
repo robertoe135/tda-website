@@ -3,7 +3,7 @@
 import { Button, useAuth, useDocumentInfo, useFormFields } from '@payloadcms/ui'
 import { useEffect, useState } from 'react'
 
-type Status = { test: boolean; list: boolean; missing: string[] }
+type Status = { test: boolean; list: boolean; missing: string[]; site: string; siteOk: boolean }
 type Note = { tone: 'ok' | 'error'; text: string } | undefined
 
 const box: React.CSSProperties = {
@@ -67,6 +67,12 @@ export function NewsletterSend() {
   return (
     <div style={box}>
       <p style={{ margin: 0, fontWeight: 600 }}>Send</p>
+      {status && !status.siteOk && (
+        <p style={{ ...small, color: 'var(--theme-error-500)' }}>
+          Links in the email lead to {status.site}, which isn’t this website. Set
+          NEXT_PUBLIC_SERVER_URL in Vercel to this site’s address and redeploy (docs/newsletter.md).
+        </p>
+      )}
       {sentAt ? (
         <p style={small}>
           Sent {new Date(sentAt).toLocaleString()}. An issue goes out once; duplicate it to send a
