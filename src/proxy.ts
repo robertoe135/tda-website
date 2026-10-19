@@ -78,7 +78,10 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Everything but the admin and its API, the daily cleanup job (it has its own secret),
+  // Everything but the admin and its API, the newsletter preview (admins only, by its own login),
+  // the daily cleanup job (it has its own secret),
   // Next's own files, and files with an extension (images, the icon, robots.txt).
-  matcher: ['/((?!admin|api|cron|_next/static|_next/image|.*\\.[a-zA-Z0-9]+$).*)'],
+  matcher: [
+    '/((?!admin|api|cron|newsletter-preview|_next/static|_next/image|.*\\.[a-zA-Z0-9]+$).*)',
+  ],
 }

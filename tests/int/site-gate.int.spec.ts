@@ -66,13 +66,14 @@ describe('the password on the site before launch', () => {
 
   it('never stands in front of the admin, its API, the cleanup job or files', () => {
     const re = new RegExp(`^${config.matcher[0]}$`)
-    for (const path of ['/', '/projects', '/about/team', '/unlock'])
+    for (const path of ['/', '/projects', '/about/team', '/unlock', '/newsletter/1'])
       expect(re.test(path)).toBe(true)
     for (const path of [
       '/admin',
       '/admin/collections/projects',
       '/api/users/me',
       '/cron/purge-leads',
+      '/newsletter-preview/1',
       '/tda-logo.svg',
       '/robots.txt',
     ])

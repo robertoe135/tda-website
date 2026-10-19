@@ -31,6 +31,9 @@ question 8 in `decisions.md`: who controls DNS?). Redeploy after adding them.
 
 ## Newsletter (Mailchimp)
 
+Issues are now written and sent from the admin through Resend (docs/newsletter.md); this
+sign-up box still feeds Mailchimp until the list moves to Resend.
+
 A signup box in the footer adds the address to TDA's Mailchimp audience with **double
 opt-in**: Mailchimp emails the person to confirm. Nothing about signups is stored on the
 site. The box is hidden until `MAILCHIMP_API_KEY` and `MAILCHIMP_AUDIENCE_ID` are set in

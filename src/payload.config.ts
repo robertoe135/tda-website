@@ -20,6 +20,7 @@ import { People } from './collections/People'
 import { Projects } from './collections/Projects'
 import { Awards } from './collections/Awards'
 import { Press } from './collections/Press'
+import { Newsletters } from './collections/newsletters'
 import { About } from './globals/About'
 import { Home } from './globals/Home'
 import { SiteSettings } from './globals/SiteSettings'
@@ -46,7 +47,7 @@ export default buildConfig({
       beforeLogin: ['/components/admin/BeforeLogin'],
     },
   },
-  collections: [Projects, People, Media, Videos, Awards, Press, Typologies, Locations, Firms, Photographers, CreditRoles, Leads, Users],
+  collections: [Projects, People, Media, Videos, Awards, Press, Newsletters, Typologies, Locations, Firms, Photographers, CreditRoles, Leads, Users],
   globals: [Home, About, SiteSettings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
