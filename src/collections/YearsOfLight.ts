@@ -24,6 +24,9 @@ export const YearsOfLight: CollectionConfig = {
   slug: 'years-of-light',
   labels: { singular: 'Year of Light', plural: 'Year of Light' },
   admin: {
+    // Hidden from the admin for now. Set to false (or remove) to bring it back; the data and the
+    // page are untouched, and with no published year /year-of-light shows nothing.
+    hidden: true,
     useAsTitle: 'title',
     defaultColumns: ['year', '_status', 'updatedAt'],
     description:
