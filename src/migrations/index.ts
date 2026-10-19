@@ -22,6 +22,7 @@ import * as migration_20261016_144302_leads_careers_email from './20261016_14430
 import * as migration_20261016_182004_block_ai_crawlers from './20261016_182004_block_ai_crawlers';
 import * as migration_20261017_015936_home_row_height from './20261017_015936_home_row_height';
 import * as migration_20261017_061737_firm_collaborators from './20261017_061737_firm_collaborators';
+import * as migration_20261019_152914_newsletters from './20261019_152914_newsletters';
 
 export const migrations = [
   {
@@ -142,6 +143,11 @@ export const migrations = [
   {
     up: migration_20261017_061737_firm_collaborators.up,
     down: migration_20261017_061737_firm_collaborators.down,
-    name: '20261017_061737_firm_collaborators'
+    name: '20261017_061737_firm_collaborators',
+  },
+  {
+    up: migration_20261019_152914_newsletters.up,
+    down: migration_20261019_152914_newsletters.down,
+    name: '20261019_152914_newsletters'
   },
 ];

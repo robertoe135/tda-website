@@ -29,12 +29,11 @@ Google Workspace) can create a sending account for `website@tillotsondesign.com`
 sending service such as Resend, which needs DNS records on tillotsondesign.com (open
 question 8 in `decisions.md`: who controls DNS?). Redeploy after adding them.
 
-## Newsletter (Mailchimp)
+## Newsletter
 
-A signup box in the footer adds the address to TDA's Mailchimp audience with **double
-opt-in**: Mailchimp emails the person to confirm. Nothing about signups is stored on the
-site. The box is hidden until `MAILCHIMP_API_KEY` and `MAILCHIMP_AUDIENCE_ID` are set in
-Vercel; then redeploy. Create the API key in Mailchimp → Profile → Extras → API keys.
+The sign-up box in the footer adds people to the Resend list with double opt-in (they confirm
+by email first). Issues are written and sent from the admin. Both are described in
+docs/newsletter.md.
 
 ## How long applications are kept
 

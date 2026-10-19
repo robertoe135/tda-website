@@ -73,6 +73,7 @@ export interface Config {
     videos: Video;
     awards: Award;
     press: Press;
+    newsletters: Newsletter;
     typologies: Typology;
     locations: Location;
     firms: Firm;
@@ -104,6 +105,7 @@ export interface Config {
     videos: VideosSelect<false> | VideosSelect<true>;
     awards: AwardsSelect<false> | AwardsSelect<true>;
     press: PressSelect<false> | PressSelect<true>;
+    newsletters: NewslettersSelect<false> | NewslettersSelect<true>;
     typologies: TypologiesSelect<false> | TypologiesSelect<true>;
     locations: LocationsSelect<false> | LocationsSelect<true>;
     firms: FirmsSelect<false> | FirmsSelect<true>;
@@ -688,6 +690,181 @@ export interface Video {
   focalY?: number | null;
 }
 /**
+ * Issues of the newsletter. Build an issue from blocks, check it in the preview, send yourself a test, then send it to the list.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "newsletters".
+ */
+export interface Newsletter {
+  id: number;
+  /**
+   * The email’s subject line, e.g. the issue’s theme or its three headlines.
+   */
+  subject: string;
+  /**
+   * Shown after the subject in most inboxes. One short sentence.
+   */
+  preheader?: string | null;
+  masthead?: string | null;
+  issueNumber?: number | null;
+  /**
+   * Optional, e.g. Light and heritage.
+   */
+  theme?: string | null;
+  /**
+   * e.g. Autumn 2026
+   */
+  season?: string | null;
+  /**
+   * Add, remove, reorder or duplicate blocks. Empty blocks and headings with nothing under them are left out of the email.
+   */
+  content?:
+    | (
+        | {
+            /**
+             * The opening letter. Separate paragraphs with an empty line.
+             */
+            body?: string | null;
+            signatureName?: string | null;
+            signatureTitle?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'letter';
+          }
+        | {
+            /**
+             * e.g. Recent work. Numbered (01, 02…) in order; left out of the email when nothing follows it.
+             */
+            title?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'section';
+          }
+        | {
+            /**
+             * Its main photo, name, city, architect, client and photographer come from the project. Only published projects can be chosen; a confidential project never shows its client.
+             */
+            project?: (number | null) | Project;
+            /**
+             * A few lines for this issue. Empty: the project’s summary is used. Separate paragraphs with an empty line.
+             */
+            note?: string | null;
+            /**
+             * Optional. Otherwise the project’s main photo.
+             */
+            image?: (number | null) | Media;
+            showCredits?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'project';
+          }
+        | {
+            /**
+             * Shown two across with photo, name and city. Good for work in progress.
+             */
+            projects?: (number | Project)[] | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'projectGrid';
+          }
+        | {
+            /**
+             * Who TDA spoke with.
+             */
+            name?: string | null;
+            /**
+             * Their role or firm.
+             */
+            role?: string | null;
+            portrait?: (number | null) | Media;
+            question?: string | null;
+            /**
+             * The start of the answer. Separate paragraphs with an empty line.
+             */
+            answer?: string | null;
+            /**
+             * Full address, starting with https://
+             */
+            url?: string | null;
+            linkLabel?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'conversation';
+          }
+        | {
+            /**
+             * Listed with the year and the project, linked to the project page.
+             */
+            awards?: (number | Award)[] | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'awards';
+          }
+        | {
+            /**
+             * Listed with the outlet, linked to the article.
+             */
+            items?: (number | Press)[] | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'press';
+          }
+        | {
+            events?:
+              | {
+                  /**
+                   * As it should read, e.g. May 20
+                   */
+                  date?: string | null;
+                  title: string;
+                  place?: string | null;
+                  /**
+                   * Full address, starting with https://
+                   */
+                  url?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'events';
+          }
+        | {
+            heading?: string | null;
+            /**
+             * Separate paragraphs with an empty line.
+             */
+            body?: string | null;
+            /**
+             * Full address, starting with https://
+             */
+            url?: string | null;
+            linkLabel?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'text';
+          }
+        | {
+            image?: (number | null) | Media;
+            caption?: string | null;
+            /**
+             * Full address, starting with https://
+             */
+            url?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'image';
+          }
+      )[]
+    | null;
+  sentAt?: string | null;
+  sentBy?: string | null;
+  broadcastId?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
  * Career applications and inquiries sent through the site. Admins only. Delete applications once a position is filled or after six months, whichever comes first.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -796,6 +973,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'press';
         value: number | Press;
+      } | null)
+    | ({
+        relationTo: 'newsletters';
+        value: number | Newsletter;
       } | null)
     | ({
         relationTo: 'typologies';
@@ -1066,6 +1247,122 @@ export interface PressSelect<T extends boolean = true> {
   projects?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "newsletters_select".
+ */
+export interface NewslettersSelect<T extends boolean = true> {
+  subject?: T;
+  preheader?: T;
+  masthead?: T;
+  issueNumber?: T;
+  theme?: T;
+  season?: T;
+  content?:
+    | T
+    | {
+        letter?:
+          | T
+          | {
+              body?: T;
+              signatureName?: T;
+              signatureTitle?: T;
+              id?: T;
+              blockName?: T;
+            };
+        section?:
+          | T
+          | {
+              title?: T;
+              id?: T;
+              blockName?: T;
+            };
+        project?:
+          | T
+          | {
+              project?: T;
+              note?: T;
+              image?: T;
+              showCredits?: T;
+              id?: T;
+              blockName?: T;
+            };
+        projectGrid?:
+          | T
+          | {
+              projects?: T;
+              id?: T;
+              blockName?: T;
+            };
+        conversation?:
+          | T
+          | {
+              name?: T;
+              role?: T;
+              portrait?: T;
+              question?: T;
+              answer?: T;
+              url?: T;
+              linkLabel?: T;
+              id?: T;
+              blockName?: T;
+            };
+        awards?:
+          | T
+          | {
+              awards?: T;
+              id?: T;
+              blockName?: T;
+            };
+        press?:
+          | T
+          | {
+              items?: T;
+              id?: T;
+              blockName?: T;
+            };
+        events?:
+          | T
+          | {
+              events?:
+                | T
+                | {
+                    date?: T;
+                    title?: T;
+                    place?: T;
+                    url?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        text?:
+          | T
+          | {
+              heading?: T;
+              body?: T;
+              url?: T;
+              linkLabel?: T;
+              id?: T;
+              blockName?: T;
+            };
+        image?:
+          | T
+          | {
+              image?: T;
+              caption?: T;
+              url?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
+  sentAt?: T;
+  sentBy?: T;
+  broadcastId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

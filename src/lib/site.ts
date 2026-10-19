@@ -1,6 +1,7 @@
 import { ROW_HEIGHTS, type RowLayout } from '@/globals/Home'
 import type { Media, Person, Video } from '@/payload-types'
 
+export { formatAddress } from './address'
 import { filterHref, getPayloadClient, getPublishedProjects, type ProjectCard } from './projects'
 
 /**
@@ -214,25 +215,6 @@ export async function getCollaborators() {
 }
 
 /** "40 Worth Street, Ste. 703, New York, NY 10013" and a directions link built from it. */
-export function formatAddress(
-  address: NonNullable<Awaited<ReturnType<typeof getSettings>>['address']>,
-) {
-  const line1 = [address.street, address.suite].filter(Boolean).join(' ')
-  const line2 = [address.city, [address.region, address.postalCode].filter(Boolean).join(' ')]
-    .filter(Boolean)
-    .join(', ')
-  const query = [address.street, line2].filter(Boolean).join(', ')
-  return {
-    lines: [line1, line2].filter(Boolean),
-    directions: query
-      ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(query)}`
-      : undefined,
-    /** Google's keyless embed of the address, for the Contact page map. */
-    mapEmbed: query
-      ? `https://maps.google.com/maps?q=${encodeURIComponent(query)}&z=15&output=embed`
-      : undefined,
-  }
-}
 
 /** tel: link for a US number as written ("212-675-7760"). */
 export const telHref = (phone: string) =>
