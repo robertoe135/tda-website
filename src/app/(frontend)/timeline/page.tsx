@@ -4,6 +4,7 @@ import Link from 'next/link'
 
 import { YearRail } from '@/components/YearRail'
 import { getTimeline } from '@/lib/site'
+import { getStoryYears } from '@/lib/year-of-light'
 
 export const metadata: Metadata = {
   title: 'Timeline — Tillotson Design Associates',
@@ -28,7 +29,7 @@ const tileRatio = (ratio?: number) =>
  * until marketing uploads one.
  */
 export default async function TimelinePage() {
-  const years = await getTimeline()
+  const [years, stories] = await Promise.all([getTimeline(), getStoryYears()])
   return (
     <div className="timeline">
       <h1 className="visually-hidden">Timeline</h1>
@@ -42,6 +43,11 @@ export default async function TimelinePage() {
         >
           <h2 id={`year-${year}-h`} className="timeline-heading">
             {year}
+            {stories.includes(year) && (
+              <Link href={`/year-of-light/${year}`} className="timeline-story">
+                Year of Light
+              </Link>
+            )}
           </h2>
           <ul className="timeline-shots">
             {projects.map((p) => (

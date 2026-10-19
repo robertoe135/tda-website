@@ -74,6 +74,7 @@ export interface Config {
     awards: Award;
     press: Press;
     newsletters: Newsletter;
+    'years-of-light': YearsOfLight;
     typologies: Typology;
     locations: Location;
     firms: Firm;
@@ -106,6 +107,7 @@ export interface Config {
     awards: AwardsSelect<false> | AwardsSelect<true>;
     press: PressSelect<false> | PressSelect<true>;
     newsletters: NewslettersSelect<false> | NewslettersSelect<true>;
+    'years-of-light': YearsOfLightSelect<false> | YearsOfLightSelect<true>;
     typologies: TypologiesSelect<false> | TypologiesSelect<true>;
     locations: LocationsSelect<false> | LocationsSelect<true>;
     firms: FirmsSelect<false> | FirmsSelect<true>;
@@ -865,6 +867,68 @@ export interface Newsletter {
   _status?: ('draft' | 'published') | null;
 }
 /**
+ * The year in review, at /year-of-light. Projects, places, awards and collaborators are counted from published projects; add the studio’s own numbers and the light of the year here, then publish.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "years-of-light".
+ */
+export interface YearsOfLight {
+  id: number;
+  /**
+   * The year this looks back on. Its address is /year-of-light/<year>.
+   */
+  year: number;
+  title?: string | null;
+  /**
+   * Optional, under the title on the first card.
+   */
+  intro?: string | null;
+  /**
+   * Cards to skip this year. A card with nothing to show is skipped anyway (e.g. no awards, or no studio numbers).
+   */
+  hiddenCards?: ('completed' | 'where' | 'awards' | 'collaborators' | 'studio' | 'light')[] | null;
+  /**
+   * Optional.
+   */
+  whereNote?: string | null;
+  /**
+   * Leave empty to show the firm(s) on the most awarded projects of the year, ties together (architects and credited firms, never clients). Choose firms here to show them instead.
+   */
+  collaborators?: (number | Firm)[] | null;
+  /**
+   * The studio’s own numbers for the year, e.g. 48 / mock-ups built. Only numbers someone has counted.
+   */
+  studio?:
+    | {
+        value: string;
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
+  light?: {
+    /**
+     * The studio’s pick. The card shows only once a published project is chosen.
+     */
+    project?: (number | null) | Project;
+    /**
+     * Optional. Leave empty to use the project’s main photo.
+     */
+    image?: (number | null) | Media;
+    /**
+     * Optional: why this one, in the studio’s words.
+     */
+    quote?: string | null;
+    quoteBy?: (number | null) | Person;
+  };
+  /**
+   * Optional, on the last card.
+   */
+  thanks?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
  * Career applications and inquiries sent through the site. Admins only. Delete applications once a position is filled or after six months, whichever comes first.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -977,6 +1041,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'newsletters';
         value: number | Newsletter;
+      } | null)
+    | ({
+        relationTo: 'years-of-light';
+        value: number | YearsOfLight;
       } | null)
     | ({
         relationTo: 'typologies';
@@ -1360,6 +1428,37 @@ export interface NewslettersSelect<T extends boolean = true> {
   sentAt?: T;
   sentBy?: T;
   broadcastId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "years-of-light_select".
+ */
+export interface YearsOfLightSelect<T extends boolean = true> {
+  year?: T;
+  title?: T;
+  intro?: T;
+  hiddenCards?: T;
+  whereNote?: T;
+  collaborators?: T;
+  studio?:
+    | T
+    | {
+        value?: T;
+        label?: T;
+        id?: T;
+      };
+  light?:
+    | T
+    | {
+        project?: T;
+        image?: T;
+        quote?: T;
+        quoteBy?: T;
+      };
+  thanks?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;

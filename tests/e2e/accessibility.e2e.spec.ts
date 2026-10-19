@@ -37,6 +37,14 @@ for (const [label, size] of [
       await check(page, href!)
     })
 
+    test('a Year of Light', async ({ page }) => {
+      const href = await firstLink(page, '/timeline', 'a.timeline-story')
+      test.skip(!href, 'no published Year of Light')
+      // Every card lit at once (cards light up as they scroll into view otherwise).
+      await page.emulateMedia({ reducedMotion: 'reduce' })
+      await check(page, href!)
+    })
+
     test('a project page', async ({ page }) => {
       const href = await firstLink(page, '/projects', '.portfolio-grid a')
       test.skip(!href, 'no published projects')
