@@ -348,6 +348,8 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   position: sticky; top: var(--year-top); z-index: 1; background: var(--bg);
   margin: 0; padding: 0.6rem 0; font-weight: 400; font-size: 0.9rem; line-height: 1.2;
 }
+.timeline-story { margin-left: 0.75rem; font-size: 0.8rem; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
+.timeline-story::after { content: ' →'; }
 .timeline-shots { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--shot-gap); }
 .timeline-shots > li { flex: var(--r) 1 calc(var(--row) * var(--r)); height: var(--row); min-width: 0; }
 .timeline-shots > .timeline-fill { flex: 10 1 0; height: 0; }
