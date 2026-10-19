@@ -1,7 +1,7 @@
 import React from 'react'
 import { Body, Container, Head, Html, Img, Link, Preview, render, Section, Text } from 'react-email'
 
-import { siteUrl } from '../lib/seo'
+import { emailLogo } from '../lib/email-logo'
 
 /** The email a newsletter sign-up receives: one link to confirm (lib/subscribe.ts). */
 
@@ -16,7 +16,7 @@ const text = (extra: React.CSSProperties = {}): React.CSSProperties => ({
   ...extra,
 })
 
-export function ConfirmSignupEmail({ link, site = siteUrl() }: { link: string; site?: string }) {
+export function ConfirmSignupEmail({ link, logo }: { link: string; logo: string }) {
   return (
     <Html lang="en">
       <Head />
@@ -25,7 +25,7 @@ export function ConfirmSignupEmail({ link, site = siteUrl() }: { link: string; s
         <Container style={{ width: '100%', maxWidth: 520, backgroundColor: '#ffffff' }}>
           <Section style={{ padding: '36px 40px 40px' }}>
             <Img
-              src={`${site}/tda-logo-email.png`}
+              src={logo}
               alt="Tillotson Design Associates"
               width={87}
               height={36}
@@ -67,7 +67,7 @@ export function ConfirmSignupEmail({ link, site = siteUrl() }: { link: string; s
 }
 
 export async function renderConfirmEmail(link: string) {
-  const element = <ConfirmSignupEmail link={link} />
+  const element = <ConfirmSignupEmail link={link} logo={await emailLogo()} />
   const [html, plain] = await Promise.all([render(element), render(element, { plainText: true })])
   return { html, text: plain }
 }

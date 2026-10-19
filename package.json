@@ -50,6 +50,8 @@
     "@payloadcms/richtext-lexical": "3.91.0",
     "@payloadcms/storage-vercel-blob": "3.91.0",
     "@payloadcms/ui": "3.91.0",
+    "@puckeditor/core": "0.23.0",
+    "@vercel/blob": "2.3.1",
     "cross-env": "^7.0.3",
     "d3-geo": "3.1.1",
     "dotenv": "16.4.7",

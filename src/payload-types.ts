@@ -716,7 +716,7 @@ export interface Newsletter {
    */
   season?: string | null;
   /**
-   * Add, remove, reorder or duplicate blocks. Empty blocks and headings with nothing under them are left out of the email.
+   * Add, remove, reorder or duplicate blocks here, or visually in the Design tab. Empty blocks and headings with nothing under them are left out of the email.
    */
   content?:
     | (

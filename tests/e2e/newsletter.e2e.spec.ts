@@ -102,4 +102,45 @@ test.describe('Newsletter', () => {
       await expect(page.getByText(block, { exact: true }).first()).toBeVisible()
     if (SHOTS) await page.screenshot({ path: `${SHOTS}/nl-create.png`, fullPage: true })
   })
+
+  test('the Design tab: drag a block into the email, fill it in, and it is saved', async () => {
+    const res = await page.request.post(`${BASE}/api/newsletters`, {
+      data: { subject: 'E2E design', content: [{ blockType: 'letter', body: 'Opening words.' }] },
+    })
+    const designId = (await res.json()).doc.id
+    try {
+      await page.goto(`${BASE}/admin/collections/newsletters/${designId}/design`)
+      const canvas = page.frameLocator('iframe').first()
+      await expect(canvas.getByText('Opening words.')).toBeVisible({ timeout: 30000 })
+
+      // Drag "Text" from the blocks on the left to under the letter.
+      const from = (await page.getByText('Text', { exact: true }).last().boundingBox())!
+      const letter = (await page.locator('iframe').first().boundingBox())!
+      const to = { x: letter.x + letter.width / 2, y: letter.y + 300 }
+      await page.mouse.move(from.x + 20, from.y + 10)
+      await page.mouse.down()
+      for (let i = 1; i <= 25; i++)
+        await page.mouse.move(
+          from.x + 20 + ((to.x - from.x - 20) * i) / 25,
+          from.y + 10 + ((to.y - from.y - 10) * i) / 25,
+        )
+      await page.mouse.up()
+      await expect(canvas.getByText('Write the text on the right.')).toBeVisible()
+
+      await page.locator('textarea:visible').first().fill('Added in the Design tab.')
+      await expect(canvas.getByText('Added in the Design tab.')).toBeVisible()
+      await expect(page.getByText('Saved', { exact: true })).toBeVisible({ timeout: 10000 })
+      const saved = await (
+        await page.request.get(`${BASE}/api/newsletters/${designId}?draft=true&depth=0`)
+      ).json()
+      expect(saved.content.map((b: { blockType: string }) => b.blockType)).toEqual([
+        'letter',
+        'text',
+      ])
+      expect(saved.content[1].body).toBe('Added in the Design tab.')
+      if (SHOTS) await page.screenshot({ path: `${SHOTS}/nl-design.png` })
+    } finally {
+      await page.request.delete(`${BASE}/api/newsletters/${designId}`)
+    }
+  })
 })

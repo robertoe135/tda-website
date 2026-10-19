@@ -1,7 +1,9 @@
 import type { PayloadHandler, PayloadRequest } from 'payload'
 
-import { RESEND_UNSUBSCRIBE, renderNewsletter } from '../../emails/Newsletter'
-import { loadIssue } from '../../lib/newsletter'
+import { RESEND_UNSUBSCRIBE, renderNewsletter, renderParts } from '../../emails/Newsletter'
+import { siteServesThis } from '../../lib/email-logo'
+import { buildIssue, loadIssue, loadLookups } from '../../lib/newsletter'
+import { emailLogo } from '../../lib/email-logo'
 import { newsletterConfig, sendBroadcast, sendEmail } from '../../lib/resend'
 import { siteUrl } from '../../lib/seo'
 import type { Newsletter } from '../../payload-types'
@@ -35,10 +37,14 @@ export const sendingStatus: PayloadHandler = async (req) => {
     !c.segmentId && 'RESEND_SEGMENT_ID',
     !c.from && 'NEWSLETTER_FROM',
   ].filter(Boolean)
+  const site = siteUrl()
   return json({
     test: Boolean((c.apiKey && c.from) || process.env.SMTP_HOST),
     list: missing.length === 0,
     missing,
+    // Links in the email are built from this address: it has to be where this site is served.
+    site,
+    siteOk: await siteServesThis(site),
   })
 }
 
@@ -117,4 +123,24 @@ export const sendNewsletter: PayloadHandler = async (req) => {
     req.payload.logger.error({ err: e }, 'Newsletter send failed')
     return json({ error: (e as Error).message }, 502)
   }
+}
+
+/**
+ * The visual editor's canvas: the blocks it holds (not yet saved), drawn as the email will be.
+ * Read as the public sees the site, like a real send.
+ */
+export const previewBlocks: PayloadHandler = async (req) => {
+  if (!req.user) return json({ error: 'Log in first.' }, 401)
+  const body = (req.json ? await req.json().catch(() => ({})) : {}) as {
+    content?: unknown
+    issue?: Partial<Pick<Newsletter, 'masthead' | 'issueNumber' | 'theme' | 'season'>>
+  }
+  const content = (
+    Array.isArray(body.content) ? body.content.slice(0, 200) : []
+  ) as Newsletter['content']
+  const { lookups, settings } = await loadLookups(req.payload, content)
+  const { masthead, issueNumber, theme, season } = body.issue ?? {}
+  const doc = { id: 0, subject: '', masthead, issueNumber, theme, season, content } as Newsletter
+  const issue = buildIssue(doc, lookups, settings, siteUrl(), await emailLogo())
+  return json(await renderParts(issue))
 }
