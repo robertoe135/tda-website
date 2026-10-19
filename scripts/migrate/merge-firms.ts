@@ -7,19 +7,20 @@
  * Every project that names the merged firm as architect, client or in its credits is pointed
  * at the kept (main) firm instead (no repeats). The merged record is deleted and its name, with
  * any aliases it had, becomes an alias of the main firm: never shown, but old links, filters
- * and imports using it land on the main firm. Names must match exactly; nothing is guessed. A project saved as a draft stays a draft; a published one is
- * republished with only this change. Refuses a database that is not on this machine unless
+ * and imports using it land on the main firm. Names must match exactly; nothing is guessed. A draft stays a draft; a published project is
+ * republished with only this change, and a newer draft it has stays an unpublished draft. Refuses a database that is not on this machine unless
  * --confirm-backup is passed.
  */
 import '../env'
 
 import { fileURLToPath } from 'url'
 
-import { getPayload, type Payload } from 'payload'
+import { getPayload, type Payload, type Where } from 'payload'
 
 import config from '../../src/payload.config'
 import { normalizeName } from '../../src/hooks/preventNearDuplicates'
 import type { Firm, Project } from '../../src/payload-types'
+import { changeProject } from './versions'
 
 type Ref = number | { id: number } | null | undefined
 const idOf = (r: Ref) => (r && typeof r === 'object' ? r.id : r)
@@ -41,30 +42,30 @@ export async function mergeFirms(payload: Payload, keepName: string, mergeName: 
 export async function mergeFirmRecords(payload: Payload, keep: Firm, merge: Firm, write: boolean) {
   if (keep.id === merge.id) throw new Error('Keep and merge are the same firm.')
 
-  const projects = await payload.find({
-    collection: 'projects',
-    draft: true,
-    pagination: false,
-    depth: 0,
-    where: {
-      or: [{ architects: { in: [merge.id] } }, { clients: { in: [merge.id] } }, { 'credits.firms': { in: [merge.id] } }],
-    },
-  })
-
-  const changed: string[] = []
-  for (const p of projects.docs as Project[]) {
-    changed.push(p.name)
-    if (!write) continue
-    await payload.update({
-      collection: 'projects',
-      id: p.id,
-      data: {
-        architects: swap(p.architects as Ref[], merge.id, keep.id),
-        clients: swap(p.clients as Ref[], merge.id, keep.id),
-        credits: (p.credits ?? []).map((c) => ({ ...c, firms: swap(c.firms as Ref[], merge.id, keep.id) })),
-      },
-      draft: p._status !== 'published',
-    })
+  // Projects naming the merged firm in their latest draft or in their published version: a
+  // published project can have a newer draft without the firm, or the other way round.
+  const where: Where = {
+    or: [{ architects: { in: [merge.id] } }, { clients: { in: [merge.id] } }, { 'credits.firms': { in: [merge.id] } }],
+  }
+  const [drafts, live] = await Promise.all([
+    payload.find({ collection: 'projects', draft: true, pagination: false, depth: 0, where }),
+    payload.find({ collection: 'projects', pagination: false, depth: 0, where: { and: [where, { _status: { equals: 'published' } }] } }),
+  ])
+  const found = new Map([...drafts.docs, ...live.docs].map((p) => [p.id, p.name]))
+  const changed = [...found.values()].sort()
+  const names = (p: Project) => [...(p.architects ?? []), ...(p.clients ?? []), ...(p.credits ?? []).flatMap((c) => c.firms)].map((r) => idOf(r as Ref))
+  // The firm's record is deleted below, which also removes it from every version that still
+  // names it, so each version is moved to the kept firm first (versions.ts).
+  for (const id of write ? found.keys() : []) {
+    await changeProject(payload, id, (p) =>
+      names(p).includes(merge.id)
+        ? {
+            architects: swap(p.architects as Ref[], merge.id, keep.id),
+            clients: swap(p.clients as Ref[], merge.id, keep.id),
+            credits: (p.credits ?? []).map((c) => ({ ...c, firms: swap(c.firms as Ref[], merge.id, keep.id) })),
+          }
+        : undefined,
+    )
   }
   // The merged name joins the main firm's aliases, after the record is gone (a name may not be
   // both a firm and another firm's alias).

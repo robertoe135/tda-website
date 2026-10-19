@@ -125,6 +125,30 @@ const LABELS: Record<string, Role> = {
   envelope: 'consultant',
   'lab planning consultant': 'consultant',
   'retail consultant': 'consultant',
+  // Found unmapped on the old credits pages (MoMA, Wyly Theatre, MIT Museum and others).
+  'interiors architect': 'interiorDesigner',
+  'client representative': 'ownerRepresentative',
+  'exhibit designer/lighting design': 'lightingDesign', // TDA itself (Seeds of Light)
+  'exhibition engineer': 'consultant',
+  'media design consultant': 'consultant',
+  'graphic design consultant': 'consultant',
+  'collaborator/manufacturer': 'consultant',
+  'lighting design gallery spaces': 'consultant',
+  'exhibit lighting design': 'consultant',
+  'vertical transportation': 'consultant',
+  'theater planning & design': 'consultant',
+  'theater audiovisual': 'consultant',
+  theater: 'consultant',
+  waterproofing: 'consultant',
+  foodservice: 'consultant',
+  'signage/wayfinding': 'consultant',
+  'steel fabricator- blade stair': 'consultant',
+  'steel fabricator- counters': 'consultant',
+  'steel fabricator- canopy': 'consultant',
+  millwork: 'consultant',
+  enclosure: 'consultant',
+  'mep engineers': 'consultant',
+  designer: 'consultant',
 }
 
 export const roleFor = (label: string): Role => LABELS[label.trim().toLowerCase().replace(/\s+/g, ' ')] ?? 'unmapped'

@@ -171,7 +171,10 @@ pnpm migrate:merge-firms --keep "Foster + Partners" --merge "Fosters + Partners"
 ```
 
 Projects naming the second record (architect, client or credits) move to the main one, the
-second record is deleted, and its name becomes an alias. Names must match exactly. For a name
+second record is deleted, and its name becomes an alias. Both the published version and the
+latest draft move; a published project's pending draft stays unpublished. (Before October 2026
+only the draft moved, so deleting the record silently took the firm off the live page; see
+`migrate:restore-credits`.) Names must match exactly. For a name
 that never had its own record (an abbreviation), add it under Other names in the admin.
 
 ### Decided names (`pnpm migrate:firm-names`)
@@ -182,6 +185,25 @@ of the names are merged, the result carries the main name (its web address stays
 other name becomes an alias. Run it again any time; rows already applied change nothing.
 Decided in October 2026: SOM; Foster + Partners; Kohn Pedersen Fox; Adjaye Associates;
 OMA - Office for Metropolitan Architecture.
+
+### Lost credits (`pnpm migrate:restore-credits`)
+
+Puts back firm credits the old credits pages had and the new site lost: lines under labels
+the import did not know (now in `credit-labels.ts`), architects a credits page names but the
+label line leaves out (now kept as credits under their own role), and firms dropped from live
+pages by the old merge. Run `pnpm migrate:extract` first.
+
+```
+pnpm migrate:restore-credits                           # list, change nothing
+pnpm migrate:restore-credits --write                   # local database
+pnpm migrate:restore-credits --write --confirm-backup  # production, after a fresh backup
+```
+
+It only adds, to both the live version and the latest draft, and never a firm a person took
+off the project. Architects are added only when the site has a firm by exactly that name. The
+end of the list is for a person: lines naming several firms at once, names with no firm on
+the site, and names that look like a firm already credited under another spelling (often two
+records of one firm: merge them with `migrate:merge-firms`). Running it again adds nothing.
 
 ## In-progress copies of finished projects (`pnpm migrate:drop-in-progress`)
 

@@ -143,7 +143,53 @@ const isWebAddress = (value: string) => {
   }
 }
 
+/**
+ * The firms a project's old pages credit: architects from the label line (or, without one, the
+ * credits page's architects), and every other firm credit under its role. A credits page can
+ * name an architect the label line leaves out (a design or collaborating architect); it is kept
+ * as a credit under its own role rather than dropped.
+ */
+export function planFirmCredits(p: Pick<ProjectRecord, 'labelFirms' | 'credits'>, splitLabelFirm: (segment: string) => string[] = (s) => [s]) {
+  const entries = p.credits?.entries ?? []
+  const fromLabel = p.labelFirms.length > 0
+  const architects = fromLabel
+    ? p.labelFirms.flatMap(splitLabelFirm)
+    : entries.filter((e) => ARCHITECT_ROLES.has(e.role)).flatMap((e) => e.values)
+  const credits = entries
+    .filter((e) => FIRM_ROLES.has(e.role) && e.role !== 'lightingDesign')
+    .filter((e) => !(ARCHITECT_ROLES.has(e.role) && !fromLabel)) // already the architects
+    .map((e) => ({ role: e.role, roleName: ROLE_NAMES[e.role] ?? e.label, order: ROLE_ORDER[e.role] ?? 50, values: e.values }))
+  return { architects, credits }
+}
+
+/**
+ * Splits "Gensler, Studio Paolo Ferrari" into two firms only when the part before the comma
+ * is a firm seen elsewhere on the site; "Skidmore, Owings & Merrill" stays one firm.
+ */
+export const labelFirmSplitter = (knownFirmKeys: Set<string>) => (segment: string): string[] => {
+  if (!segment.includes(',')) return [segment]
+  const parts = segment.split(',').map((p) => p.trim()).filter(Boolean)
+  return knownFirmKeys.has(normalizeName(parts[0])) && parts.length > 1 ? parts : [segment]
+}
+
+/** "Gensler/WKSHPS": two firms joined by a slash, unless a firm is known by exactly that name. */
+export const looksJoined = (value: string) => /\S\s*\/\s*\S/.test(value)
+
 const yearOf = (value?: string) => (value && /^\d{4}$/.test(value.trim()) ? Number(value) : undefined)
+
+/** Finds a firm by any of its names (its own or an alias), without creating one. */
+export function firmFinder(payload: Payload) {
+  return async (name: string): Promise<number | undefined> => {
+    const normalized = normalizeName(name)
+    const found = await payload.find({
+      collection: 'firms',
+      where: { or: [{ normalizedName: { equals: normalized } }, { 'aliases.normalizedName': { equals: normalized } }] },
+      limit: 1,
+      depth: 0,
+    })
+    return found.docs[0]?.id as number | undefined
+  }
+}
 
 /** Finds a record by normalized name or creates it; never renames an existing record. */
 export function finder(payload: Payload) {
@@ -224,6 +270,10 @@ async function main() {
   const preferred = new Map(firms.filter((f) => f.preferred).map((f) => [f.key, f.preferred!]))
   const knownFirmKeys = new Set(firms.map((f) => f.key))
   const firmId = (name: string) => findOrCreate('firms', preferred.get(normalizeName(name)) ?? name)
+  const findFirm = firmFinder(payload)
+  // A credit naming several firms in one line is flagged rather than made into one odd firm.
+  const creditFirmId = async (name: string) =>
+    looksJoined(name) && !(await findFirm(preferred.get(normalizeName(name)) ?? name)) ? undefined : firmId(name)
 
   const counts: Record<string, number> = {}
   const bump = (k: string) => (counts[k] = (counts[k] ?? 0) + 1)
@@ -264,13 +314,7 @@ async function main() {
 
   const locationId = locationFinder(payload, flag)
 
-  // Splits "Gensler, Studio Paolo Ferrari" into two firms only when the part before the comma
-  // is a firm seen elsewhere on the site; "Skidmore, Owings & Merrill" stays one firm.
-  const splitLabelFirm = (segment: string): string[] => {
-    if (!segment.includes(',')) return [segment]
-    const parts = segment.split(',').map((p) => p.trim()).filter(Boolean)
-    return knownFirmKeys.has(normalizeName(parts[0])) && parts.length > 1 ? parts : [segment]
-  }
+  const splitLabelFirm = labelFirmSplitter(knownFirmKeys)
 
   // Projects
   const currentYear = new Date().getFullYear()
@@ -287,24 +331,22 @@ async function main() {
     const where = p.legacyPaths[0] ?? '/on-the-boards'
     const c = p.credits
 
-    const architectNames = p.labelFirms.length
-      ? p.labelFirms.flatMap(splitLabelFirm)
-      : (c?.entries ?? []).filter((e) => ARCHITECT_ROLES.has(e.role)).flatMap((e) => e.values)
-    const architectKeys = new Set(architectNames.map(normalizeName))
-    const architects = await Promise.all(architectNames.map(firmId))
+    const plan = planFirmCredits(p, splitLabelFirm)
+    const architects = [...new Set(await Promise.all(plan.architects.map(firmId)))]
 
-    // Credits: everyone else, grouped by role in the order they appear.
+    // Credits: everyone else, grouped by role in the order they appear. A firm already named as
+    // architect (under any of its names) is not repeated.
     const creditRows = new Map<number, number[]>()
-    for (const e of c?.entries ?? []) {
-      if (!FIRM_ROLES.has(e.role) || e.role === 'lightingDesign') continue
-      if (ARCHITECT_ROLES.has(e.role) && p.labelFirms.length) continue // architects come from the label
-      const values = e.values.filter((v) => !architectKeys.has(normalizeName(v)))
-      if (!values.length) continue
-      const roleName = ROLE_NAMES[e.role] ?? e.label
-      const roleId = await findOrCreate('creditRoles', roleName, { order: ROLE_ORDER[e.role] ?? 50 })
-      const ids = creditRows.get(roleId) ?? []
-      for (const v of values) ids.push(await firmId(v))
-      creditRows.set(roleId, ids)
+    for (const row of plan.credits) {
+      const ids: number[] = []
+      for (const v of row.values) {
+        const id = await creditFirmId(v)
+        if (id === undefined) flag(p.creditsPath ?? where, 'credit', `${row.roleName}: ${v}`, 'Looks like several firms in one line; not imported. Add each firm by hand.')
+        else if (!architects.includes(id)) ids.push(id)
+      }
+      if (!ids.length) continue
+      const roleId = await findOrCreate('creditRoles', row.roleName, { order: row.order })
+      creditRows.set(roleId, [...(creditRows.get(roleId) ?? []), ...ids])
     }
     for (const e of c?.entries ?? []) {
       if (e.role === 'curator' || e.role === 'artist') {
