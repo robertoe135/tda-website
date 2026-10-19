@@ -1,0 +1,80 @@
+:root {
+  --text: #000;
+  --muted: #555;
+  --line: #c8c8c8;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  font-family: 'DM Sans Variable', system-ui, sans-serif;
+  font-weight: 300;
+  color: var(--text);
+  background: #fff;
+}
+.gate {
+  width: 100%;
+  max-width: 22rem;
+}
+.gate img {
+  display: block;
+  height: 44px;
+  width: auto;
+  margin-bottom: 2.5rem;
+}
+.gate h1 {
+  margin: 0 0 0.4rem;
+  font-size: 1.25rem;
+  font-weight: 300;
+}
+.gate p {
+  margin: 0 0 1.5rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.gate label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.gate input {
+  width: 100%;
+  height: 48px;
+  padding: 0 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  font: inherit;
+  font-size: 1rem;
+}
+.gate input:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 1px;
+  border-color: var(--text);
+}
+.gate button {
+  width: 100%;
+  height: 48px;
+  margin-top: 0.75rem;
+  border: 1px solid var(--text);
+  background: var(--text);
+  color: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.gate button:hover {
+  background: #333;
+}
+.gate .gate-error {
+  margin: 0.6rem 0 0;
+  font-size: 0.85rem;
+  color: #a3001b;
+}
