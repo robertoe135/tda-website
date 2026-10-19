@@ -32,18 +32,8 @@ describe('mapData', () => {
     ])
     expect(d.unplaced).toBe(2)
   })
-  it('places New York in every view and London only in the world view', () => {
-    const [ny, ldn] = mapData([card(1, nyc), card(2, london)]).cities
-    for (const v of ['northeast', 'north-america', 'world'] as const) {
-      expect(ny.at[v]!.x).toBeGreaterThan(0)
-      expect(ny.at[v]!.x).toBeLessThan(100)
-    }
-    expect(ldn.at.world).toBeDefined()
-    expect(ldn.at['north-america']).toBeUndefined()
-  })
-  it('draws the three maps', () => {
-    const { paths } = mapData([])
-    expect(paths.world.length).toBeGreaterThan(1000)
-    expect(paths.northeast.startsWith('M')).toBe(true)
+  it('keeps each city’s coordinates for the globe', () => {
+    const [ny] = mapData([card(1, nyc)]).cities
+    expect([ny.lat, ny.lng, ny.name]).toEqual([40.71, -74.01, 'New York, NY'])
   })
 })
