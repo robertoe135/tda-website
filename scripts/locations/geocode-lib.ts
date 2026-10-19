@@ -148,3 +148,10 @@ export function fromList(rows: Record<string, string>[], locations: Known[]) {
   }
   return { save, problems }
 }
+
+/** The separator a saved list uses: Numbers and Excel can save tabs or semicolons, not commas. */
+export function separatorOf(text: string): string {
+  const header = text.split(/\r?\n/, 1)[0]
+  const count = (c: string) => header.split(c).length - 1
+  return ['\t', ';', ','].reduce((best, c) => (count(c) > count(best) ? c : best), ',')
+}

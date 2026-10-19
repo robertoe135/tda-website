@@ -10,8 +10,8 @@ export const ROLE_LABELS: Record<TeamRole, string> = { principal: 'Principal in 
 
 export const COLUMNS = ['project', 'person', 'role', 'former staff', 'note'] as const
 
-/** RFC 4180 CSV: quoted fields, doubled quotes, commas and line breaks inside quotes, CRLF. */
-export function parseCsv(text: string): string[][] {
+/** RFC 4180 CSV (or another separator, such as a tab): quoted fields, doubled quotes, commas and line breaks inside quotes, CRLF. */
+export function parseCsv(text: string, sep = ','): string[][] {
   const rows: string[][] = []
   let row: string[] = []
   let field = ''
@@ -26,7 +26,7 @@ export function parseCsv(text: string): string[][] {
       } else if (c === '"') quoted = false
       else field += c
     } else if (c === '"') quoted = true
-    else if (c === ',') {
+    else if (c === sep) {
       row.push(field)
       field = ''
     } else if (c === '\n' || c === '\r') {

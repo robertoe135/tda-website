@@ -4,8 +4,8 @@
  *
  *   pnpm locations:geocode                          # list what it finds
  *   pnpm locations:geocode --write --confirm-backup # save the clear matches
- *   pnpm locations:geocode --from scripts/locations/out/geocode.csv --write --confirm-backup
- *                                                   # save the list after you corrected it
+ *   pnpm locations:geocode --from scripts/locations/coordinates.csv --write --confirm-backup
+ *                                                   # save a corrected list (comma, tab or ;)
  *
  * Correcting the list: set "result" to ok on a row you checked, and fix its lat and lng if
  * they are wrong (latitude first; New York is 40.71, -74.01). With --from only rows marked ok
@@ -16,8 +16,10 @@
  * name; anything else is listed as "check" and not saved unless --include-check is passed, so a
  * wrong guess never reaches the map. Names are never changed.
  *
- * Writes scripts/locations/out/geocode.csv (not committed). Refuses a database that is not on
- * this machine unless --confirm-backup is passed. One lookup a second, as the service asks.
+ * Each lookup writes a new scripts/locations/out/geocode-<date>.csv (not committed), so an edited
+ * list is never overwritten. scripts/locations/coordinates.csv is the checked list (October 2026).
+ * Refuses a database that is not on this machine unless --confirm-backup is passed. One lookup a
+ * second, as the service asks.
  */
 import '../env'
 
@@ -32,9 +34,14 @@ import { csv } from '../migrate/lib'
 
 import { parseCsv } from '../team/lib'
 
-import { type Found, fromList, geocode, nominatim, type Place } from './geocode-lib'
+import { type Found, fromList, geocode, nominatim, type Place, separatorOf } from './geocode-lib'
 
-const OUT = path.join(path.dirname(new URL(import.meta.url).pathname), 'out', 'geocode.csv')
+const OUT_DIR = path.join(path.dirname(new URL(import.meta.url).pathname), 'out')
+// A new file per run, so a list someone corrected is never overwritten by the next lookup.
+const OUT = path.join(
+  OUT_DIR,
+  `geocode-${new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '')}.csv`,
+)
 
 async function main() {
   const args = process.argv.slice(2)
@@ -56,7 +63,10 @@ async function main() {
   // An edited list: save the rows marked ok, as written.
   const listPath = args.includes('--from') ? args[args.indexOf('--from') + 1] : undefined
   if (listPath) {
-    const [header, ...lines] = parseCsv(await readFile(listPath, 'utf8'))
+    const text = await readFile(listPath, 'utf8')
+    const [header = [], ...lines] = parseCsv(text, separatorOf(text)).filter((l) =>
+      l.some((c) => c.trim()),
+    )
     // Excel and Numbers often start a saved CSV with an invisible mark (BOM); drop it.
     const cols = header.map((h) =>
       h
@@ -64,7 +74,18 @@ async function main() {
         .trim()
         .toLowerCase(),
     )
+    const missing = ['location', 'result', 'lat', 'lng'].filter((c) => !cols.includes(c))
+    if (missing.length) {
+      console.error(
+        `${listPath} has no ${missing.join(', ')} column. Columns found: ${cols.join(' | ')}`,
+      )
+      console.error('Save it as CSV (Numbers: File > Export To > CSV), keeping the header row.')
+      process.exit(1)
+    }
     const rows = lines.map((l) => Object.fromEntries(cols.map((c, i) => [c, l[i] ?? ''])))
+    console.log(
+      `Read ${rows.length} rows, ${rows.filter((r) => r.result.trim().toLowerCase() === 'ok').length} marked ok.\n`,
+    )
     const { save, problems } = fromList(rows, locations.docs)
     for (const s of save)
       console.log(`${write ? 'save ' : 'would save'}  ${s.name.padEnd(32)}  ${s.lat}, ${s.lng}`)
@@ -133,7 +154,7 @@ async function main() {
     }
   }
 
-  await mkdir(path.dirname(OUT), { recursive: true })
+  await mkdir(OUT_DIR, { recursive: true })
   await writeFile(
     OUT,
     csv(
@@ -162,7 +183,7 @@ async function main() {
   console.log(
     write
       ? `Saved ${saved}. The map shows them at once (no redeploy).`
-      : 'Nothing saved. Rerun with --write --confirm-backup to save the clear matches, or correct the\nlist and save it with --from scripts/locations/out/geocode.csv --write --confirm-backup.',
+      : `Nothing saved. Rerun with --write --confirm-backup to save the clear matches, or correct the\nlist and save it with --from ${path.relative(process.cwd(), OUT)} --write --confirm-backup.`,
   )
   process.exit(0)
 }

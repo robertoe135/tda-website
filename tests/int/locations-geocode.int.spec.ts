@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest'
 
-import { fromList, geocode, type Hit, pick, queryFor } from '../../scripts/locations/geocode-lib'
+import { readFileSync } from 'fs'
+
+import {
+  fromList,
+  geocode,
+  type Hit,
+  pick,
+  queryFor,
+  separatorOf,
+} from '../../scripts/locations/geocode-lib'
+import { parseCsv } from '../../scripts/team/lib'
 
 const place = (city: string, region: string | null, country: string) => ({
   id: 1,
@@ -96,5 +106,31 @@ describe('locations:geocode --from (a corrected list)', () => {
       fromList([{ location: 'New York, NY', result: 'ok', lat: '-140', lng: '40' }], locs)
         .problems[0],
     ).toContain('not a place')
+  })
+
+  it('reads a list saved with tabs or semicolons, as Numbers and Excel can', () => {
+    const tsv = 'location\tresult\tlat\tlng\nNew York, NY\tok\t40.71\t-74.01\n'
+    expect(separatorOf(tsv)).toBe('\t')
+    expect(separatorOf('location;result;lat;lng\n')).toBe(';')
+    expect(separatorOf('location,result,lat,lng\n"Bronx, NY",ok,1,2')).toBe(',')
+    expect(parseCsv(tsv, separatorOf(tsv))[1]).toEqual(['New York, NY', 'ok', '40.71', '-74.01'])
+  })
+
+  it('the checked list has a coordinate pair for every row marked ok, latitude first', () => {
+    const text = readFileSync('scripts/locations/coordinates.csv', 'utf8')
+    const [header, ...lines] = parseCsv(text).filter((l) => l.some(Boolean))
+    expect(header).toEqual(['location', 'result', 'lat', 'lng', 'note'])
+    const names = lines.map((l) => l[0])
+    expect(new Set(names).size).toBe(names.length)
+    const rows = lines.map((l) => Object.fromEntries(header.map((c, i) => [c, l[i] ?? ''])))
+    const locs = names.map((n, i) => ({ id: i + 1, displayName: n, city: n }))
+    const { save, problems } = fromList(rows, locs)
+    expect(problems).toEqual([])
+    expect(save.length).toBe(rows.filter((r) => r.result === 'ok').length)
+    const at = (n: string) => save.find((s) => s.name === n)!
+    // Shanghai is north of Shenzhen; the two were once swapped.
+    expect(at('Shanghai, China').lat).toBeGreaterThan(30)
+    expect(at('Shenzhen, China').lat).toBeLessThan(23)
+    expect(at('New York, NY').lng).toBeLessThan(-73)
   })
 })
