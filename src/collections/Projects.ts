@@ -290,6 +290,10 @@ export const Projects: CollectionConfig = {
               name: 'gallery',
               type: 'array',
               labels: { singular: 'Image', plural: 'Gallery' },
+              admin: {
+                // Many photos at once, through Payload's bulk upload (components/admin/GalleryBulkAdd).
+                components: { beforeInput: ['/components/admin/GalleryBulkAdd#GalleryBulkAdd'] },
+              },
               fields: [
                 { name: 'image', type: 'upload', relationTo: 'media', required: true },
                 {
