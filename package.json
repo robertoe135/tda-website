@@ -27,6 +27,7 @@
     "migrate:audit-credits": "tsx scripts/migrate/audit-credits.ts",
     "migrate:firm-names": "tsx scripts/migrate/firm-names.ts",
     "migrate:drop-in-progress": "tsx scripts/migrate/drop-in-progress.ts",
+    "migrate:remove-placeholders": "tsx scripts/migrate/remove-placeholders.ts",
     "migrate:people": "tsx scripts/migrate/people.ts",
     "migrate:check-redirects": "tsx scripts/migrate/check-redirects.ts",
     "team:import": "tsx scripts/team/import.ts",

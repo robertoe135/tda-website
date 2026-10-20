@@ -4,6 +4,7 @@
  *
  *   pnpm migrate:drop-in-progress            # list the pairs
  *   pnpm migrate:drop-in-progress --write    # delete the in-progress copies (--confirm-backup if not local)
+ *   pnpm migrate:drop-in-progress --only "Loyola University Chapel" --write   # just one
  *
  * A pair is an in-progress project whose name (three words or more, so "Art Museum" never
  * qualifies) is contained in, or nearly the same as, exactly one completed project's name: "Princeton Art Museum" → "Princeton University Art Museum".
@@ -18,6 +19,7 @@ import { fileURLToPath } from 'url'
 import { getPayload, type Payload } from 'payload'
 
 import config from '../../src/payload.config'
+import { changeProject } from './versions'
 import { normalizeName } from '../../src/hooks/preventNearDuplicates'
 
 import { similarity, tokens } from './lib'
@@ -74,11 +76,11 @@ export async function dropInProgress(payload: Payload, { stale, keep }: Pair, wr
 
   if (!write) return log
   if (moved.length) {
-    await payload.update({
-      collection: 'projects',
-      id: keep.id,
-      data: { legacyUrls: [...(keepDoc.legacyUrls ?? []).map((l) => ({ path: l.path })), ...moved.map((path) => ({ path }))] },
-      draft: keepDoc._status !== 'published',
+    // On the live version too, so the redirects work before the next publish (versions.ts).
+    await changeProject(payload, keep.id, (v) => {
+      const have = (v.legacyUrls ?? []).map((l) => l.path)
+      const add = moved.filter((p) => !have.includes(p))
+      return add.length ? { legacyUrls: [...(v.legacyUrls ?? []).map((l) => ({ path: l.path })), ...add.map((path) => ({ path }))] } : undefined
     })
   }
   for (const p of press.docs) {
@@ -102,7 +104,12 @@ async function main() {
   }
   const payload = await getPayload({ config })
   const all = await payload.find({ collection: 'projects', draft: true, pagination: false, depth: 0, select: { name: true, status: true } })
-  const { pairs, ambiguous } = inProgressPairs(all.docs)
+  const found = inProgressPairs(all.docs)
+  // --only "<name>": just the copy with that name (exactly as in the admin).
+  const only = process.argv.includes('--only') ? process.argv[process.argv.indexOf('--only') + 1] : undefined
+  const pairs = only ? found.pairs.filter((p) => p.stale.name === only) : found.pairs
+  const ambiguous = only ? found.ambiguous.filter((a) => a.stale.name === only) : found.ambiguous
+  if (only && !pairs.length && !ambiguous.length) console.log(`No in-progress copy named "${only}" with a completed counterpart.`)
   for (const pair of pairs) {
     console.log(`Delete "${pair.stale.name}" (in progress), keep "${pair.keep.name}" (completed)`)
     for (const line of await dropInProgress(payload, pair, write)) console.log(`  ${line}`)
