@@ -4,6 +4,7 @@ import { authenticated } from '../access/authenticated'
 import { publishedOrAuthenticated } from '../access/publishedOrAuthenticated'
 import { fillSlug, slug } from '../fields/slug'
 import { stillNeededField } from '../fields/stillNeeded'
+import { exportProjects, importTeam, teamWorksheet } from './projects-endpoints'
 
 // Project facts are structured fields, never sentences: architect, location, year and team
 // are relationships or numbers so every label on the site can link to a filtered view.
@@ -16,7 +17,16 @@ export const Projects: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'year', 'status', 'stillNeeded', '_status'],
     listSearchableFields: ['name', 'summary'],
+    components: {
+      // Export every project as CSV; import TDA team credits from a filled-in worksheet.
+      beforeListTable: ['/components/admin/ProjectTools#ProjectTools'],
+    },
   },
+  endpoints: [
+    { path: '/export', method: 'get', handler: exportProjects },
+    { path: '/team-worksheet', method: 'get', handler: teamWorksheet },
+    { path: '/import-team', method: 'post', handler: importTeam },
+  ],
   defaultSort: '-year',
   versions: { drafts: true, maxPerDoc: 50 },
   access: {
@@ -55,6 +65,7 @@ export const Projects: CollectionConfig = {
                     { label: 'Completed', value: 'completed' },
                     { label: 'In progress', value: 'in-progress' },
                     { label: 'Unbuilt', value: 'unbuilt' },
+                    { label: 'Cancelled', value: 'cancelled' },
                   ],
                 },
                 {

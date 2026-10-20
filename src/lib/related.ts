@@ -53,7 +53,8 @@ export function relatedProjects(
     },
     {
       pick: (p) =>
-        project.year && p.year === project.year && p.status !== 'in-progress'
+        // Completed in the same year: the year is on the Timeline (never unbuilt, cancelled or expected years).
+        project.year && p.year === project.year && p.status === 'completed'
           ? { label: String(project.year), href: `/timeline#year-${project.year}` }
           : undefined,
     },

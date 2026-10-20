@@ -55,7 +55,12 @@ export async function removePlaceholders(payload: Payload, write: boolean) {
   // Anything else still using one keeps it, for a person to replace.
   const usedElsewhere = new Set<number>()
   const check = async (label: string, found: Promise<{ docs: unknown[] }>, ids: (doc: never) => number[]) => {
-    for (const doc of (await found).docs) for (const id of ids(doc as never)) if (mediaIds.includes(id)) (usedElsewhere.add(id), log.push(`kept photo ${id}: still used by ${label}`))
+    for (const doc of (await found).docs)
+      for (const id of ids(doc as never))
+        if (mediaIds.includes(id)) {
+          usedElsewhere.add(id)
+          log.push(`kept photo ${id}: still used by ${label}`)
+        }
   }
   await check('a person’s headshot', payload.find({ collection: 'people', draft: true, pagination: false, depth: 0, where: { headshot: { in: mediaIds } } }), (p: { headshot?: Ref }) => [idOf(p.headshot) as number])
   const home = JSON.stringify(await payload.findGlobal({ slug: 'home', draft: true, depth: 0 }))
@@ -63,7 +68,10 @@ export async function removePlaceholders(payload: Payload, write: boolean) {
   const newsletters = JSON.stringify((await payload.find({ collection: 'newsletters', draft: true, pagination: false, depth: 0 })).docs)
   for (const id of mediaIds)
     for (const [label, text] of [['the homepage', home], ['About', about], ['a newsletter', newsletters]] as const)
-      if (new RegExp(`"(image|media|poster)":${id}\\b`).test(text)) (usedElsewhere.add(id), log.push(`kept photo ${id}: still used by ${label}`))
+      if (new RegExp(`"(image|media|poster)":${id}\\b`).test(text)) {
+        usedElsewhere.add(id)
+        log.push(`kept photo ${id}: still used by ${label}`)
+      }
 
   // Placeholder videos (and their stills) not on the homepage.
   const doomedVideos = videos.filter((v) => !new RegExp(`"video":${v.id}\\b`).test(home))

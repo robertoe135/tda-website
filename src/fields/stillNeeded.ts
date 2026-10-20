@@ -30,7 +30,7 @@ export function stillNeeded(p: Record<string, unknown>): StillNeeded[] {
   if (!photos) out.push('photos')
   if (photos && !has(p.photographers)) out.push('photographer')
   if (!has(p.typologies)) out.push('category')
-  if (p.status !== 'in-progress' && !has(p.year)) out.push('year')
+  if (p.status === 'completed' && !has(p.year)) out.push('year')
   if (!has(p.location)) out.push('location')
   if (!has(p.architects)) out.push('architect')
   if (!hasText(p.description)) out.push('write-up')

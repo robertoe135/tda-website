@@ -108,6 +108,11 @@ export async function getTypologies(): Promise<Pick<Typology, 'name' | 'slug'>[]
   return result.docs.map((t) => ({ name: t.name, slug: t.slug }))
 }
 
+/** The statuses the Timeline shows: built work and work under way, never unbuilt or cancelled. */
+export const TIMELINE_STATUSES: readonly string[] = ['completed', 'in-progress']
+export const onTimeline = (p: { year?: number | null; status?: string | null }) =>
+  Boolean(p.year && p.status && TIMELINE_STATUSES.includes(p.status))
+
 // ── filters ──────────────────────────────────────────────────────────────────
 
 // Wording from tillotsondesign.com: "on the boards" is TDA's term for work in progress.
