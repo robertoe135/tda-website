@@ -149,6 +149,9 @@ const LABELS: Record<string, Role> = {
   enclosure: 'consultant',
   'mep engineers': 'consultant',
   designer: 'consultant',
+  // On the 2025 stats pages (Loyola chapel).
+  'consulting engineers': 'consultant',
+  'acoustic consultant': 'consultant',
 }
 
 export const roleFor = (label: string): Role => LABELS[label.trim().toLowerCase().replace(/\s+/g, ' ')] ?? 'unmapped'

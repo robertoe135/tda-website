@@ -139,3 +139,62 @@ describe('restoring lost credits', () => {
     expect((await restoreCredits(payload, [record], [], false)).rows).toEqual([])
   })
 })
+
+describe('restoring photographers, facts, awards and old addresses', () => {
+  let payload: Payload
+  const tag = `zy${Date.now().toString(36)}`
+  const path = `/${tag}/chapel`
+  let projectId: number
+
+  beforeAll(async () => {
+    payload = await getPayload({ config })
+    const typology = (await payload.create({ collection: 'typologies', data: { name: `${tag} Typology` } })).id
+    // Published without its stats (the stats page was missed), with an unpublished draft on top.
+    projectId = (
+      await payload.create({
+        collection: 'projects',
+        data: { name: `${tag} Chapel`, status: 'completed', typologies: [typology], summary: 'Live text.', legacyUrls: [{ path }], _status: 'published' },
+      })
+    ).id
+    await payload.update({ collection: 'projects', id: projectId, draft: true, data: { summary: 'Unpublished edit.' } })
+  })
+
+  afterAll(async () => {
+    await payload.delete({ collection: 'awards', where: { project: { equals: projectId } } })
+    await payload.delete({ collection: 'projects', where: { name: { like: tag } } })
+    await payload.delete({ collection: 'photographers', where: { name: { like: tag } } })
+    await payload.delete({ collection: 'typologies', where: { name: { like: tag } } })
+  })
+
+  const record = {
+    key: tag,
+    name: 'Chapel',
+    legacyPaths: [path, `/${tag}-stats`],
+    labelFirms: [],
+    credits: {
+      name: 'Chapel',
+      completed: '2025',
+      area: '4,620 sf',
+      photography: [`Timothy Lens ${tag}`],
+      awards: [{ year: 2026, text: `${tag} Lighting Award` }],
+      entries: [],
+    },
+  } as unknown as ProjectRecord
+
+  it('adds them where the project has none, on the live site and the draft, once', async () => {
+    const { rows } = await restoreCredits(payload, [record], [], true)
+    expect([...new Set(rows.map((r) => r.role))]).toEqual(['Award', 'Photographer', 'Year', 'Area', 'Old address'])
+    const photographer = (await payload.find({ collection: 'photographers', where: { name: { equals: `Timothy Lens ${tag}` } } })).docs[0]
+    for (const draft of [false, true]) {
+      const v = (await payload.findByID({ collection: 'projects', id: projectId, depth: 0, draft })) as Project
+      expect(v.photographers).toEqual([photographer.id])
+      expect(v.year).toBe(2025)
+      expect(v.areaSqFt).toBe(4620)
+      expect(v.legacyUrls?.map((u) => u.path)).toEqual([path, `/${tag}-stats`])
+      expect(v.summary).toBe(draft ? 'Unpublished edit.' : 'Live text.')
+    }
+    const awards = await payload.find({ collection: 'awards', where: { project: { equals: projectId } } })
+    expect(awards.docs.map((a) => [a.year, a.name])).toEqual([[2026, `${tag} Lighting Award`]])
+    expect((await restoreCredits(payload, [record], [], false)).rows).toEqual([])
+  })
+})

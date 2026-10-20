@@ -1,5 +1,6 @@
 /**
- * Puts back firm credits the old site's project pages had and the new site lost:
+ * Puts back credits the old site's pages had and the new site lost: firms, photographers,
+ * awards, and the year, area and old addresses where the project has none:
  *
  *   pnpm migrate:restore-credits                                   # list what is missing, change nothing
  *   pnpm migrate:restore-credits --write                           # add it (local database)
@@ -28,14 +29,16 @@ import config from '../../src/payload.config'
 import { normalizeName } from '../../src/hooks/preventNearDuplicates'
 import type { Project } from '../../src/payload-types'
 import type { ProjectRecord } from './extract'
-import { finder, firmFinder, labelFirmSplitter, looksJoined, planFirmCredits } from './import'
+import { finder, firmFinder, labelFirmSplitter, looksJoined, parseArea, planFirmCredits } from './import'
 import { ARCHITECT_ROLES } from './credit-labels'
-import { cacheDir, similarity, SITE } from './lib'
+import { cacheDir, similarity, SITE, splitCredit } from './lib'
 import { changeProject } from './versions'
 
 type Ref = number | { id: number } | null | undefined
 const idOf = (r: Ref) => (r && typeof r === 'object' ? r.id : r)
 const ids = (refs: Ref[] | null | undefined) => (refs ?? []).map(idOf).filter((id): id is number => typeof id === 'number')
+const isObject = <T>(v: unknown): v is T => typeof v === 'object' && v !== null
+const samePerson = (a: string, b: string) => normalizeName(a) === normalizeName(b) || similarity(normalizeName(a), normalizeName(b)) >= 0.88
 const firmsOn = (p: Pick<Project, 'architects' | 'credits'>) => new Set([...ids(p.architects as Ref[]), ...(p.credits ?? []).flatMap((c) => ids(c.firms as Ref[]))])
 
 const words = (s: string) => s.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().split(/[^a-z0-9]+/).filter(Boolean)
@@ -140,26 +143,78 @@ export async function restoreCredits(
     for (const row of plan.credits)
       for (const name of row.values) await consider(name, { roleName: row.roleName, order: row.order, architect: ARCHITECT_ROLES.has(row.role) })
 
+    // Photographers the old page credits, by name (already credited on the project or on one of
+    // its photos counts), and the facts it gives that the project leaves empty.
+    const photoIdsOf = (v: Project) => ids(v.photographers as Ref[])
+    const everPhotos = new Set(versions.docs.flatMap((v) => photoIdsOf(v.version as Project)))
+    const latestPhotos = new Set(photoIdsOf(doc))
+    const photoNames = new Map(
+      (await payload.find({ collection: 'photographers', where: { id: { in: [...new Set([...everPhotos, ...latestPhotos])] } }, pagination: false, depth: 0, select: { name: true } })).docs.map((x) => [x.id, x.name]),
+    )
+    const imageCredits = async (v: Project) => {
+      const mediaIds = ids([v.heroImage, ...(v.gallery ?? []).map((g) => g.image)] as Ref[])
+      if (!mediaIds.length) return []
+      const media = await payload.find({ collection: 'media', where: { id: { in: mediaIds } }, pagination: false, depth: 1, select: { photographer: true, credit: true } })
+      return media.docs.flatMap((m) => (isObject<{ name: string }>(m.photographer) ? [m.photographer.name] : m.credit ? [m.credit] : []))
+    }
+    const findPhotographer = async (name: string) =>
+      (await payload.find({ collection: 'photographers', where: { normalizedName: { equals: normalizeName(name) } }, limit: 1, depth: 0 })).docs[0]?.id
+    const oldPhotographers = (p.credits?.photography ?? []).flatMap(splitCredit)
+    const year = p.credits?.completed && /^\d{4}$/.test(p.credits.completed.trim()) ? Number(p.credits.completed.trim()) : undefined
+    const area = parseArea(p.credits?.area)
+    // Old addresses (the stats page) for redirects, unless another project already has one.
+    const paths: string[] = []
+    for (const path of p.legacyPaths) {
+      const owner = await payload.find({ collection: 'projects', where: { 'legacyUrls.path': { equals: path } }, limit: 1, draft: true, depth: 0 })
+      if (!owner.docs[0] || owner.docs[0].id === doc.id) paths.push(path)
+    }
+
     const roleIds = new Map<string, number>()
     const roleId = async (name: string, order: number) => {
       if (!roleIds.has(name)) roleIds.set(name, write ? await findOrCreate('creditRoles', name, { order }) : -roleIds.size - 1)
       return roleIds.get(name)!
     }
-    const added: Record<'live' | 'draft', typeof wanted> = { live: [], draft: [] }
+    type Added = { role?: string; firm: string }
+    const added: Record<'live' | 'draft', Added[]> = { live: [], draft: [] }
     const fill = async (v: Project, which: 'live' | 'draft') => {
+      const changes: Partial<Project> = {}
+      const note = (a: Added) => added[which].push(a)
+
       const have = firmsOn(v)
       const missing = wanted.filter((w) => !have.has(w.id) && !removed(w.id))
-      if (!missing.length) return undefined
-      added[which] = missing
-      const architects = [...ids(v.architects as Ref[]), ...missing.filter((m) => !m.role).map((m) => m.id)]
-      const credits = (v.credits ?? []).map((c) => ({ ...c, role: idOf(c.role as Ref) as number, firms: ids(c.firms as Ref[]) }))
-      for (const m of missing.filter((m) => m.role)) {
-        const role = await roleId(m.role!, m.order ?? 50)
-        const row = credits.find((c) => c.role === role)
-        if (row) row.firms.push(m.id)
-        else credits.push({ role, firms: [m.id] } as (typeof credits)[number])
+      if (missing.length) {
+        changes.architects = [...ids(v.architects as Ref[]), ...missing.filter((m) => !m.role).map((m) => m.id)]
+        const credits = (v.credits ?? []).map((c) => ({ ...c, role: idOf(c.role as Ref) as number, firms: ids(c.firms as Ref[]) }))
+        for (const m of missing.filter((m) => m.role)) {
+          const role = await roleId(m.role!, m.order ?? 50)
+          const row = credits.find((c) => c.role === role)
+          if (row) row.firms.push(m.id)
+          else credits.push({ role, firms: [m.id] } as (typeof credits)[number])
+        }
+        changes.credits = credits as Project['credits']
+        missing.forEach((m) => note({ role: m.role ?? 'Architect', firm: m.firm }))
       }
-      return { architects, credits } as Partial<Project>
+
+      const credited = [...photoIdsOf(v).map((id) => photoNames.get(id) ?? ''), ...(await imageCredits(v))]
+      const photographers = photoIdsOf(v)
+      for (const name of oldPhotographers) {
+        if (credited.some((c) => samePerson(c, name))) continue
+        const id = (await findPhotographer(name)) ?? (write ? (await payload.create({ collection: 'photographers', data: { name } })).id : next--)
+        if ((everPhotos.has(id) && !latestPhotos.has(id)) || photographers.includes(id)) continue // taken off by a person
+        photographers.push(id)
+        note({ role: 'Photographer', firm: name })
+      }
+      if (photographers.length !== photoIdsOf(v).length) changes.photographers = photographers
+
+      if (year && !v.year) (changes.year = year), note({ role: 'Year', firm: String(year) })
+      if (area?.areaSqFt && !v.areaSqFt && !v.areaNote) Object.assign(changes, area), note({ role: 'Area', firm: p.credits!.area! })
+      const known = new Set((v.legacyUrls ?? []).map((u) => u.path))
+      const newPaths = paths.filter((x) => !known.has(x))
+      if (newPaths.length) {
+        changes.legacyUrls = [...(v.legacyUrls ?? []).map((u) => ({ path: u.path })), ...newPaths.map((x) => ({ path: x }))]
+        newPaths.forEach((x) => note({ role: 'Old address', firm: x }))
+      }
+      return Object.keys(changes).length ? changes : undefined
     }
 
     if (write) await changeProject(payload, doc.id, (v) => fill(v, v._status === 'published' ? 'live' : 'draft'))
@@ -168,6 +223,22 @@ export async function restoreCredits(
       const live = (await payload.findByID({ collection: 'projects', id: doc.id, depth: 0 }).catch(() => undefined)) as Project | undefined
       if (live?._status === 'published') await fill(live, 'live')
       if (doc._status !== 'published') await fill(doc, 'draft')
+    }
+    // Awards are their own records (shown on live and draft alike). One is added only when the
+    // project has fewer awards for that year than the old page lists: an award a person renamed
+    // or corrected still counts.
+    const awards = (await payload.find({ collection: 'awards', where: { project: { equals: doc.id } }, pagination: false, depth: 0 })).docs
+    const perYear = new Map<number, number>()
+    for (const a of awards) perYear.set(a.year ?? 0, (perYear.get(a.year ?? 0) ?? 0) + 1)
+    for (const a of p.credits?.awards ?? []) {
+      const y = a.year ?? 0
+      const left = perYear.get(y) ?? 0
+      if (left > 0) {
+        perYear.set(y, left - 1)
+        continue
+      }
+      if (write) await payload.create({ collection: 'awards', data: { name: a.text, year: a.year, project: doc.id } })
+      rows.push({ project: doc.name, projectId: doc.id, role: 'Award', firm: `${a.year ?? ''} ${a.text}`.trim(), where: 'live site and draft' })
     }
     for (const which of ['live', 'draft'] as const)
       for (const m of added[which]) rows.push({ project: doc.name, projectId: doc.id, role: m.role ?? 'Architect', firm: m.firm, where: which === 'live' ? 'live site' : 'draft' })

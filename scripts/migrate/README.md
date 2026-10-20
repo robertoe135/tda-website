@@ -190,10 +190,14 @@ OMA - Office for Metropolitan Architecture.
 
 ### Lost credits (`pnpm migrate:restore-credits`)
 
-Puts back firm credits the old credits pages had and the new site lost: lines under labels
-the import did not know (now in `credit-labels.ts`), architects a credits page names but the
-label line leaves out (now kept as credits under their own role), and firms dropped from live
-pages by the old merge. Run `pnpm migrate:extract` first.
+Puts back credits the old pages had and the new site lost: lines under labels the import
+did not know (now in `credit-labels.ts`), architects a credits page names but the label line
+leaves out (now kept as credits under their own role), firms dropped from live pages by the
+old merge, and everything on stats pages whose address does not end in "credits"
+(/holt-renfrew, /loyola-chapel, /foundation-in-the-midwest: the extractor now follows the
+"Full Project Stats" link by its text). Besides firms it adds missing photographers and
+awards, and the year, area and old addresses where the project has none. Run
+`pnpm migrate:extract` first.
 
 ```
 pnpm migrate:restore-credits                           # list, change nothing
