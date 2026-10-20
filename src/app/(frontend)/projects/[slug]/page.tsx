@@ -64,6 +64,7 @@ const STATUS: Record<Project['status'], string> = {
   completed: 'Completed',
   'in-progress': 'In Progress',
   unbuilt: 'Unbuilt',
+  cancelled: 'Cancelled',
 }
 const LEVEL: Record<string, string> = {
   certified: 'Certified',

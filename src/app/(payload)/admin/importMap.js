@@ -21,7 +21,9 @@ import { StrikethroughFeatureClient as StrikethroughFeatureClient_e70f5e05f09f93
 import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { GalleryBulkAdd as GalleryBulkAdd_61235ec258949ab813badd7bc93e70c2 } from '../../../components/admin/GalleryBulkAdd'
 import { SlugField as SlugField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
+import { ProjectTools as ProjectTools_2e61bdbdfdf330794460b94e6e22776a } from '../../../components/admin/ProjectTools'
 import { NewsletterSend as NewsletterSend_84cf96ce03290acc3351b04b7777eb00 } from '../../../components/admin/NewsletterSend'
 import { NewsletterDesignView as NewsletterDesignView_523e37de3cf1f531e240f33de60d7fe4 } from '../../../components/admin/NewsletterDesignView'
 import { default as default_dfe4008080d895d460898c3a6155e9ba } from '../../../components/admin/Icon'
@@ -55,7 +57,9 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#UnderlineFeatureClient": UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#BoldFeatureClient": BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "/components/admin/GalleryBulkAdd#GalleryBulkAdd": GalleryBulkAdd_61235ec258949ab813badd7bc93e70c2,
   "@payloadcms/next/client#SlugField": SlugField_2b8867833a34864a02ddf429b0728a40,
+  "/components/admin/ProjectTools#ProjectTools": ProjectTools_2e61bdbdfdf330794460b94e6e22776a,
   "/components/admin/NewsletterSend#NewsletterSend": NewsletterSend_84cf96ce03290acc3351b04b7777eb00,
   "/components/admin/NewsletterDesignView#NewsletterDesignView": NewsletterDesignView_523e37de3cf1f531e240f33de60d7fe4,
   "/components/admin/Icon#default": default_dfe4008080d895d460898c3a6155e9ba,

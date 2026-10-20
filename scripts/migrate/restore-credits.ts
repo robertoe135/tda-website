@@ -206,8 +206,14 @@ export async function restoreCredits(
       }
       if (photographers.length !== photoIdsOf(v).length) changes.photographers = photographers
 
-      if (year && !v.year) (changes.year = year), note({ role: 'Year', firm: String(year) })
-      if (area?.areaSqFt && !v.areaSqFt && !v.areaNote) Object.assign(changes, area), note({ role: 'Area', firm: p.credits!.area! })
+      if (year && !v.year) {
+        changes.year = year
+        note({ role: 'Year', firm: String(year) })
+      }
+      if (area?.areaSqFt && !v.areaSqFt && !v.areaNote) {
+        Object.assign(changes, area)
+        note({ role: 'Area', firm: p.credits!.area! })
+      }
       const known = new Set((v.legacyUrls ?? []).map((u) => u.path))
       const newPaths = paths.filter((x) => !known.has(x))
       if (newPaths.length) {

@@ -364,6 +364,7 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   opacity: 0; transform: translateY(6px); transition: opacity 0.35s ease, transform 0.35s ease;
 }
 .shot:hover .shot-name, .shot:focus-visible .shot-name { opacity: 1; transform: none; }
+.shot-status { display: block; margin-top: 0.15rem; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.85; }
 /* No photo yet: the name on a plain tile, always shown. */
 .shot-empty { display: flex; align-items: flex-end; }
 .shot-empty .shot-name { position: static; background: none; color: var(--text); opacity: 1; transform: none; padding: 0.7rem; }

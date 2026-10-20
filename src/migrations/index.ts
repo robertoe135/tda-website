@@ -24,6 +24,7 @@ import * as migration_20261017_015936_home_row_height from './20261017_015936_ho
 import * as migration_20261017_061737_firm_collaborators from './20261017_061737_firm_collaborators';
 import * as migration_20261019_152914_newsletters from './20261019_152914_newsletters';
 import * as migration_20261019_204447_year_of_light from './20261019_204447_year_of_light';
+import * as migration_20261020_170437_project_status_cancelled from './20261020_170437_project_status_cancelled';
 
 export const migrations = [
   {
@@ -154,6 +155,11 @@ export const migrations = [
   {
     up: migration_20261019_204447_year_of_light.up,
     down: migration_20261019_204447_year_of_light.down,
-    name: '20261019_204447_year_of_light'
+    name: '20261019_204447_year_of_light',
+  },
+  {
+    up: migration_20261020_170437_project_status_cancelled.up,
+    down: migration_20261020_170437_project_status_cancelled.down,
+    name: '20261020_170437_project_status_cancelled'
   },
 ];

@@ -2,7 +2,7 @@ import { ROW_HEIGHTS, type RowLayout } from '@/globals/Home'
 import type { Media, Person, Video } from '@/payload-types'
 
 export { formatAddress } from './address'
-import { filterHref, getPayloadClient, getPublishedProjects, type ProjectCard } from './projects'
+import { filterHref, getPayloadClient, getPublishedProjects, onTimeline, type ProjectCard } from './projects'
 
 /**
  * Data for the homepage, timeline, About and contact pages. Everything is read as an
@@ -127,11 +127,12 @@ export async function getHomeRows(): Promise<HomeRowData[]> {
   })
 }
 
-/** Completed published projects grouped by completion year, newest first. */
+/**
+ * Published projects by year, newest first: completed ones by completion year, in-progress ones
+ * by their expected year. Unbuilt and cancelled projects are left out.
+ */
 export async function getTimeline() {
-  const projects = (await getPublishedProjects()).filter(
-    (p) => p.year && p.status !== 'in-progress',
-  )
+  const projects = (await getPublishedProjects()).filter(onTimeline)
   const years = new Map<number, typeof projects>()
   for (const p of projects) years.set(p.year!, [...(years.get(p.year!) ?? []), p])
   return [...years].sort(([a], [b]) => b - a).map(([year, list]) => ({ year, projects: list }))

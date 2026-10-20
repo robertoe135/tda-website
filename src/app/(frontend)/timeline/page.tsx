@@ -8,7 +8,7 @@ import { getStoryYears } from '@/lib/year-of-light'
 
 export const metadata: Metadata = {
   title: 'Timeline — Tillotson Design Associates',
-  description: 'Lighting design projects by Tillotson Design Associates, by year of completion.',
+  description: 'Lighting design projects by Tillotson Design Associates, by year: completed work and work on the boards.',
   alternates: { canonical: '/timeline' },
 }
 
@@ -22,7 +22,8 @@ const tileRatio = (ratio?: number) =>
   ratio ? Math.min(MAX_RATIO, Math.max(MIN_RATIO, ratio)) : NO_PHOTO_RATIO
 
 /**
- * Published, completed projects by year, picture first: each year is a band of photographs at
+ * Published projects by year, completed and in progress (under their expected year, marked On
+ * the Boards); never unbuilt or cancelled ones. Picture first: each year is a band of photographs at
  * one height, each keeping its own proportions, filling the row edge to edge. The year is small
  * and stays at the top of its band while it scrolls. Project names show on hover and keyboard
  * focus, and always on touch screens. A project without a photo shows its name on a plain tile
@@ -64,7 +65,10 @@ export default async function TimelinePage() {
                       loading="lazy"
                     />
                   )}
-                  <span className="shot-name">{p.name}</span>
+                  <span className="shot-name">
+                    {p.name}
+                    {p.status === 'in-progress' && <span className="shot-status">On the Boards</span>}
+                  </span>
                 </Link>
               </li>
             ))}

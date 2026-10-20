@@ -44,13 +44,9 @@ export const levenshtein = (a: string, b: string): number => {
 export const similarity = (a: string, b: string): number =>
   1 - levenshtein(a, b) / Math.max(a.length, b.length, 1)
 
-export const csv = (rows: Record<string, unknown>[], columns: string[]): string => {
-  const cell = (v: unknown) => {
-    const s = v === undefined || v === null ? '' : String(v)
-    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
-  }
-  return [columns.join(','), ...rows.map((r) => columns.map((c) => cell(r[c])).join(','))].join('\n') + '\n'
-}
+import { toCsv as csv } from '../../src/lib/csv'
+
+export { csv }
 
 const REVIEW_COLUMNS = ['source URL', 'field', 'as written', 'suggested', 'note']
 

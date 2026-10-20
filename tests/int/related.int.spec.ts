@@ -28,6 +28,8 @@ describe('related projects', () => {
     card(6, { year: 2020 }),
     card(7, { year: 2020, status: 'in-progress' }),
     card(8, { year: 2019 }),
+    card(11, { year: 2020, status: 'cancelled' }),
+    card(12, { year: 2020, status: 'unbuilt' }),
   ]
 
   it('mixes architect, category and year, never repeats or includes the project itself', () => {
@@ -38,6 +40,8 @@ describe('related projects', () => {
     expect(ids).not.toContain(1)
     expect(ids).not.toContain(8) // nothing in common
     expect(ids).not.toContain(7) // on the boards: no completion year to share
+    expect(ids).not.toContain(11) // cancelled and unbuilt work is not on the Timeline
+    expect(ids).not.toContain(12)
     expect(new Set(picks.map((p) => p.reason.label))).toEqual(new Set(['KPF', 'Corporate', '2020']))
   })
 

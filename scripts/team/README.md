@@ -1,7 +1,14 @@
 # TDA team credits import
 
-Marketing fills in a spreadsheet of who worked on which project; this script puts it into the
-admin as drafts.
+Marketing fills in a spreadsheet of who worked on which project, and it goes into the admin as
+drafts.
+
+**In the admin (no developer needed):** Projects → **Import TDA team credits**. Download the
+team worksheet and the list of names there, fill in the worksheet, choose it, press **Check**,
+then **Save**. The same rules apply as below. **Export all projects (CSV)**, next to it, downloads
+every project with its credits, team, awards and what is still needed.
+
+The commands below do the same from a terminal (`src/lib/team-credits.ts` holds the logic for both).
 
 ## The worksheet
 

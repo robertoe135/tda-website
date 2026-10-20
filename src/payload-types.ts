@@ -172,7 +172,7 @@ export interface Project {
    * The project name only. Location and architect have their own fields.
    */
   name: string;
-  status: 'completed' | 'in-progress' | 'unbuilt';
+  status: 'completed' | 'in-progress' | 'unbuilt' | 'cancelled';
   /**
    * Completion year, or expected year if in progress.
    */

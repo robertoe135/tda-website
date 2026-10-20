@@ -236,11 +236,23 @@ exists, the in-progress one goes.
 ```bash
 pnpm migrate:drop-in-progress            # list the pairs
 pnpm migrate:drop-in-progress --write    # delete them (--confirm-backup if not local)
+pnpm migrate:drop-in-progress --only "Loyola University Chapel" --write   # just one
 ```
 
 Before deleting, its old web addresses, press, awards and homepage places move to the completed
-project, so old links keep working. A pair needs the in-progress name (three words or more) to sit
+project (its live version too), so old links keep working. A pair needs the in-progress name (three words or more) to sit
 inside exactly one completed project's name; anything less certain is listed and left alone.
+
+## Placeholder photos (`pnpm migrate:remove-placeholders`)
+
+Photos and videos used while building the site ("Placeholder photograph 1", credited
+"[Placeholder Photographer]") are taken off every project, live and draft, then deleted.
+One still used elsewhere (a headshot, the homepage, About, a newsletter) is listed and kept.
+
+```bash
+pnpm migrate:remove-placeholders                          # list
+pnpm migrate:remove-placeholders --write --confirm-backup # remove (production, after a backup)
+```
 
 ## The team (`pnpm migrate:people`)
 
