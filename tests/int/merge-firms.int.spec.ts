@@ -52,6 +52,29 @@ describe('merging two records of one firm', () => {
     expect(main.aliases?.map((a) => a.name)).toEqual([merge.name])
   })
 
+  it('moves a published project too when it has a newer draft, without publishing the draft', async () => {
+    const keep = await payload.create({ collection: 'firms', data: { name: `${prefix} Live Keep` } })
+    const merge = await payload.create({ collection: 'firms', data: { name: `${prefix} Live Zzz Old` } })
+    const typology = (await payload.find({ collection: 'typologies', limit: 1, depth: 0 })).docs[0]?.id ??
+      (await payload.create({ collection: 'typologies', data: { name: `${prefix} Typology` } })).id
+    const project = await payload.create({
+      collection: 'projects',
+      data: { name: `${prefix} Live`, status: 'completed', typologies: [typology], summary: 'Live text.', architects: [merge.id], _status: 'published' },
+    })
+    await payload.update({ collection: 'projects', id: project.id, draft: true, data: { summary: 'Unpublished edit.' } })
+
+    await mergeFirms(payload, keep.name, merge.name, true)
+    // The live site names the kept firm (the deleted record no longer silently drops off it)...
+    const live = await payload.findByID({ collection: 'projects', id: project.id, depth: 0 })
+    expect(live.architects).toEqual([keep.id])
+    expect(live.summary).toBe('Live text.')
+    // ...and the editor's draft is still there, unpublished, with the same change.
+    const draft = await payload.findByID({ collection: 'projects', id: project.id, depth: 0, draft: true })
+    expect(draft._status).toBe('draft')
+    expect(draft.summary).toBe('Unpublished edit.')
+    expect(draft.architects).toEqual([keep.id])
+  })
+
   it('treats another name of a firm as that firm', async () => {
     const firm = await payload.create({ collection: 'firms', data: { name: `${prefix} Skidmore Owings`, aliases: [{ name: `${prefix} SOM` }] } })
 

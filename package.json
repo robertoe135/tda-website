@@ -23,6 +23,8 @@
     "migrate:pages": "tsx scripts/migrate/pages.ts",
     "migrate:photographers": "tsx scripts/migrate/photographers.ts",
     "migrate:merge-firms": "tsx scripts/migrate/merge-firms.ts",
+    "migrate:restore-credits": "tsx scripts/migrate/restore-credits.ts",
+    "migrate:audit-credits": "tsx scripts/migrate/audit-credits.ts",
     "migrate:firm-names": "tsx scripts/migrate/firm-names.ts",
     "migrate:drop-in-progress": "tsx scripts/migrate/drop-in-progress.ts",
     "migrate:people": "tsx scripts/migrate/people.ts",

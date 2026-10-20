@@ -136,7 +136,9 @@ homepage and About drafts.
 ## 6. Photographers (`pnpm migrate:photographers`)
 
 Splits comma-separated photo credits the first import stored as one photographer, and
-credits each project (as a draft) with the photographers its old credits page lists. Run it
+credits each project with the photographers its old credits page lists, on the live version
+and the latest draft, wherever that version has none. (Before October 2026 it wrote drafts
+only, so a published project such as Faena Forum showed no photographers.) Run it
 before importing photos (`scripts/media/README.md`).
 
 
@@ -171,7 +173,10 @@ pnpm migrate:merge-firms --keep "Foster + Partners" --merge "Fosters + Partners"
 ```
 
 Projects naming the second record (architect, client or credits) move to the main one, the
-second record is deleted, and its name becomes an alias. Names must match exactly. For a name
+second record is deleted, and its name becomes an alias. Both the published version and the
+latest draft move; a published project's pending draft stays unpublished. (Before October 2026
+only the draft moved, so deleting the record silently took the firm off the live page; see
+`migrate:restore-credits`.) Names must match exactly. For a name
 that never had its own record (an abbreviation), add it under Other names in the admin.
 
 ### Decided names (`pnpm migrate:firm-names`)
@@ -182,6 +187,45 @@ of the names are merged, the result carries the main name (its web address stays
 other name becomes an alias. Run it again any time; rows already applied change nothing.
 Decided in October 2026: SOM; Foster + Partners; Kohn Pedersen Fox; Adjaye Associates;
 OMA - Office for Metropolitan Architecture.
+
+### Lost credits (`pnpm migrate:restore-credits`)
+
+Puts back credits the old pages had and the new site lost: lines under labels the import
+did not know (now in `credit-labels.ts`), architects a credits page names but the label line
+leaves out (now kept as credits under their own role), firms dropped from live pages by the
+old merge, and everything on stats pages whose address does not end in "credits"
+(/holt-renfrew, /loyola-chapel, /foundation-in-the-midwest: the extractor now follows the
+"Full Project Stats" link by its text). Besides firms it adds missing photographers and
+awards, and the year, area and old addresses where the project has none. Run
+`pnpm migrate:extract` first.
+
+```
+pnpm migrate:restore-credits                           # list, change nothing
+pnpm migrate:restore-credits --write                   # local database
+pnpm migrate:restore-credits --write --confirm-backup  # production, after a fresh backup
+```
+
+It only adds, to both the live version and the latest draft, and never a firm a person took
+off the project. Architects are added only when the site has a firm by exactly that name. The
+end of the list is for a person: lines naming several firms at once, names with no firm on
+the site, and names that look like a firm already credited under another spelling (often two
+records of one firm: merge them with `migrate:merge-firms`). Running it again adds nothing.
+
+### Checking every credit (`pnpm migrate:audit-credits`)
+
+Read only. Compares each project with its old pages, field by field, for both the live
+version and the latest draft: architects and credited firms, photographers, owner, location,
+year, area, LEED/WELL and awards. It allows for spelling ("REX" is REX Architecture), and also
+flags firm records that hold a certification or name several firms. Prints a count per field
+and writes every difference to `scripts/migrate/cache/credits-audit.csv` (gitignored).
+
+```
+pnpm migrate:audit-credits    # works on any database; it changes nothing
+```
+
+Run it after `migrate:restore-credits` and `migrate:photographers`: what remains is for a
+person (values the old site wrote in an unusual form, names that need checking). A difference
+can be deliberate, when marketing corrected something.
 
 ## In-progress copies of finished projects (`pnpm migrate:drop-in-progress`)
 

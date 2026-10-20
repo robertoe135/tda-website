@@ -4,7 +4,8 @@
  *    photographers. Each person is created (or found, by normalized name) and the combined
  *    record deleted, unless an image already uses it; those are listed instead.
  * 2. Credit: each project gets the photographers its old credits page lists, in that order,
- *    as a draft, when it has none yet. TDA credits photography per project, not per photo.
+ *    when it has none yet, on its published version and its latest draft (a pending draft
+ *    stays unpublished). TDA credits photography per project, not per photo.
  * Spellings are kept exactly as written on the old site.
  *
  *   pnpm migrate:photographers               # list what would change
@@ -22,6 +23,7 @@ import { normalizeName } from '../../src/hooks/preventNearDuplicates'
 
 import type { ProjectRecord } from './extract'
 import { cacheDir, SITE, splitCredit } from './lib'
+import { changeProject } from './versions'
 
 const write = process.argv.includes('--write')
 
@@ -82,17 +84,22 @@ async function main() {
       select: { name: true, photographers: true },
     })
     const project = found.docs[0]
-    if (!project || project.photographers?.length) continue
+    if (!project) continue
+    // On the live version too (versions.ts): a draft-only credit never reached published pages.
+    // Each version without photographers gets them; one that has any is left as it is.
+    const live = await payload.findByID({ collection: 'projects', id: project.id, depth: 0 }).catch(() => undefined)
+    const needs = !project.photographers?.length || (live?._status === 'published' && !live.photographers?.length)
+    if (!needs) continue
     const photographerIds = names.map((n) => ids.get(normalizeName(n)))
     if (photographerIds.some((id) => !id)) {
       if (write) console.log(`skip ${project.name}: run once more after the split (${names.join(', ')})`)
       missing++
       continue
     }
-    if (write) await payload.update({ collection: 'projects', id: project.id, data: { photographers: photographerIds as number[] }, draft: true })
+    if (write) await changeProject(payload, project.id, (v) => (v.photographers?.length ? undefined : { photographers: photographerIds as number[] }))
     credited++
   }
-  console.log(write ? `Credited photographers on ${credited} projects (drafts).` : `${credited + missing} projects to credit. Rerun with --write.`)
+  console.log(write ? `Credited photographers on ${credited} projects.` : `${credited + missing} projects to credit. Rerun with --write.`)
   process.exit(0)
 }
 

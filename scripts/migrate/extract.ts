@@ -230,10 +230,13 @@ export function parseProjectPage(main: HTMLElement) {
     }
   }
 
-  const creditsPath = main
-    .querySelectorAll('a')
-    .map((a) => a.getAttribute('href') ?? '')
-    .find((href) => /^\/[^/]*credits$/.test(href))
+  // The "Full Project Stats" link, wherever it points: most credits pages end in -credits, but
+  // some are plain pages (/holt-renfrew, /loyola-chapel).
+  const links = main.querySelectorAll('a').map((a) => ({ href: a.getAttribute('href') ?? '', text: a.text.replace(/\s+/g, ' ').trim() }))
+  const creditsPath = (
+    links.find((l) => /^full project (stats|credits)$/i.test(l.text) && /^\/[^/?#]+$/.test(l.href)) ??
+    links.find((l) => /^\/[^/]*credits$/.test(l.href))
+  )?.href
 
   return {
     name,
@@ -311,7 +314,8 @@ async function main() {
 
   // Credits pages: attach through the project page's own "Full Project Stats" link.
   const creditsByPath = new Map<string, NonNullable<ProjectRecord['credits']>>()
-  for (const row of inventory.filter((r) => r.kind === 'credits')) {
+  const linked = new Set([...projects.values()].map((p) => p.creditsPath).filter((p): p is string => Boolean(p)))
+  for (const row of inventory.filter((r) => r.kind === 'credits' || (r.kind === 'page' && linked.has(r.path)))) {
     const main = available.has(pageFile(row.path)) ? await loadMain(pageFile(row.path)) : undefined
     if (main) creditsByPath.set(row.path, parseCredits(lines(main)))
   }
