@@ -39,17 +39,34 @@ const ids = (refs: Ref[] | null | undefined) => (refs ?? []).map(idOf).filter((i
 const firmsOn = (p: Pick<Project, 'architects' | 'credits'>) => new Set([...ids(p.architects as Ref[]), ...(p.credits ?? []).flatMap((c) => ids(c.firms as Ref[]))])
 
 const words = (s: string) => s.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().split(/[^a-z0-9]+/).filter(Boolean)
+// Words that do not tell firms apart: "REX" and "REX Architecture" are one firm.
+const GENERIC = new Set(
+  'a an and the of for with architect architects architecture associates assoc inc llc llp pc ltd co company corp corporation design designs designers group partners partnership studio studios office interiors landscape consulting consultants engineers engineering urban planning international'.split(' '),
+)
+
 /**
  * Two spellings of one firm: almost the same letters ("Foster + Partner", "Pelli Clark Pelli"),
- * or one name inside the other as whole words ("REX" in "REX Architecture"; never "OMA" in
- * "Tomasetti").
+ * or the same name with generic words added ("REX" and "REX Architecture"). Not "Gensler" and
+ * "Gensler/WKSHPS", and never "OMA" inside "Tomasetti".
  */
-export function sameFirm(a: string, b: string) {
+export function sameFirm(a: string, b: string): boolean {
+  // "CallisonRTKL - CRTKL", "Leslie E. Robertson Associates (LERA)", "Kazuyo Sejima + Ryue
+  // Nishizawa / SANAA": each form is a name of the firm.
+  const forms = (s: string) => [s, s.replace(/\s*\([^)]*\)/g, ''), ...s.split(/\s+[-/]\s+/)].map((f) => f.trim()).filter(Boolean)
+  if (forms(a).length > 1 || forms(b).length > 1) return forms(a).some((f) => forms(b).some((g) => sameName(f, g)))
+  return sameName(a, b)
+}
+
+function sameName(a: string, b: string) {
   const [x, y] = [normalizeName(a), normalizeName(b)]
   if (x === y || similarity(x, y) >= 0.88) return true
   const [short, long] = [words(a), words(b)].sort((p, q) => p.length - q.length)
-  const joined = ` ${long.join(' ')} `
-  return short.length > 0 && joined.includes(` ${short.join(' ')} `)
+  if (!short.length) return false
+  const start = long.join(' ').indexOf(short.join(' '))
+  if (start < 0 || !` ${long.join(' ')} `.includes(` ${short.join(' ')} `)) return false
+  const rest = [...long]
+  for (const w of short) rest.splice(rest.indexOf(w), 1)
+  return rest.every((w) => GENERIC.has(w))
 }
 
 export type RestoreRow = { project: string; projectId: number; role: string; firm: string; where: string }
@@ -100,6 +117,9 @@ export async function restoreCredits(
       const label = role?.roleName ?? 'Architect'
       const known = await findFirm(nameOf(name))
       if (looksJoined(name) && !known) {
+        // "A / B": fine when each firm is already on the project.
+        const parts = name.split(/\s*\/\s*/).filter(Boolean)
+        if (parts.length > 1 && parts.every((part) => onProject.some((f) => f.names.some((m) => sameFirm(m, part))))) return
         skipped.push({ project: doc.name, projectId: doc.id, role: label, firm: name, where: 'several firms in one line: add by hand' })
         return
       }

@@ -136,7 +136,9 @@ homepage and About drafts.
 ## 6. Photographers (`pnpm migrate:photographers`)
 
 Splits comma-separated photo credits the first import stored as one photographer, and
-credits each project (as a draft) with the photographers its old credits page lists. Run it
+credits each project with the photographers its old credits page lists, on the live version
+and the latest draft, wherever that version has none. (Before October 2026 it wrote drafts
+only, so a published project such as Faena Forum showed no photographers.) Run it
 before importing photos (`scripts/media/README.md`).
 
 
@@ -204,6 +206,22 @@ off the project. Architects are added only when the site has a firm by exactly t
 end of the list is for a person: lines naming several firms at once, names with no firm on
 the site, and names that look like a firm already credited under another spelling (often two
 records of one firm: merge them with `migrate:merge-firms`). Running it again adds nothing.
+
+### Checking every credit (`pnpm migrate:audit-credits`)
+
+Read only. Compares each project with its old pages, field by field, for both the live
+version and the latest draft: architects and credited firms, photographers, owner, location,
+year, area, LEED/WELL and awards. It allows for spelling ("REX" is REX Architecture), and also
+flags firm records that hold a certification or name several firms. Prints a count per field
+and writes every difference to `scripts/migrate/cache/credits-audit.csv` (gitignored).
+
+```
+pnpm migrate:audit-credits    # works on any database; it changes nothing
+```
+
+Run it after `migrate:restore-credits` and `migrate:photographers`: what remains is for a
+person (values the old site wrote in an unusual form, names that need checking). A difference
+can be deliberate, when marketing corrected something.
 
 ## In-progress copies of finished projects (`pnpm migrate:drop-in-progress`)
 
