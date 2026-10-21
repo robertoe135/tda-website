@@ -275,9 +275,13 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 
 /* Team pages */
 /* Person page: name, then headshot and bio side by side at the same size, then project tiles */
-.person-header { margin: 0 0 1.5rem; }
+.person-header { grid-area: head; }
 .person-title { margin: 0.35rem 0 0; font-weight: 300; color: var(--muted); }
-.person-intro { display: grid; gap: 1.5rem; }
+.person-intro { display: grid; gap: 1.5rem; grid-template-areas: 'head' 'photo' 'bio'; margin-top: 1.5rem; }
+.person-headshot { grid-area: photo; }
+.person-bio { grid-area: bio; }
+.person-intro .person-name { margin-top: 0; }
+.person-bio > :first-child > :first-child, .person-bio p:first-child { margin-top: 0; }
 .person-headshot img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; }
 .person-section-head { font-weight: 400; font-size: 0.85rem; margin: 0; border-top: 1px solid var(--text); padding-top: 0.75rem; }
 .person-bio { font-weight: 300; line-height: 1.65; hyphens: manual; overflow-wrap: break-word; text-wrap: pretty; }
@@ -294,9 +298,9 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .person-project-name { font-weight: 400; font-size: 0.95rem; line-height: 1.35; margin: 0.6rem 0 0; }
 .person-project-meta { display: block; color: var(--muted); font-weight: 300; font-size: 0.8rem; }
 @media (min-width: 768px) {
-  .person-intro { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .person-intro { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: 'photo head' 'photo bio'; grid-template-rows: auto 1fr; column-gap: 2.5rem; row-gap: 1.75rem; margin-top: 2.25rem; }
   /* No headshot: the bio has the width to itself, at a comfortable reading length. */
-  .person-intro-text { grid-template-columns: minmax(0, 46rem); }
+  .person-intro-text { grid-template-columns: minmax(0, 46rem); grid-template-areas: 'head' 'bio'; grid-template-rows: auto; }
   /* The bio column is as tall as the headshot; a longer bio simply runs on. */
   .person-headshot + .person-bio { min-height: 100%; }
   .person-bio { padding-right: 8%; }

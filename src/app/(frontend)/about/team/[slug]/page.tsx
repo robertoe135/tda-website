@@ -74,15 +74,15 @@ export default async function PersonPage({ params }: Props) {
         ]}
         current={person.name}
       />
-      <header className="person-header">
-        <h1 className="person-name">{person.name}</h1>
-        {person.title && <p className="person-title">{person.title}</p>}
-        <CredentialBadges badges={badgesOf(person.credentials)} className="person-badges" />
-      </header>
-
-      {(headshot || person.bio) && (
-        <div className={headshot ? 'person-intro' : 'person-intro person-intro-text'}>
-          {headshot && (
+      {/* Name and credentials sit beside the photo, level with its top, above the bio. On a phone:
+          name, photo, bio. */}
+      <div className={headshot ? 'person-intro' : 'person-intro person-intro-text'}>
+        <header className="person-header">
+          <h1 className="person-name">{person.name}</h1>
+          {person.title && <p className="person-title">{person.title}</p>}
+          <CredentialBadges badges={badgesOf(person.credentials)} className="person-badges" />
+        </header>
+        {headshot && (
             <div className="person-headshot">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -95,15 +95,11 @@ export default async function PersonPage({ params }: Props) {
           )}
           {/* The bio only when the person has approved one; never written for them. */}
           {person.bio && (
-            <section className="person-bio" aria-labelledby="person-bio">
-              <h2 id="person-bio" className="person-section-head">
-                About
-              </h2>
+            <section className="person-bio" aria-label={`About ${person.name}`}>
               <RichText data={reflow(person.bio)} />
             </section>
           )}
-        </div>
-      )}
+      </div>
 
       {projects.length > 0 && (
         <section className="person-projects" aria-labelledby="person-projects">
