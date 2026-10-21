@@ -16,6 +16,7 @@ import { Locations } from './collections/Locations'
 import { Firms } from './collections/Firms'
 import { Photographers } from './collections/Photographers'
 import { CreditRoles } from './collections/CreditRoles'
+import { Credentials } from './collections/Credentials'
 import { People } from './collections/People'
 import { Projects } from './collections/Projects'
 import { Awards } from './collections/Awards'
@@ -48,7 +49,7 @@ export default buildConfig({
       beforeLogin: ['/components/admin/BeforeLogin'],
     },
   },
-  collections: [Projects, People, Media, Videos, Awards, Press, Newsletters, YearsOfLight, Typologies, Locations, Firms, Photographers, CreditRoles, Leads, Users],
+  collections: [Projects, People, Media, Videos, Awards, Press, Newsletters, YearsOfLight, Typologies, Locations, Firms, Photographers, CreditRoles, Credentials, Leads, Users],
   globals: [Home, About, SiteSettings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

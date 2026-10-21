@@ -5,8 +5,10 @@ import { notFound } from 'next/navigation'
 import { cache } from 'react'
 
 import { Breadcrumb } from '@/components/Breadcrumb'
+import { CredentialBadges } from '@/components/CredentialBadges'
 import { cardImage, getPayloadClient } from '@/lib/projects'
 import { reflow } from '@/lib/reflow'
+import { badgesOf } from '@/lib/site'
 import type { Media } from '@/payload-types'
 
 type Props = { params: Promise<{ slug: string }> }
@@ -75,6 +77,7 @@ export default async function PersonPage({ params }: Props) {
       <header className="person-header">
         <h1 className="person-name">{person.name}</h1>
         {person.title && <p className="person-title">{person.title}</p>}
+        <CredentialBadges badges={badgesOf(person.credentials)} className="person-badges" />
       </header>
 
       {(headshot || person.bio) && (

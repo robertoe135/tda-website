@@ -61,6 +61,16 @@ export const People: CollectionConfig = {
       ],
     },
     {
+      name: 'credentials',
+      type: 'relationship',
+      relationTo: 'credentials',
+      hasMany: true,
+      admin: {
+        description:
+          'Shown as badges under the name, in this order. Only credentials the person holds and has approved; add new ones under Credentials.',
+      },
+    },
+    {
       name: 'headshot',
       type: 'upload',
       relationTo: 'media',

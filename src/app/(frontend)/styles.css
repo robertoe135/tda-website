@@ -447,6 +447,18 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .team-member:hover .team-photo img { filter: brightness(0.96); }
 .team-name { display: block; margin-top: 0.6rem; font-weight: 400; font-size: 0.9rem; line-height: 1.3; }
 .team-member:hover .team-name { text-decoration: underline; }
+.badges { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.badge {
+  display: inline-block; padding: 0.15rem 0.45rem; border: 1px solid var(--line); border-radius: 2px;
+  font-size: 0.68rem; font-weight: 400; letter-spacing: 0.06em; line-height: 1.4; color: var(--muted); white-space: nowrap;
+}
+.badge:hover { text-decoration: none; color: var(--text); border-color: var(--text); }
+.badge abbr { text-decoration: none; cursor: inherit; }
+.person-badges { margin-top: 0.8rem; }
+.person-badges .badge { font-size: 0.75rem; padding: 0.2rem 0.55rem; }
+.team-badges { margin-top: 0.4rem; }
+.team-filter { margin: 0.5rem 0 1.5rem; font-weight: 300; color: var(--muted); }
+.team-filter a { text-decoration: underline; text-underline-offset: 3px; }
 .team-title { display: block; margin-top: 0.1rem; font-weight: 300; font-size: 0.75rem; color: var(--muted); line-height: 1.35; }
 
 /* Collaborators: A to Z, letters that have firms are links */

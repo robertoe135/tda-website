@@ -1,5 +1,5 @@
 import { ROW_HEIGHTS, type RowLayout } from '@/globals/Home'
-import type { Media, Person, Video } from '@/payload-types'
+import type { Credential, Media, Person, Video } from '@/payload-types'
 
 export { formatAddress } from './address'
 import { filterHref, getPayloadClient, getPublishedProjects, onTimeline, type ProjectCard } from './projects'
@@ -144,8 +144,20 @@ export const TEAM_GROUPS = [
   { value: 'administration', label: 'Administration' },
 ] as const
 
-/** Current staff who may be shown, by team page section and position. */
-export async function getTeam() {
+export type Badge = { name: string; slug: string; fullName?: string | null }
+
+/** A person's credentials, in their order, as badges (only ones with an address to link to). */
+export const badgesOf = (list: unknown): Badge[] =>
+  (Array.isArray(list) ? list : [])
+    .filter(isObject<Credential>)
+    .filter((c) => c.slug)
+    .map((c) => ({ name: c.name, slug: c.slug!, fullName: c.fullName }))
+
+/**
+ * Current staff who may be shown, by team page section and position. With `credential` (a
+ * credential's slug), only the people who hold it.
+ */
+export async function getTeam(credential?: string) {
   const payload = await getPayloadClient()
   const people = await payload.find({
     collection: 'people',
@@ -154,18 +166,19 @@ export async function getTeam() {
     pagination: false,
     sort: ['order', 'name'],
     depth: 1,
-    select: { name: true, slug: true, title: true, group: true, headshot: true },
+    select: { name: true, slug: true, title: true, group: true, headshot: true, credentials: true },
+    populate: { credentials: { name: true, slug: true, fullName: true } },
   })
-  const docs = people.docs as Pick<
-    Person,
-    'id' | 'name' | 'slug' | 'title' | 'group' | 'headshot'
-  >[]
+  const docs = (people.docs as Pick<Person, 'id' | 'name' | 'slug' | 'title' | 'group' | 'headshot' | 'credentials'>[]).filter(
+    (p) => !credential || badgesOf(p.credentials).some((b) => b.slug === credential),
+  )
   return TEAM_GROUPS.map((g) => ({
     ...g,
     people: docs
       .filter((p) => (p.group ?? 'design') === g.value)
       .map((p) => ({
         ...p,
+        credentials: badgesOf(p.credentials),
         headshot:
           isObject<Media>(p.headshot) && p.headshot.url
             ? { src: p.headshot.sizes?.card?.url ?? p.headshot.url, alt: p.headshot.alt }
