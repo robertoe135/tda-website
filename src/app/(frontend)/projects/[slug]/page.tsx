@@ -15,6 +15,7 @@ import {
   projectSlides,
   SQ_FT_TO_M2,
 } from '@/lib/projects'
+import { reflow } from '@/lib/reflow'
 import { otherProjects } from '@/lib/related'
 import type {
   Award,
@@ -340,7 +341,7 @@ export default async function ProjectPage({ params }: Props) {
 
           {project.description && (
             <div className="project-description">
-              <RichText data={project.description} />
+              <RichText data={reflow(project.description)} />
             </div>
           )}
         </div>

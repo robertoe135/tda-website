@@ -6,6 +6,7 @@ import { cache } from 'react'
 
 import { Breadcrumb } from '@/components/Breadcrumb'
 import { cardImage, getPayloadClient } from '@/lib/projects'
+import { reflow } from '@/lib/reflow'
 import type { Media } from '@/payload-types'
 
 type Props = { params: Promise<{ slug: string }> }
@@ -77,7 +78,7 @@ export default async function PersonPage({ params }: Props) {
       </header>
 
       {(headshot || person.bio) && (
-        <div className="person-intro">
+        <div className={headshot ? 'person-intro' : 'person-intro person-intro-text'}>
           {headshot && (
             <div className="person-headshot">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -95,7 +96,7 @@ export default async function PersonPage({ params }: Props) {
               <h2 id="person-bio" className="person-section-head">
                 About
               </h2>
-              <RichText data={person.bio} />
+              <RichText data={reflow(person.bio)} />
             </section>
           )}
         </div>

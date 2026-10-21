@@ -216,7 +216,7 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .credit-more[open] .credit-sign::before { content: '\2212'; }
 .credit-list { padding: 0 0 1rem; font-size: 0.92rem; font-weight: 300; line-height: 1.45; }
 .credit-list p { margin: 0 0 0.45rem; }
-.project-description { text-align: justify; hyphens: auto; font-weight: 300; font-size: 1rem; line-height: 1.75; }
+.project-description { text-align: justify; hyphens: manual; overflow-wrap: break-word; font-weight: 300; font-size: 1rem; line-height: 1.75; }
 .project-description p { margin: 0 0 1.1rem; }
 /* Slideshow: a frame that never changes size (3:2, smaller on short windows); each photo shows
    whole inside it on a light ground and cross-fades. Arrows over it, caption and count below. */
@@ -280,7 +280,7 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .person-intro { display: grid; gap: 1.5rem; }
 .person-headshot img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; }
 .person-section-head { font-weight: 400; font-size: 0.85rem; margin: 0; border-top: 1px solid var(--text); padding-top: 0.75rem; }
-.person-bio { font-weight: 300; line-height: 1.65; }
+.person-bio { font-weight: 300; line-height: 1.65; hyphens: manual; overflow-wrap: break-word; text-wrap: pretty; }
 .person-bio p { margin: 0.9rem 0 0; }
 .person-projects { margin-top: 4rem; }
 .person-projects-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.25rem; }
@@ -295,6 +295,8 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .person-project-meta { display: block; color: var(--muted); font-weight: 300; font-size: 0.8rem; }
 @media (min-width: 768px) {
   .person-intro { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* No headshot: the bio has the width to itself, at a comfortable reading length. */
+  .person-intro-text { grid-template-columns: minmax(0, 46rem); }
   /* The bio column is as tall as the headshot; a longer bio simply runs on. */
   .person-headshot + .person-bio { min-height: 100%; }
   .person-bio { padding-right: 8%; }
