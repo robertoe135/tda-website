@@ -104,6 +104,9 @@ render without it. Bios and headshots come from the people themselves via market
 - `heroImage` (upload) and `gallery` (array of { `image`, `caption` })
 - `awards` (join on `awards.project`), `press` (join on `press.projects`)
 - `legacyUrls` (array of text): every old Squarespace path for this project, which drives redirects
+- `projectNumber` (text, unique, drafts included) and `aliases` (array of { `name` }): internal only.
+  Field read access is staff-only, so the public API, site and queries never see them; the admin
+  list search covers both, and the CSV export includes them.
 
 Enable drafts and versions on projects and people (`versions: { drafts: true }`) so editors can
 stage changes and roll back.

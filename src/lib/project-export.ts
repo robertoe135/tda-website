@@ -17,6 +17,8 @@ import { ROLE_LABELS, sortTeam, type TeamRole } from './team-credits'
 export const EXPORT_COLUMNS = [
   'id',
   'name',
+  'project number',
+  'internal names',
   'on the site',
   'status',
   'year',
@@ -66,6 +68,8 @@ export function projectRow(
   return {
     id: p.id,
     name: p.name,
+    'project number': p.projectNumber ?? '',
+    'internal names': (p.aliases ?? []).map((a) => a.name).join('; '),
     'on the site': ctx.live ? (p._status === 'published' ? 'live' : 'live, with unpublished changes') : 'draft only',
     status: STATUS[p.status] ?? p.status,
     year: p.year ?? '',

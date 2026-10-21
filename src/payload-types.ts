@@ -308,6 +308,19 @@ export interface Project {
       }[]
     | null;
   /**
+   * Internal, never shown on the site. Type it in the Projects list search to find the project.
+   */
+  projectNumber?: string | null;
+  /**
+   * Other names the office uses for this project (code names, old names, short names). Internal, never shown on the site; the Projects list search finds them.
+   */
+  aliases?:
+    | {
+        name: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
    * Worked out from this project each time you save. Add what is listed before publishing; each item clears itself once filled in.
    */
   stillNeeded?: ('photos' | 'photographer' | 'category' | 'year' | 'location' | 'architect' | 'write-up')[] | null;
@@ -1218,6 +1231,13 @@ export interface ProjectsSelect<T extends boolean = true> {
     | T
     | {
         path?: T;
+        id?: T;
+      };
+  projectNumber?: T;
+  aliases?:
+    | T
+    | {
+        name?: T;
         id?: T;
       };
   stillNeeded?: T;

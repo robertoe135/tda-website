@@ -1,4 +1,4 @@
-import type { CollectionConfig } from 'payload'
+import { type CollectionBeforeValidateHook, type CollectionConfig, type FieldAccess, ValidationError } from 'payload'
 
 import { authenticated } from '../access/authenticated'
 import { publishedOrAuthenticated } from '../access/publishedOrAuthenticated'
@@ -10,13 +10,40 @@ import { exportProjects, importTeam, teamWorksheet } from './projects-endpoints'
 // are relationships or numbers so every label on the site can link to a filtered view.
 // Never write or "improve" summaries, descriptions, client names or credits; leave them
 // empty for marketing.
+const staffOnly: FieldAccess = ({ req }) => Boolean(req.user)
+
+/**
+ * One project per TDA project number, drafts included (the database index only sees published
+ * values). Trims the number and stores a blank one as empty.
+ */
+const checkProjectNumber: CollectionBeforeValidateHook = async ({ data, originalDoc, req }) => {
+  if (!data || typeof data.projectNumber !== 'string') return data
+  const number = data.projectNumber.trim()
+  data.projectNumber = number || null
+  if (!number || number === originalDoc?.projectNumber) return data
+  const other = (
+    await req.payload.find({
+      collection: 'projects',
+      draft: true,
+      depth: 0,
+      limit: 1,
+      req,
+      select: { name: true },
+      where: { and: [{ projectNumber: { equals: number } }, ...(originalDoc?.id ? [{ id: { not_equals: originalDoc.id } }] : [])] },
+    })
+  ).docs[0]
+  if (other) throw new ValidationError({ collection: 'projects', errors: [{ path: 'projectNumber', message: `${number} is already the number of "${other.name}".` }], req })
+  return data
+}
+
 export const Projects: CollectionConfig = {
   slug: 'projects',
   labels: { singular: 'Project', plural: 'Projects' },
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'year', 'status', 'stillNeeded', '_status'],
-    listSearchableFields: ['name', 'summary'],
+    defaultColumns: ['name', 'projectNumber', 'year', 'status', 'stillNeeded', '_status'],
+    // Search finds a project by its name, internal number, internal aliases or summary.
+    listSearchableFields: ['name', 'projectNumber', 'aliases.name', 'summary'],
     components: {
       // Export every project as CSV; import TDA team credits from a filled-in worksheet.
       beforeListTable: ['/components/admin/ProjectTools#ProjectTools'],
@@ -36,7 +63,7 @@ export const Projects: CollectionConfig = {
     delete: authenticated,
   },
   hooks: {
-    beforeValidate: [fillSlug('name')],
+    beforeValidate: [fillSlug('name'), checkProjectNumber],
   },
   fields: [
     {
@@ -360,6 +387,31 @@ export const Projects: CollectionConfig = {
           ],
         },
       ],
+    },
+    // Internal only: staff can read these, the public API and site never see them.
+    {
+      name: 'projectNumber',
+      label: 'TDA project number',
+      type: 'text',
+      unique: true,
+      index: true,
+      access: { read: staffOnly },
+      admin: {
+        position: 'sidebar',
+        description: 'Internal, never shown on the site. Type it in the Projects list search to find the project.',
+      },
+    },
+    {
+      name: 'aliases',
+      label: 'Internal names',
+      type: 'array',
+      access: { read: staffOnly },
+      admin: {
+        position: 'sidebar',
+        description: 'Other names the office uses for this project (code names, old names, short names). Internal, never shown on the site; the Projects list search finds them.',
+      },
+      labels: { singular: 'Internal name', plural: 'Internal names' },
+      fields: [{ name: 'name', type: 'text', required: true }],
     },
     stillNeededField,
     {

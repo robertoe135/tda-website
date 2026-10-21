@@ -104,7 +104,7 @@ describe('the admin’s spreadsheet tools', () => {
     expect(res.headers.get('Content-Disposition')).toMatch(/attachment; filename="tda-projects-/)
     const rows = parseCsv(await res.text())
     expect(rows[0]).toEqual([...EXPORT_COLUMNS])
-    expect(rows.find((r) => r[1] === `${tag} Hall`)?.[2]).toBe('live')
+    expect(rows.find((r) => r[1] === `${tag} Hall`)?.[4]).toBe('live')
   })
 
   it('checks a team sheet, refuses one with problems, and saves teams as drafts', async () => {
