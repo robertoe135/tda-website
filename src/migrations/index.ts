@@ -25,6 +25,7 @@ import * as migration_20261017_061737_firm_collaborators from './20261017_061737
 import * as migration_20261019_152914_newsletters from './20261019_152914_newsletters';
 import * as migration_20261019_204447_year_of_light from './20261019_204447_year_of_light';
 import * as migration_20261020_170437_project_status_cancelled from './20261020_170437_project_status_cancelled';
+import * as migration_20261021_153815_person_credentials from './20261021_153815_person_credentials';
 
 export const migrations = [
   {
@@ -160,6 +161,11 @@ export const migrations = [
   {
     up: migration_20261020_170437_project_status_cancelled.up,
     down: migration_20261020_170437_project_status_cancelled.down,
-    name: '20261020_170437_project_status_cancelled'
+    name: '20261020_170437_project_status_cancelled',
+  },
+  {
+    up: migration_20261021_153815_person_credentials.up,
+    down: migration_20261021_153815_person_credentials.down,
+    name: '20261021_153815_person_credentials'
   },
 ];

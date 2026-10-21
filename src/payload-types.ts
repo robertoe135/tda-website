@@ -80,6 +80,7 @@ export interface Config {
     firms: Firm;
     photographers: Photographer;
     creditRoles: CreditRole;
+    credentials: Credential;
     leads: Lead;
     users: User;
     'payload-kv': PayloadKv;
@@ -113,6 +114,7 @@ export interface Config {
     firms: FirmsSelect<false> | FirmsSelect<true>;
     photographers: PhotographersSelect<false> | PhotographersSelect<true>;
     creditRoles: CreditRolesSelect<false> | CreditRolesSelect<true>;
+    credentials: CredentialsSelect<false> | CredentialsSelect<true>;
     leads: LeadsSelect<false> | LeadsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -468,6 +470,10 @@ export interface Person {
    */
   group?: ('leadership' | 'design' | 'administration') | null;
   /**
+   * Shown as badges under the name, in this order. Only credentials the person holds and has approved; add new ones under Credentials.
+   */
+  credentials?: (number | Credential)[] | null;
+  /**
    * Approved by the person.
    */
   headshot?: (number | null) | Media;
@@ -521,6 +527,38 @@ export interface Person {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * Professional credentials and memberships shown under a person’s name, e.g. CLD or LEED AP. Add them to a person under People → Credentials.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "credentials".
+ */
+export interface Credential {
+  id: number;
+  /**
+   * As written after a name, e.g. CLD, LEED AP BD+C, WELL AP.
+   */
+  name: string;
+  /**
+   * Optional, as the issuing body writes it, e.g. Certified Lighting Designer. Shown when someone points at the badge.
+   */
+  fullName?: string | null;
+  /**
+   * Full address, starting with https://
+   */
+  website?: string | null;
+  /**
+   * Position on the team page filter. Lower numbers come first.
+   */
+  order?: number | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * Photographs and headshots. Every image needs a description for screen readers. Every image must be credited, on the image or, for project photos, on the project; crediting the photographer is part of the license. Upload JPEGs exported at about 3000 px on the long side and under 4 MB; larger files are refused by the server.
@@ -1067,6 +1105,10 @@ export interface PayloadLockedDocument {
         value: number | CreditRole;
       } | null)
     | ({
+        relationTo: 'credentials';
+        value: number | Credential;
+      } | null)
+    | ({
         relationTo: 'leads';
         value: number | Lead;
       } | null)
@@ -1189,6 +1231,7 @@ export interface PeopleSelect<T extends boolean = true> {
   name?: T;
   title?: T;
   group?: T;
+  credentials?: T;
   headshot?: T;
   bio?: T;
   linkedin?: T;
@@ -1535,6 +1578,20 @@ export interface CreditRolesSelect<T extends boolean = true> {
   name?: T;
   order?: T;
   normalizedName?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "credentials_select".
+ */
+export interface CredentialsSelect<T extends boolean = true> {
+  name?: T;
+  fullName?: T;
+  website?: T;
+  order?: T;
+  generateSlug?: T;
+  slug?: T;
   updatedAt?: T;
   createdAt?: T;
 }

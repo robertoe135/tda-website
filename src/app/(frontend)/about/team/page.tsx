@@ -2,22 +2,52 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { Breadcrumb } from '@/components/Breadcrumb'
+import { CredentialBadges } from '@/components/CredentialBadges'
 import { getTeam } from '@/lib/site'
 
-export const metadata: Metadata = {
-  title: 'Team — Tillotson Design Associates',
-  description: 'The people of Tillotson Design Associates.',
-  alternates: { canonical: '/about/team' },
+type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> }
+
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const filtered = Boolean((await searchParams).credential)
+  return {
+    title: 'Team — Tillotson Design Associates',
+    description: 'The people of Tillotson Design Associates.',
+    // A filtered view (?credential=cld) is the same page for search engines.
+    alternates: { canonical: '/about/team' },
+    ...(filtered ? { robots: { index: false, follow: true } } : {}),
+  }
 }
 
-/** Current staff with "Show on site" on, by section and position (People in the admin). */
-export default async function TeamPage() {
-  const groups = await getTeam()
+/**
+ * Current staff with "Show on site" on, by section and position (People in the admin), each
+ * with their credentials as badges. ?credential=<slug> shows only the people who hold one.
+ */
+export default async function TeamPage({ searchParams }: Props) {
+  const raw = (await searchParams).credential
+  const credential = typeof raw === 'string' ? raw : undefined
+  const groups = await getTeam(credential)
+  const badge = credential
+    ? groups.flatMap((g) => g.people).flatMap((p) => p.credentials).find((b) => b.slug === credential)
+    : undefined
+
   return (
     <div className="team">
       <Breadcrumb trail={[{ href: '/about', label: 'about' }]} current="team" />
       <h1 className="page-title page-title-large">Team</h1>
-      {groups.length === 0 && <p className="empty">The team will be introduced here soon.</p>}
+      {credential && (
+        <p className="team-filter">
+          {badge ? (
+            <>
+              Everyone with <strong>{badge.name}</strong>
+              {badge.fullName ? ` (${badge.fullName})` : ''}.{' '}
+            </>
+          ) : (
+            'Nobody on the team holds that credential. '
+          )}
+          <Link href="/about/team">Show the whole team</Link>
+        </p>
+      )}
+      {groups.length === 0 && !credential && <p className="empty">The team will be introduced here soon.</p>}
       {groups.map((g) => (
         <section key={g.value} className="team-group" aria-labelledby={`team-${g.value}`}>
           <div className="group-head">
@@ -37,6 +67,7 @@ export default async function TeamPage() {
                   <span className="team-name">{p.name}</span>
                   {p.title && <span className="team-title">{p.title}</span>}
                 </Link>
+                <CredentialBadges badges={p.credentials} className="team-badges" />
               </li>
             ))}
           </ul>
