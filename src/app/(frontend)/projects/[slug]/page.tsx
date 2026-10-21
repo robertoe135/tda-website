@@ -11,7 +11,7 @@ import {
   filterHref,
   getPublishedProject,
   getPublishedProjects,
-  projectPhotographers,
+  projectPhotographerCredits,
   projectSlides,
   SQ_FT_TO_M2,
 } from '@/lib/projects'
@@ -177,7 +177,7 @@ export default async function ProjectPage({ params }: Props) {
   const awards = (project.awards?.docs ?? []).filter(isObject<Award>)
   const press = (project.press?.docs ?? []).filter(isObject<Press>)
   const slides = projectSlides(project)
-  const photographers = projectPhotographers(project)
+  const photographers = projectPhotographerCredits(project)
 
   const all = await getPublishedProjects()
   const card = all.find((p) => p.id === project.id)
@@ -334,7 +334,14 @@ export default async function ProjectPage({ params }: Props) {
             )}
             {photographers.length > 0 && (
               <dl>
-                <Row label="Photography">{photographers.join(' / ')}</Row>
+                <Row label="Photography">
+                  {photographers.map((ph, i) => (
+                    <span key={ph.name}>
+                      {i > 0 && ' / '}
+                      {ph.href ? <MetaLink href={ph.href}>{ph.name}</MetaLink> : ph.name}
+                    </span>
+                  ))}
+                </Row>
               </dl>
             )}
           </section>

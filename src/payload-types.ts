@@ -627,7 +627,7 @@ export interface Media {
   };
 }
 /**
- * Credited on every image they took. The credit links to their website.
+ * Credited on every image they took. On the site, the credit links to every project with their photographs.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "photographers".
@@ -643,6 +643,11 @@ export interface Photographer {
    */
   website?: string | null;
   normalizedName?: string | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1567,6 +1572,8 @@ export interface PhotographersSelect<T extends boolean = true> {
   name?: T;
   website?: T;
   normalizedName?: T;
+  generateSlug?: T;
+  slug?: T;
   updatedAt?: T;
   createdAt?: T;
 }

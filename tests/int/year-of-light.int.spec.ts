@@ -17,6 +17,7 @@ const card = (id: number, extra: Partial<ProjectCard> = {}): ProjectCard => ({
   architects: [],
   collaboratorSlugs: [],
   clientSlugs: [],
+  photographers: [],
   ...extra,
 })
 const input = (extra: Partial<StoryInput> = {}): StoryInput => ({

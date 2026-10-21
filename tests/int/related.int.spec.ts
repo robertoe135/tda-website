@@ -11,6 +11,7 @@ const card = (id: number, o: Partial<ProjectCard> = {}): ProjectCard => ({
   architects: [],
   collaboratorSlugs: [],
   clientSlugs: [],
+  photographers: [],
   status: 'completed',
   ...o,
 })

@@ -23,6 +23,8 @@ export type ProjectCard = {
   location?: Pick<Location, 'displayName' | 'slug' | 'worldRegion' | 'lat' | 'lng'>
   typologies: Pick<Typology, 'name' | 'slug'>[]
   architects: Pick<Firm, 'name' | 'slug'>[]
+  /** Photographers credited on the project or on one of its photos, for the photographer filter. */
+  photographers: { name: string; slug: string }[]
   /** The main image, card-sized with larger sizes in srcSet, when one has been uploaded. */
   image?: CardImage
   /** Slugs of firms in the credits list and of clients, for the collaborator/client filters. */
@@ -65,6 +67,7 @@ export async function getPublishedProjects(): Promise<ProjectCard[]> {
       clients: true,
       heroImage: true,
       gallery: true,
+      photographers: true,
     },
     populate: {
       // Photos are loaded whole: the storage plugin builds each address from the file name and
@@ -72,8 +75,12 @@ export async function getPublishedProjects(): Promise<ProjectCard[]> {
       locations: { displayName: true, slug: true, worldRegion: true, lat: true, lng: true },
       typologies: { name: true, slug: true, order: true },
       firms: { name: true, slug: true },
+      photographers: { name: true, slug: true },
     },
   })
+  // Photos carry their photographer as an id at this depth: names and addresses from one list.
+  const everyPhotographer = await payload.find({ collection: 'photographers', pagination: false, depth: 0, select: { name: true, slug: true } })
+  const photographerById = new Map(everyPhotographer.docs.map((ph) => [ph.id, ph]))
   return result.docs.map((p) => ({
     id: p.id,
     name: p.name,
@@ -84,6 +91,16 @@ export async function getPublishedProjects(): Promise<ProjectCard[]> {
     location: isObject<Location>(p.location) ? p.location : undefined,
     typologies: (p.typologies ?? []).filter(isObject<Typology>),
     architects: (p.architects ?? []).filter(isObject<Firm>),
+    photographers: [
+      ...(p.photographers ?? []).filter(isObject<Photographer>),
+      ...[p.heroImage, ...(p.gallery ?? []).map((g) => g.image)]
+        .filter(isObject<Media>)
+        .map((m) => (isObject<Photographer>(m.photographer) ? m.photographer : photographerById.get(m.photographer as number)))
+        .filter((ph): ph is Photographer => Boolean(ph)),
+    ]
+      .filter((ph) => ph.slug)
+      .map((ph) => ({ name: ph.name, slug: ph.slug! }))
+      .filter((ph, i, all) => all.findIndex((o) => o.slug === ph.slug) === i),
     // The main image, or else the first gallery photo, so a project with photos never shows an empty card.
     image: [p.heroImage, ...(p.gallery ?? []).map((g) => g.image)]
       .filter((m): m is Media => isObject<Media>(m) && Boolean(m.url))
@@ -132,9 +149,9 @@ export const REGION_OPTIONS = [
 ] as const
 
 /** URL parameters. Several values in one group mean "any of"; different groups mean "all of". */
-export const FILTER_KEYS = ['status', 'typology', 'region', 'location', 'architect', 'collaborator', 'client'] as const
+export const FILTER_KEYS = ['status', 'typology', 'region', 'location', 'architect', 'collaborator', 'client', 'photographer'] as const
 /** Reached from labels on project pages rather than offered as checkboxes. */
-export const LINK_ONLY_KEYS = ['location', 'collaborator', 'client'] as const
+export const LINK_ONLY_KEYS = ['location', 'collaborator', 'client', 'photographer'] as const
 export type FilterKey = (typeof FILTER_KEYS)[number]
 export type Filters = Record<FilterKey, string[]>
 
@@ -161,7 +178,8 @@ export function matches(project: ProjectCard, filters: Filters): boolean {
     any(filters.location, [project.location?.slug]) &&
     any(filters.architect, project.architects.map((a) => a.slug)) &&
     any(filters.collaborator, project.collaboratorSlugs) &&
-    any(filters.client, project.clientSlugs)
+    any(filters.client, project.clientSlugs) &&
+    any(filters.photographer, project.photographers.map((ph) => ph.slug))
   )
 }
 
@@ -281,10 +299,23 @@ export type Slide = ReturnType<typeof projectSlides>[number]
  * on a single image that are not already listed. In order, without repeats.
  */
 export function projectPhotographers(project: Project): string[] {
-  const onProject = (project.photographers ?? []).filter(isObject<Photographer>).map((p) => p.name)
-  const media = [project.heroImage, ...(project.gallery ?? []).map((g) => g.image)].filter(isObject<Media>)
-  const onImages = media.map((m) => (isObject<Photographer>(m.photographer) ? m.photographer.name : m.credit)).filter(
-    (n): n is string => Boolean(n),
-  )
-  return [...new Set([...onProject, ...onImages])]
+  return projectPhotographerCredits(project).map((c) => c.name)
+}
+
+/**
+ * The same credit with each photographer's portfolio filter (every project with their photos),
+ * where the name is a photographer in the list; a credit typed on one photo ("Courtesy of the
+ * architect") has no link.
+ */
+export function projectPhotographerCredits(project: Project): { name: string; href?: string }[] {
+  const people = [
+    ...(project.photographers ?? []).filter(isObject<Photographer>),
+    ...[project.heroImage, ...(project.gallery ?? []).map((g) => g.image)]
+      .filter(isObject<Media>)
+      .map((m) => (isObject<Photographer>(m.photographer) ? m.photographer : m.credit ? { name: m.credit } : undefined)),
+  ].filter((x): x is Pick<Photographer, 'name' | 'slug'> => Boolean(x?.name))
+  const out: { name: string; href?: string }[] = []
+  for (const p of people)
+    if (!out.some((o) => o.name === p.name)) out.push({ name: p.name, href: p.slug ? filterHref('photographer', p.slug) : undefined })
+  return out
 }

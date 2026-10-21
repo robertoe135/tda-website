@@ -11,6 +11,7 @@ const card = (id: number, location?: ProjectCard['location']): ProjectCard => ({
   architects: [],
   collaboratorSlugs: [],
   clientSlugs: [],
+  photographers: [],
   status: 'completed',
   location,
 })

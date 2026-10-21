@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 
 import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
+import { fillSlug, slug } from '../fields/slug'
 import { websiteField } from '../fields/website'
 import { normalizedNameField, preventNearDuplicates } from '../hooks/preventNearDuplicates'
 
@@ -13,7 +14,8 @@ export const Photographers: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'website'],
     group: 'Reference',
-    description: 'Credited on every image they took. The credit links to their website.',
+    description:
+      'Credited on every image they took. On the site, the credit links to every project with their photographs.',
   },
   defaultSort: 'name',
   access: {
@@ -23,7 +25,7 @@ export const Photographers: CollectionConfig = {
     delete: authenticated,
   },
   hooks: {
-    beforeValidate: [preventNearDuplicates('photographers')],
+    beforeValidate: [preventNearDuplicates('photographers'), fillSlug('name')],
   },
   fields: [
     {
@@ -35,5 +37,6 @@ export const Photographers: CollectionConfig = {
     },
     websiteField,
     normalizedNameField,
+    slug('name'),
   ],
 }
