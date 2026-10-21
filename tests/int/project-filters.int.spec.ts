@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { filterHref, matches, parseFilters, type ProjectCard, setHref, toggleHref } from '@/lib/projects'
+import { filterHref, matches, parseFilters, type ProjectCard, projectPhotographerCredits, setHref, toggleHref } from '@/lib/projects'
+import type { Project } from '@/payload-types'
 
 const project: ProjectCard = {
   id: 1,
@@ -14,6 +15,7 @@ const project: ProjectCard = {
   architects: [{ name: 'Kohn Pedersen Fox', slug: 'kohn-pedersen-fox' }],
   collaboratorSlugs: ['severud-associates'],
   clientSlugs: ['sl-green-realty-corporation'],
+  photographers: [{ name: 'Max Touhey', slug: 'max-touhey' }],
 }
 
 describe('project filters', () => {
@@ -52,5 +54,25 @@ describe('category links', () => {
     expect(setHref(f, { typology: ['retail'], status: [] })).toBe('/projects?typology=retail&region=europe')
     expect(setHref(f, { typology: [], status: [] })).toBe('/projects?region=europe')
     expect(setHref(parseFilters({}), {})).toBe('/projects')
+  })
+})
+
+describe('photographer credits', () => {
+  it('filters the portfolio to every project with a photographer’s photos', () => {
+    expect(matches(project, parseFilters({ photographer: 'max-touhey' }))).toBe(true)
+    expect(matches(project, parseFilters({ photographer: 'someone-else' }))).toBe(false)
+    expect(filterHref('photographer', 'max-touhey')).toBe('/projects?photographer=max-touhey')
+  })
+
+  it('links each credited photographer, once, and leaves a typed credit as text', () => {
+    const credits = projectPhotographerCredits({
+      photographers: [{ id: 1, name: 'Max Touhey', slug: 'max-touhey' }],
+      heroImage: { id: 9, url: 'x', alt: '', photographer: { id: 1, name: 'Max Touhey', slug: 'max-touhey' } },
+      gallery: [{ image: { id: 10, url: 'y', alt: '', credit: 'Courtesy of the architect' } }],
+    } as unknown as Project)
+    expect(credits).toEqual([
+      { name: 'Max Touhey', href: '/projects?photographer=max-touhey' },
+      { name: 'Courtesy of the architect', href: undefined },
+    ])
   })
 })

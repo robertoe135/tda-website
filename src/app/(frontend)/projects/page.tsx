@@ -88,6 +88,9 @@ export default async function ProjectsPage({ searchParams }: Props) {
     typologies.find((t) => key === 'typology' && t.slug === value)?.name ??
     architects.find((a) => key === 'architect' && a.slug === value)?.name ??
     projects.find((p) => key === 'location' && p.location?.slug === value)?.location?.displayName ??
+    (key === 'photographer'
+      ? projects.flatMap((p) => p.photographers).find((ph) => ph.slug === value)?.name.replace(/^/, 'Photos by ')
+      : undefined) ??
     value.replace(/-/g, ' ')
 
   // The category line: All, each category in the old menu's order, then On the Boards.
