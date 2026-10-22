@@ -2,6 +2,8 @@ import { randomBytes } from 'crypto'
 import type { CollectionBeforeOperationHook } from 'payload'
 import sharp, { type Sharp } from 'sharp'
 
+import { MAX_IMAGE_EDGE } from '../lib/upload-limits'
+
 const REENCODE: Record<string, (img: Sharp) => Sharp> = {
   'image/jpeg': (img) => img.jpeg({ quality: 95, mozjpeg: true }),
   'image/png': (img) => img.png(),
@@ -10,10 +12,9 @@ const REENCODE: Record<string, (img: Sharp) => Sharp> = {
   'image/tiff': (img) => img.tiff(),
 }
 
-// Longest side kept online. TDA's full-resolution masters stay on the file server; this is
-// plenty for a 2400px hero on a high-density screen and keeps uploads under Vercel's 4.5 MB
-// request limit.
-export const MAX_IMAGE_EDGE = 3000
+// Also exported from here for the media scripts. The admin shrinks photos to this size in the
+// browser before sending them (components/admin/UploadGuard), so they fit Vercel's 4.5 MB limit.
+export { MAX_IMAGE_EDGE }
 
 /**
  * Uploaded files are publicly reachable by filename, and the old site leaked a private
