@@ -159,7 +159,7 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   .map-panel { margin-top: 2.85rem; }
 }
 
-/* Phones: the categories become one line that scrolls sideways, the two menus share a row. */
+/* Phones: the categories become one line that scrolls sideways; the views, then the two menus, each fill a row. */
 @media (max-width: 639px) {
   .portfolio-filters { flex-direction: column; flex-wrap: nowrap; align-items: stretch; margin-inline: calc(-1 * var(--gutter)); padding-bottom: 0; border-bottom: 0; }
   .category-nav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding: 0 2.5rem 0 var(--gutter); border-bottom: 1px solid var(--line); font-size: 0.9rem; flex: none;
@@ -167,17 +167,41 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
   .category-nav::-webkit-scrollbar { display: none; }
   .category-nav a { display: flex; align-items: center; min-height: 44px; padding: 0; }
   .category-nav a[aria-current='page'] { text-decoration: none; box-shadow: inset 0 -2px 0 var(--text); }
-  .filter-menus { padding: 0 var(--gutter); }
+  /* Grid / List / Map on a row of its own, the two menus sharing the next. */
+  .filter-menus { padding: 0 var(--gutter); flex-wrap: wrap; }
+  .view-switch { flex: 1 0 100%; }
+  .view-switch a { flex: 1 1 0; justify-content: center; min-height: 44px; }
   .filter-menu { flex: 1 1 0; }
   .filter-menu > summary { min-height: 44px; justify-content: space-between; }
-  .filter-menu:last-child .filter-panel { right: 0; }
-  .filter-menu:first-child .filter-panel { left: 0; right: auto; }
+  .filter-menu:last-of-type .filter-panel { right: 0; }
+  .filter-menu:first-of-type .filter-panel { left: 0; right: auto; }
 }
 
 .portfolio-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.5rem; }
 .portfolio-image { aspect-ratio: 3 / 2; background: #f4f4f4; overflow: hidden; }
 .portfolio-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .portfolio-title { font-weight: 400; font-size: 1.05rem; margin: 0.5rem 0 0; }
+.portfolio-more { margin: 2rem 0 0; font-weight: 300; font-size: 0.9rem; color: var(--muted); }
+.portfolio-more a { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+
+/* Portfolio list: every project as text, one row each. */
+.project-list { width: 100%; border-collapse: collapse; font-weight: 300; font-size: 0.9rem; }
+.project-list thead th { text-align: left; font-weight: 400; font-size: 0.75rem; color: var(--muted); padding: 0 0.75rem 0.5rem 0; border-bottom: 1px solid var(--text); }
+.project-list tbody th, .project-list td { text-align: left; vertical-align: top; padding: 0.7rem 0.75rem 0.7rem 0; border-bottom: 1px solid var(--line); }
+.project-list tbody th { font-weight: 400; }
+.project-list tbody th > a { color: var(--text); }
+.project-list a { color: inherit; }
+.project-list td a { color: var(--muted); }
+.project-list td a:hover, .project-list .list-place a:hover { color: var(--text); }
+.project-list .col-year { white-space: nowrap; text-align: right; padding-right: 0; }
+.list-place { display: block; margin-top: 0.15rem; font-weight: 300; font-size: 0.8rem; }
+.list-place a { color: var(--muted); }
+.project-list .col-location, .project-list .col-architect, .project-list .col-category { display: none; }
+@media (min-width: 720px) {
+  .project-list .col-location, .project-list .col-category { display: table-cell; }
+  .list-place { display: none; }
+}
+@media (min-width: 1080px) { .project-list .col-architect { display: table-cell; } }
 
 /* Project page (mockup F3) */
 .breadcrumb { padding: 0.25rem 0 0.75rem; font-weight: 300; font-size: 0.75rem; color: var(--muted); }

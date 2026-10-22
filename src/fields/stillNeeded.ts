@@ -2,6 +2,8 @@ import type { Field } from 'payload'
 
 /** What a project can be missing, in the order marketing usually fills it in. */
 export const STILL_NEEDED = [
+  // Work in progress is off the site until this is recorded (Projects → Approved to announce).
+  { value: 'approval', label: 'Approval to announce' },
   { value: 'photos', label: 'Photos' },
   { value: 'photographer', label: 'Photographer' },
   { value: 'category', label: 'Category' },
@@ -26,6 +28,7 @@ const hasText = (value: unknown): boolean => {
 /** What a project is missing, from its own fields. Photos without a credit need a photographer. */
 export function stillNeeded(p: Record<string, unknown>): StillNeeded[] {
   const out: StillNeeded[] = []
+  if (p.status === 'in-progress' && !p.announceApproved) out.push('approval')
   const photos = has(p.heroImage) || has(p.gallery)
   if (!photos) out.push('photos')
   if (photos && !has(p.photographers)) out.push('photographer')

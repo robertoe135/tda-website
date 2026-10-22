@@ -30,7 +30,7 @@ describe('content check', () => {
       'No design architect',
       'No write-up',
     ])
-    const done = { id: 2, name: 'Y', status: 'in-progress', heroImage: 5, photographers: [1], typologies: [1], location: 1, architects: [1], description: words('Light.') }
+    const done = { id: 2, name: 'Y', status: 'in-progress', announceApproved: true, heroImage: 5, photographers: [1], typologies: [1], location: 1, architects: [1], description: words('Light.') }
     expect(projectIssues(done, done)).toEqual([])
   })
 

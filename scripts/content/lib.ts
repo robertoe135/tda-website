@@ -8,6 +8,7 @@ export type ProjectRecord = {
   id: number
   name: string
   status?: string | null
+  announceApproved?: boolean | null
   year?: number | null
   location?: unknown
   typologies?: unknown[] | null
@@ -39,6 +40,8 @@ const hasText = (value: unknown): boolean => {
 export function projectIssues(draft: ProjectRecord, live?: ProjectRecord): Issue[] {
   const issues: Issue[] = []
   const add = (issue: string, detail = '') => issues.push({ issue, detail })
+  if (draft.status === 'in-progress' && !draft.announceApproved)
+    add('Not approved to announce', 'Work in progress stays off the site until "Approved to announce" is ticked, with who approved it.')
   const photos = has(draft.heroImage) || has(draft.gallery)
   if (!photos) add('No photos', 'Add a main image or gallery photos.')
   else if (live && !has(live.heroImage) && !has(live.gallery)) add('Photos not published', 'Photos are on the draft only. Publish the project, or run pnpm media:publish.')

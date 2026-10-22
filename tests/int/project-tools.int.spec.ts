@@ -10,9 +10,11 @@ import config from '@/payload.config'
 import type { Project, User } from '@/payload-types'
 
 describe('the Timeline', () => {
-  it('shows completed and in-progress projects with a year, never unbuilt, cancelled or hidden ones', () => {
+  it('shows completed and in-progress projects with a year, never unbuilt, cancelled, hidden or photo-less work in progress', () => {
     expect(onTimeline({ year: 2020, status: 'completed' })).toBe(true)
-    expect(onTimeline({ year: 2027, status: 'in-progress' })).toBe(true)
+    expect(onTimeline({ year: 2027, status: 'in-progress', image: { src: 'x.jpg' } })).toBe(true)
+    // Announced work with no photos waits until it is completed.
+    expect(onTimeline({ year: 2027, status: 'in-progress' })).toBe(false)
     expect(onTimeline({ year: 2019, status: 'unbuilt' })).toBe(false)
     expect(onTimeline({ year: 2019, status: 'cancelled' })).toBe(false)
     expect(onTimeline({ status: 'completed' })).toBe(false)
