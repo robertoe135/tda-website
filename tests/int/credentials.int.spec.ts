@@ -39,7 +39,7 @@ describe('credential badges', () => {
       await payload.delete({ collection: 'credentials', where: { name: { like: tag } } })
     })
 
-    it('shows each person’s badges, and a badge filters the team to those who hold it', async () => {
+    it('knows each person’s badges, and a badge filters the team to those who hold it', async () => {
       const everyone = (await getTeam()).flatMap((g) => g.people).filter((p) => p.name.startsWith(tag))
       expect(everyone.map((p) => [p.name, p.credentials.map((c) => c.name)])).toEqual([
         [`${tag} Holder`, [`${tag} CLD`]],

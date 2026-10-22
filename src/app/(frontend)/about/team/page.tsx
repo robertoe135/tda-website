@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { Breadcrumb } from '@/components/Breadcrumb'
-import { CredentialBadges } from '@/components/CredentialBadges'
 import { getTeam } from '@/lib/site'
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> }
@@ -19,8 +18,9 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 }
 
 /**
- * Current staff with "Show on site" on, by section and position (People in the admin), each
- * with their credentials as badges. ?credential=<slug> shows only the people who hold one.
+ * Current staff with "Show on site" on, by section and position (People in the admin). Names
+ * and titles only: credentials show on each person's page, whose badges link back here as
+ * ?credential=<slug>, the people who hold one.
  */
 export default async function TeamPage({ searchParams }: Props) {
   const raw = (await searchParams).credential
@@ -67,7 +67,6 @@ export default async function TeamPage({ searchParams }: Props) {
                   <span className="team-name">{p.name}</span>
                   {p.title && <span className="team-title">{p.title}</span>}
                 </Link>
-                <CredentialBadges badges={p.credentials} className="team-badges" />
               </li>
             ))}
           </ul>
