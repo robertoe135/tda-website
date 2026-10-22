@@ -29,6 +29,7 @@ import { NewsletterDesignView as NewsletterDesignView_523e37de3cf1f531e240f33de6
 import { default as default_dfe4008080d895d460898c3a6155e9ba } from '../../../components/admin/Icon'
 import { default as default_91a09b539d3c86b0aebf520e7564ce08 } from '../../../components/admin/Logo'
 import { default as default_527cb6ea03a8cd52ace999dddf7d43a7 } from '../../../components/admin/BeforeLogin'
+import { UploadGuard as UploadGuard_7c5d6243a6ea73c6275ed800490b80b8 } from '../../../components/admin/UploadGuard'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 import { VercelBlobClientUploadHandler as VercelBlobClientUploadHandler_16c82c5e25f430251a3e3ba57219ff4e } from '@payloadcms/storage-vercel-blob/client'
 
@@ -65,6 +66,7 @@ export const importMap = {
   "/components/admin/Icon#default": default_dfe4008080d895d460898c3a6155e9ba,
   "/components/admin/Logo#default": default_91a09b539d3c86b0aebf520e7564ce08,
   "/components/admin/BeforeLogin#default": default_527cb6ea03a8cd52ace999dddf7d43a7,
+  "/components/admin/UploadGuard#UploadGuard": UploadGuard_7c5d6243a6ea73c6275ed800490b80b8,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1,
   "@payloadcms/storage-vercel-blob/client#VercelBlobClientUploadHandler": VercelBlobClientUploadHandler_16c82c5e25f430251a3e3ba57219ff4e
 }

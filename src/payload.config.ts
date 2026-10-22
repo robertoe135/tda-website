@@ -47,6 +47,8 @@ export default buildConfig({
         Icon: '/components/admin/Icon',
       },
       beforeLogin: ['/components/admin/BeforeLogin'],
+      // Shrinks photos in the browser before upload and reports failed uploads as failed.
+      providers: ['/components/admin/UploadGuard#UploadGuard'],
     },
   },
   collections: [Projects, People, Media, Videos, Awards, Press, Newsletters, YearsOfLight, Typologies, Locations, Firms, Photographers, CreditRoles, Credentials, Leads, Users],
@@ -97,7 +99,8 @@ export default buildConfig({
     }),
     // Videos are uploaded from the browser straight to Blob, past Vercel's 4.5 MB request
     // limit. Images must not be: they go through the server, which renames them and strips
-    // camera data (src/hooks/sanitizeUpload.ts). Hence a second, video-only instance.
+    // camera data (src/hooks/sanitizeUpload.ts); the admin shrinks them in the browser first so
+    // they fit (src/components/admin/UploadGuard.tsx). Hence a second, video-only instance.
     vercelBlobStorage({
       token: process.env.BLOB_READ_WRITE_TOKEN,
       enabled: Boolean(process.env.BLOB_READ_WRITE_TOKEN),

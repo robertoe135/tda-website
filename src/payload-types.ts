@@ -574,7 +574,7 @@ export interface Credential {
   createdAt: string;
 }
 /**
- * Photographs and headshots. Every image needs a description for screen readers. Every image must be credited, on the image or, for project photos, on the project; crediting the photographer is part of the license. Upload JPEGs exported at about 3000 px on the long side and under 4 MB; larger files are refused by the server.
+ * Photographs and headshots. Every image needs a description for screen readers. Every image must be credited, on the image or, for project photos, on the project; crediting the photographer is part of the license. Large photos are reduced to 3000 px on the long side automatically as they upload. iPhone HEIC photos need exporting as JPEG first.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".

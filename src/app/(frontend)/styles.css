@@ -327,10 +327,6 @@ main { padding: var(--gutter); max-width: 1200px; margin: 0 auto; }
 .home-tile { position: relative; align-self: start; }
 .home-tile .tile-image { aspect-ratio: 4 / 3; }
 .tile-image video { width: 100%; height: 100%; object-fit: cover; display: block; }
-.video-toggle {
-  position: absolute; left: 0.6rem; top: 0.6rem; width: 44px; height: 44px; border: 0; border-radius: 50%;
-  display: grid; place-items: center; background: rgb(255 255 255 / 0.9); color: var(--text); cursor: pointer;
-}
 .home-quote { margin: 0; padding: 0.5rem 0; }
 .home-quote blockquote { margin: 0; font-weight: 300; font-size: 1.35rem; line-height: 1.38; }
 .home-quote figcaption { margin-top: 0.9rem; font-weight: 400; font-size: 0.8rem; color: var(--muted); }
