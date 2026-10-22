@@ -36,7 +36,7 @@ Add videos under **Videos** first, then pick them on a project tile.
   in full. Smaller loops look the same and keep the hosting bill near zero.
 - A **still image** is required: it shows while the video loads, and instead of the video for
   visitors who turn off motion in their device settings.
-- Videos play muted on a loop, with a pause button.
+- Videos play muted on a loop, always, with no pause button.
 - The file name is public. Name it after the project, never after a private client.
 
 The old homepage played four videos (PAC NYC, London Mithraeum, MIT Museum, Seeds of Light).
