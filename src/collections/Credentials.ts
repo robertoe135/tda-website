@@ -5,7 +5,7 @@ import { authenticated } from '../access/authenticated'
 import { fillSlug, slug } from '../fields/slug'
 import { urlField } from '../fields/website'
 
-// Professional credentials shown as badges under a person's name (CLD, LEED AP, WELL AP…).
+// Professional credentials shown as badges under a person's name on their page (CLD, LEED AP…).
 // A list rather than a fixed dropdown so marketing can add one without a developer. Each badge
 // links to the team page showing everyone who holds it.
 export const Credentials: CollectionConfig = {

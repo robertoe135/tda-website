@@ -26,6 +26,8 @@ export type HomeTile = {
   kind: 'project'
   id?: string | null
   share: number
+  /** The tile's own name (Homepage → Name on the homepage), else the project's. */
+  name: string
   project: ProjectCard
   image?: HomeMedia
   video?: HomeVideo
@@ -106,6 +108,7 @@ export async function getHomeRows(): Promise<HomeRowData[]> {
           kind: 'project',
           id: item.id,
           share,
+          name: item.name?.trim() || project.name,
           project,
           image: imageOf(item.image) ?? project.image,
           video,

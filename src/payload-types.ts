@@ -329,6 +329,10 @@ export interface Project {
    */
   featured?: boolean | null;
   /**
+   * Leave this project off the Timeline. It stays in the portfolio, search and everywhere else.
+   */
+  hideFromTimeline?: boolean | null;
+  /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
   generateSlug?: boolean | null;
@@ -483,7 +487,7 @@ export interface Person {
    */
   group?: ('leadership' | 'design' | 'administration') | null;
   /**
-   * Shown as badges under the name, in this order. Only credentials the person holds and has approved; add new ones under Credentials.
+   * Shown as badges under the name on this person’s page, in this order. Only credentials the person holds and has approved; add new ones under Credentials.
    */
   credentials?: (number | Credential)[] | null;
   /**
@@ -1242,6 +1246,7 @@ export interface ProjectsSelect<T extends boolean = true> {
       };
   stillNeeded?: T;
   featured?: T;
+  hideFromTimeline?: T;
   generateSlug?: T;
   slug?: T;
   updatedAt?: T;
@@ -1729,6 +1734,10 @@ export interface Home {
           | {
               project: number | Project;
               /**
+               * Optional. Shown on this tile instead of the project's name, on the homepage only; the project page and everywhere else keep the project's name. A name only: location and architect have their own fields.
+               */
+              name?: string | null;
+              /**
                * Optional. Another photograph of the project instead of its main image.
                */
               image?: (number | null) | Media;
@@ -1906,6 +1915,7 @@ export interface HomeSelect<T extends boolean = true> {
                 | T
                 | {
                     project?: T;
+                    name?: T;
                     image?: T;
                     video?: T;
                     id?: T;

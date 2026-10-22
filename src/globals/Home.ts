@@ -80,6 +80,15 @@ export const Home: GlobalConfig = {
               fields: [
                 { name: 'project', type: 'relationship', relationTo: 'projects', required: true },
                 {
+                  name: 'name',
+                  label: 'Name on the homepage',
+                  type: 'text',
+                  admin: {
+                    description:
+                      "Optional. Shown on this tile instead of the project's name, on the homepage only; the project page and everywhere else keep the project's name. A name only: location and architect have their own fields.",
+                  },
+                },
+                {
                   type: 'row',
                   fields: [
                     {

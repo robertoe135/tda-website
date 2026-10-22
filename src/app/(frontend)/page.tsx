@@ -54,7 +54,7 @@ function Tile({ item, eager }: { item: HomeTile; eager: boolean }) {
   const { project, image, video } = item
   const href = `/projects/${project.slug}`
   const style = { '--w': item.share } as CSSProperties
-  if (video) return <VideoTile href={href} name={project.name} src={video.src} type={video.type} poster={video.poster ?? image?.src} style={style} />
+  if (video) return <VideoTile href={href} name={item.name} src={video.src} type={video.type} poster={video.poster ?? image?.src} style={style} />
   return (
     <div className="home-tile" style={style}>
       <Link href={href} className="tile">
@@ -70,7 +70,7 @@ function Tile({ item, eager }: { item: HomeTile; eager: boolean }) {
             />
           )}
         </div>
-        <span className="tile-name">{project.name}</span>
+        <span className="tile-name">{item.name}</span>
       </Link>
     </div>
   )

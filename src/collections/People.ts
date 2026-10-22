@@ -67,7 +67,7 @@ export const People: CollectionConfig = {
       hasMany: true,
       admin: {
         description:
-          'Shown as badges under the name, in this order. Only credentials the person holds and has approved; add new ones under Credentials.',
+          'Shown as badges under the name on this person’s page, in this order. Only credentials the person holds and has approved; add new ones under Credentials.',
       },
     },
     {

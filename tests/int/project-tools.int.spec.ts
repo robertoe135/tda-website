@@ -10,12 +10,13 @@ import config from '@/payload.config'
 import type { Project, User } from '@/payload-types'
 
 describe('the Timeline', () => {
-  it('shows completed and in-progress projects with a year, never unbuilt or cancelled ones', () => {
+  it('shows completed and in-progress projects with a year, never unbuilt, cancelled or hidden ones', () => {
     expect(onTimeline({ year: 2020, status: 'completed' })).toBe(true)
     expect(onTimeline({ year: 2027, status: 'in-progress' })).toBe(true)
     expect(onTimeline({ year: 2019, status: 'unbuilt' })).toBe(false)
     expect(onTimeline({ year: 2019, status: 'cancelled' })).toBe(false)
     expect(onTimeline({ status: 'completed' })).toBe(false)
+    expect(onTimeline({ year: 2020, status: 'completed', hideFromTimeline: true })).toBe(false)
   })
 })
 

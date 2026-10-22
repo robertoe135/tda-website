@@ -20,7 +20,9 @@ a row of three shows one wide tile and two side by side.
 ## Items
 
 - **Project**: shows the project's main photograph and name, and links to the project.
-  Optionally pick another **image** of the project, or a **video** to play instead.
+  Optionally pick another **image** of the project, or a **video** to play instead, and give
+  it a **Name on the homepage** (a shorter or more familiar name, say). That name shows on this
+  tile only; the project page, the portfolio and search keep the project's own name.
   Unpublished projects are left out of the live page automatically.
 - **Quote**: the words exactly as said, without quotation marks, and who said them.
 
@@ -34,8 +36,7 @@ Add videos under **Videos** first, then pick them on a project tile.
   preset, with Audio removed.
 - Why the limit: videos play on their own, so every visitor to the homepage downloads each one
   in full. Smaller loops look the same and keep the hosting bill near zero.
-- A **still image** is required: it shows while the video loads, and instead of the video for
-  visitors who turn off motion in their device settings.
+- A **still image** is required: it shows while the video loads.
 - Videos play muted on a loop, always, with no pause button.
 - The file name is public. Name it after the project, never after a private client.
 
