@@ -1729,6 +1729,10 @@ export interface Home {
           | {
               project: number | Project;
               /**
+               * Optional. Shown on this tile instead of the project's name, on the homepage only; the project page and everywhere else keep the project's name. A name only: location and architect have their own fields.
+               */
+              name?: string | null;
+              /**
                * Optional. Another photograph of the project instead of its main image.
                */
               image?: (number | null) | Media;
@@ -1906,6 +1910,7 @@ export interface HomeSelect<T extends boolean = true> {
                 | T
                 | {
                     project?: T;
+                    name?: T;
                     image?: T;
                     video?: T;
                     id?: T;

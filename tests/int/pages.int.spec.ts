@@ -2,6 +2,7 @@ import { parse } from 'node-html-parser'
 import { getPayload, Payload } from 'payload'
 import config from '@/payload.config'
 import type { Home } from '@/payload-types'
+import { getHomeRows } from '@/lib/site'
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
@@ -116,5 +117,42 @@ describe('homepage and About drafts', () => {
     expect(texts(anon)).toEqual(['Published'])
     const asDraft = await payload.findGlobal({ slug: 'home', overrideAccess: false, draft: true })
     expect(texts(asDraft)).not.toContain('Draft')
+  })
+
+  it('shows a tile’s own name on the homepage only, else the project’s name', async () => {
+    const tag = `zh${Date.now().toString(36)}`
+    const typology = (await payload.create({ collection: 'typologies', data: { name: `${tag} Typology` } })).id
+    const [a, b] = await Promise.all(
+      ['Alpha', 'Beta'].map((n) =>
+        payload.create({ collection: 'projects', data: { name: `${tag} ${n} Hall`, status: 'completed', typologies: [typology], _status: 'published' } }),
+      ),
+    )
+    try {
+      await payload.updateGlobal({
+        slug: 'home',
+        data: {
+          rows: [
+            {
+              layout: 'two',
+              items: [
+                { blockType: 'project', project: a.id, name: '  The Alpha  ' },
+                { blockType: 'project', project: b.id, name: '' },
+              ],
+            },
+          ],
+          _status: 'published',
+        },
+      })
+      const tiles = (await getHomeRows()).flatMap((r) => r.items).filter((i) => i.kind === 'project')
+      expect(tiles.map((t) => [t.name, t.project.name])).toEqual([
+        ['The Alpha', `${tag} Alpha Hall`],
+        [`${tag} Beta Hall`, `${tag} Beta Hall`],
+      ])
+      // The project itself keeps its name.
+      expect((await payload.findByID({ collection: 'projects', id: a.id })).name).toBe(`${tag} Alpha Hall`)
+    } finally {
+      await payload.delete({ collection: 'projects', where: { name: { like: tag } } })
+      await payload.delete({ collection: 'typologies', id: typology })
+    }
   })
 })
