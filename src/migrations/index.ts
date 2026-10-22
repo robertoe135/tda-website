@@ -29,6 +29,7 @@ import * as migration_20261021_153815_person_credentials from './20261021_153815
 import * as migration_20261021_182510_photographer_slugs from './20261021_182510_photographer_slugs';
 import * as migration_20261021_200211_project_number_aliases from './20261021_200211_project_number_aliases';
 import * as migration_20261022_205140_home_tile_name from './20261022_205140_home_tile_name';
+import * as migration_20261022_205529_project_hide_from_timeline from './20261022_205529_project_hide_from_timeline';
 
 export const migrations = [
   {
@@ -184,6 +185,11 @@ export const migrations = [
   {
     up: migration_20261022_205140_home_tile_name.up,
     down: migration_20261022_205140_home_tile_name.down,
-    name: '20261022_205140_home_tile_name'
+    name: '20261022_205140_home_tile_name',
+  },
+  {
+    up: migration_20261022_205529_project_hide_from_timeline.up,
+    down: migration_20261022_205529_project_hide_from_timeline.down,
+    name: '20261022_205529_project_hide_from_timeline'
   },
 ];

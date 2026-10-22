@@ -329,6 +329,10 @@ export interface Project {
    */
   featured?: boolean | null;
   /**
+   * Leave this project off the Timeline. It stays in the portfolio, search and everywhere else.
+   */
+  hideFromTimeline?: boolean | null;
+  /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
   generateSlug?: boolean | null;
@@ -1242,6 +1246,7 @@ export interface ProjectsSelect<T extends boolean = true> {
       };
   stillNeeded?: T;
   featured?: T;
+  hideFromTimeline?: T;
   generateSlug?: T;
   slug?: T;
   updatedAt?: T;

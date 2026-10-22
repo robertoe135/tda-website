@@ -20,6 +20,8 @@ export type ProjectCard = {
   year?: number | null
   status?: Project['status']
   featured?: boolean | null
+  /** Left off the Timeline by marketing (Projects → Hide from the Timeline). */
+  hideFromTimeline?: boolean | null
   location?: Pick<Location, 'displayName' | 'slug' | 'worldRegion' | 'lat' | 'lng'>
   typologies: Pick<Typology, 'name' | 'slug'>[]
   architects: Pick<Firm, 'name' | 'slug'>[]
@@ -60,6 +62,7 @@ export async function getPublishedProjects(): Promise<ProjectCard[]> {
       year: true,
       status: true,
       featured: true,
+      hideFromTimeline: true,
       location: true,
       typologies: true,
       architects: true,
@@ -88,6 +91,7 @@ export async function getPublishedProjects(): Promise<ProjectCard[]> {
     year: p.year,
     status: p.status,
     featured: p.featured,
+    hideFromTimeline: p.hideFromTimeline,
     location: isObject<Location>(p.location) ? p.location : undefined,
     typologies: (p.typologies ?? []).filter(isObject<Typology>),
     architects: (p.architects ?? []).filter(isObject<Firm>),
@@ -127,8 +131,9 @@ export async function getTypologies(): Promise<Pick<Typology, 'name' | 'slug'>[]
 
 /** The statuses the Timeline shows: built work and work under way, never unbuilt or cancelled. */
 export const TIMELINE_STATUSES: readonly string[] = ['completed', 'in-progress']
-export const onTimeline = (p: { year?: number | null; status?: string | null }) =>
-  Boolean(p.year && p.status && TIMELINE_STATUSES.includes(p.status))
+/** On the Timeline: has a year, is built or under way, and marketing has not hidden it. */
+export const onTimeline = (p: { year?: number | null; status?: string | null; hideFromTimeline?: boolean | null }) =>
+  Boolean(p.year && p.status && TIMELINE_STATUSES.includes(p.status) && !p.hideFromTimeline)
 
 // ── filters ──────────────────────────────────────────────────────────────────
 

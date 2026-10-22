@@ -420,6 +420,16 @@ export const Projects: CollectionConfig = {
       defaultValue: false,
       admin: { position: 'sidebar', description: 'Show on the homepage.' },
     },
+    {
+      name: 'hideFromTimeline',
+      label: 'Hide from the Timeline',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        position: 'sidebar',
+        description: 'Leave this project off the Timeline. It stays in the portfolio, search and everywhere else.',
+      },
+    },
     slug('name'),
   ],
 }

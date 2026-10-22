@@ -54,7 +54,7 @@ export function relatedProjects(
     {
       pick: (p) =>
         // Completed in the same year: the year is on the Timeline (never unbuilt, cancelled or expected years).
-        project.year && p.year === project.year && p.status === 'completed'
+        project.year && p.year === project.year && p.status === 'completed' && !p.hideFromTimeline
           ? { label: String(project.year), href: `/timeline#year-${project.year}` }
           : undefined,
     },
@@ -135,13 +135,13 @@ export function otherProjects(
       }
   }
   if (project.year) {
-    const list = others.filter((p) => p.year === project.year && p.status === 'completed')
+    const list = others.filter((p) => p.year === project.year && p.status === 'completed' && !p.hideFromTimeline)
     if (list.length)
       return {
         by: 'year',
         name: String(project.year),
         href: `/timeline#year-${project.year}`,
-        total: list.length + (project.status === 'completed' ? 1 : 0),
+        total: list.length + (project.status === 'completed' && !project.hideFromTimeline ? 1 : 0),
         projects: pick(list),
       }
   }
