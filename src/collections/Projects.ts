@@ -1,4 +1,4 @@
-import { type CollectionBeforeValidateHook, type CollectionConfig, type FieldAccess, ValidationError } from 'payload'
+import { type CollectionBeforeValidateHook, type CollectionConfig, type FieldAccess, ValidationError, type Where } from 'payload'
 
 import { authenticated } from '../access/authenticated'
 import { publishedOrAuthenticated } from '../access/publishedOrAuthenticated'
@@ -11,6 +11,13 @@ import { exportProjects, importTeam, teamWorksheet } from './projects-endpoints'
 // Never write or "improve" summaries, descriptions, client names or credits; leave them
 // empty for marketing.
 const staffOnly: FieldAccess = ({ req }) => Boolean(req.user)
+
+/**
+ * An announced client or architect does not mean TDA may say it lights the building: work in
+ * progress stays off the public site until marketing records who approved naming it.
+ */
+export const ANNOUNCED: Where = { or: [{ status: { not_equals: 'in-progress' } }, { announceApproved: { equals: true } }] }
+const inProgress = (data: Partial<{ status: unknown }> | undefined) => data?.status === 'in-progress'
 
 /**
  * One project per TDA project number, drafts included (the database index only sees published
@@ -57,7 +64,8 @@ export const Projects: CollectionConfig = {
   defaultSort: '-year',
   versions: { drafts: true, maxPerDoc: 50 },
   access: {
-    read: publishedOrAuthenticated(),
+    // Visitors see published projects; work in progress only once someone approved naming it.
+    read: publishedOrAuthenticated([ANNOUNCED]),
     create: authenticated,
     update: authenticated,
     delete: authenticated,
@@ -419,6 +427,42 @@ export const Projects: CollectionConfig = {
       type: 'checkbox',
       defaultValue: false,
       admin: { position: 'sidebar', description: 'Show on the homepage.' },
+    },
+    {
+      name: 'announceApproved',
+      label: 'Approved to announce',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        position: 'sidebar',
+        condition: inProgress,
+        description:
+          'Work in progress stays off the site, even when published, until someone approves naming TDA on it (the client, the architect, or both). Tick once they have.',
+      },
+    },
+    {
+      name: 'announceApprovedBy',
+      label: 'Approved by',
+      type: 'text',
+      access: { read: staffOnly },
+      validate: (value: null | string | undefined, { siblingData }: { siblingData: { announceApproved?: boolean } }) =>
+        !siblingData?.announceApproved || value?.trim() ? true : 'Say who approved it, e.g. "Owner, by email to Suzan".',
+      admin: {
+        position: 'sidebar',
+        condition: (data) => inProgress(data) && Boolean(data?.announceApproved),
+        description: 'Internal. Who approved it and how, e.g. "Owner, by email to Suzan".',
+      },
+    },
+    {
+      name: 'announceApprovedOn',
+      label: 'Approved on',
+      type: 'date',
+      access: { read: staffOnly },
+      admin: {
+        position: 'sidebar',
+        condition: (data) => inProgress(data) && Boolean(data?.announceApproved),
+        date: { pickerAppearance: 'dayOnly', displayFormat: 'd MMM yyyy' },
+      },
     },
     {
       name: 'hideFromTimeline',

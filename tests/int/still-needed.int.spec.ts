@@ -7,7 +7,7 @@ import { stillNeeded } from '@/fields/stillNeeded'
 describe('Still needed (admin flag on projects)', () => {
   it('lists what a project is missing, and a photographer only once it has photos', () => {
     expect(stillNeeded({ status: 'completed' })).toEqual(['photos', 'category', 'year', 'location', 'architect', 'write-up'])
-    expect(stillNeeded({ status: 'in-progress', heroImage: 3, typologies: [1], location: 2, architects: [4], description: { root: { children: [{ text: 'Light.' }] } } })).toEqual(['photographer'])
+    expect(stillNeeded({ status: 'in-progress', heroImage: 3, typologies: [1], location: 2, architects: [4], description: { root: { children: [{ text: 'Light.' }] } } })).toEqual(['approval', 'photographer'])
   })
 
   let payload: Payload

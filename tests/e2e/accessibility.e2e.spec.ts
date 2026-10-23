@@ -7,7 +7,7 @@ import { expect, type Page, test } from '@playwright/test'
  * each rule broken and where, so it can be fixed rather than skipped.
  */
 const BASE = 'http://localhost:3000'
-const FIXED = ['/', '/projects', '/timeline', '/about', '/about/team', '/about/collaborators', '/contact', '/careers', '/no-such-page']
+const FIXED = ['/', '/projects', '/projects?view=list', '/timeline', '/about', '/about/team', '/about/collaborators', '/contact', '/careers', '/no-such-page']
 
 async function firstLink(page: Page, from: string, selector: string) {
   await page.goto(`${BASE}${from}`)

@@ -131,9 +131,24 @@ export async function getTypologies(): Promise<Pick<Typology, 'name' | 'slug'>[]
 
 /** The statuses the Timeline shows: built work and work under way, never unbuilt or cancelled. */
 export const TIMELINE_STATUSES: readonly string[] = ['completed', 'in-progress']
-/** On the Timeline: has a year, is built or under way, and marketing has not hidden it. */
-export const onTimeline = (p: { year?: number | null; status?: string | null; hideFromTimeline?: boolean | null }) =>
-  Boolean(p.year && p.status && TIMELINE_STATUSES.includes(p.status) && !p.hideFromTimeline)
+/**
+ * On the Timeline: has a year, is built or under way, and marketing has not hidden it. Work in
+ * progress with no photos of its own (announced, but nothing TDA may show) waits until it is
+ * completed; it is in the portfolio's list and map meanwhile.
+ */
+export const onTimeline = (p: {
+  year?: number | null
+  status?: string | null
+  hideFromTimeline?: boolean | null
+  image?: unknown
+}) =>
+  Boolean(
+    p.year &&
+      p.status &&
+      TIMELINE_STATUSES.includes(p.status) &&
+      !p.hideFromTimeline &&
+      (p.status !== 'in-progress' || p.image),
+  )
 
 // ── filters ──────────────────────────────────────────────────────────────────
 

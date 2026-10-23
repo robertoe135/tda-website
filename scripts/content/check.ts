@@ -33,7 +33,7 @@ const csv = (value: string) => (/[",\n]/.test(value) ? `"${value.replace(/"/g, '
 async function main() {
   const payload = await getPayload({ config })
   const fields = {
-    name: true, status: true, year: true, location: true, typologies: true, architects: true,
+    name: true, status: true, announceApproved: true, year: true, location: true, typologies: true, architects: true,
     description: true, heroImage: true, gallery: true, photographers: true, _status: true,
   } as const
   const [drafts, published] = await Promise.all([

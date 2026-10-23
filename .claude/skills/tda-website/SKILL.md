@@ -104,6 +104,12 @@ render without it. Bios and headshots come from the people themselves via market
 - `heroImage` (upload) and `gallery` (array of { `image`, `caption` })
 - `awards` (join on `awards.project`), `press` (join on `press.projects`)
 - `legacyUrls` (array of text): every old Squarespace path for this project, which drives redirects
+- `announceApproved` (checkbox) with `announceApprovedBy` / `announceApprovedOn` (staff-only):
+  work in progress is off the public site, even when published, until someone records who
+  approved naming TDA on it. Enforced in the collection's read access, so every public query
+  obeys it. "Still needed" lists "Approval to announce" until then.
+- `hideFromTimeline` (checkbox). The Timeline also leaves out work in progress with no photos
+  of its own; it appears there once completed, and meanwhile in the portfolio's list and map.
 - `projectNumber` (text, unique, drafts included) and `aliases` (array of { `name` }): internal only.
   Field read access is staff-only, so the public API, site and queries never see them; the admin
   list search covers both, and the CSV export includes them.

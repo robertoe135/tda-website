@@ -323,11 +323,21 @@ export interface Project {
   /**
    * Worked out from this project each time you save. Add what is listed before publishing; each item clears itself once filled in.
    */
-  stillNeeded?: ('photos' | 'photographer' | 'category' | 'year' | 'location' | 'architect' | 'write-up')[] | null;
+  stillNeeded?:
+    ('approval' | 'photos' | 'photographer' | 'category' | 'year' | 'location' | 'architect' | 'write-up')[] | null;
   /**
    * Show on the homepage.
    */
   featured?: boolean | null;
+  /**
+   * Work in progress stays off the site, even when published, until someone approves naming TDA on it (the client, the architect, or both). Tick once they have.
+   */
+  announceApproved?: boolean | null;
+  /**
+   * Internal. Who approved it and how, e.g. "Owner, by email to Suzan".
+   */
+  announceApprovedBy?: string | null;
+  announceApprovedOn?: string | null;
   /**
    * Leave this project off the Timeline. It stays in the portfolio, search and everywhere else.
    */
@@ -1246,6 +1256,9 @@ export interface ProjectsSelect<T extends boolean = true> {
       };
   stillNeeded?: T;
   featured?: T;
+  announceApproved?: T;
+  announceApprovedBy?: T;
+  announceApprovedOn?: T;
   hideFromTimeline?: T;
   generateSlug?: T;
   slug?: T;
