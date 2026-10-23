@@ -110,10 +110,9 @@ render without it. Bios and headshots come from the people themselves via market
   obeys it. "Still needed" lists "Approval to announce" until then.
 - `hideFromTimeline` (checkbox). The Timeline also leaves out work in progress with no photos
   of its own; it appears there once completed, and meanwhile in the portfolio's list and map.
-- Firms & clients duplicates: merged in the admin (Find possible duplicates on the list, or
-  Duplicates in a firm's sidebar), via `src/lib/merge-firms.ts` in one transaction. Suggestions
-  use `likelySameFirm` (src/lib/firm-names.ts); automatic matching in scripts uses the stricter
-  `sameFirm`. Never merge or rename firms without a person choosing.
+- Firms & clients: a person merges two records in the admin (Merge, in the kept record's
+  sidebar), via `src/lib/merge-firms.ts` in one transaction. Never merge or rename firms
+  without a person choosing.
 - `projectNumber` (text, unique, drafts included) and `aliases` (array of { `name` }): internal only.
   Field read access is staff-only, so the public API, site and queries never see them; the admin
   list search covers both, and the CSV export includes them.

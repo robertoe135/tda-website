@@ -1,12 +1,11 @@
 import { createLocalReq, getPayload, type Payload, type PayloadRequest } from 'payload'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
-import { allFirmDuplicates, firmDuplicates, mergeFirm } from '@/collections/firms-endpoints'
-import { likelySameFirm, sameFirm } from '@/lib/firm-names'
+import { mergeFirm } from '@/collections/firms-endpoints'
 import config from '@/payload.config'
 import type { Firm, Project, User, YearsOfLight } from '@/payload-types'
 
-describe('merging duplicate firms in the admin', () => {
+describe('merging two firms in the admin', () => {
   let payload: Payload
   let user: User
   const tag = `zm${Date.now().toString(36)}`
@@ -45,23 +44,8 @@ describe('merging duplicate firms in the admin', () => {
     return r
   }
 
-  it('suggests spellings of one firm, never different firms', () => {
-    expect(likelySameFirm('Foster + Partners', 'Foster and Partners Ltd')).toBe(true)
-    expect(likelySameFirm('Kohn Pedersen Fox', 'Kohn Pederson Fox')).toBe(true)
-    expect(likelySameFirm('Gensler', 'Gensler/WKSHPS')).toBe(false)
-    expect(likelySameFirm('OMA', 'Thornton Tomasetti')).toBe(false)
-    expect(likelySameFirm('Perkins Eastman', 'Perkins and Will')).toBe(false)
-    // The stricter rule the import uses to match firms by itself is unchanged.
-    expect(sameFirm('Foster + Partners', 'Foster and Partners Ltd')).toBe(false)
-  })
-
-  it('suggests likely duplicates, for one firm and across the list, to staff only', async () => {
-    expect((await firmDuplicates(await req(keep.id, undefined, false))).status).toBe(401)
-    const one = (await (await firmDuplicates(await req(keep.id))).json()) as { firms: { id: number }[] }
-    expect(one.firms.map((f) => f.id)).toEqual([dupe.id])
-    const all = (await (await allFirmDuplicates(await req())).json()) as { pairs: { a: { id: number }; b: { id: number } }[] }
-    const mine = all.pairs.filter((p) => [keep.id, dupe.id, other.id].includes(p.a.id))
-    expect(mine.map((p) => [p.a.id, p.b.id].sort())).toEqual([[keep.id, dupe.id].sort()])
+  it('is for staff only', async () => {
+    expect((await mergeFirm(await req(keep.id, { mergeId: dupe.id }, false))).status).toBe(401)
   })
 
   it('previews a merge without changing anything', async () => {

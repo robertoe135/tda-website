@@ -1,45 +1,14 @@
 import { commitTransaction, initTransaction, killTransaction, type PayloadHandler, type PayloadRequest } from 'payload'
 
-import { duplicatePairs, likelySameFirm } from '@/lib/firm-names'
 import { mergeFirmRecords } from '@/lib/merge-firms'
-import type { Firm } from '@/payload-types'
 
 /**
- * The admin's duplicate tools for Firms & clients (components/admin/MergeFirm, FirmDuplicates).
- * Suggestions only: a person picks the record to keep and confirms each merge. Staff only.
+ * Merging two records of one firm or client from the admin (components/admin/MergeFirm). A person
+ * picks both records and confirms. Staff only.
  */
 
 const refuse = () => Response.json({ error: 'Log in to the admin first.' }, { status: 401 })
-const namesOf = (f: Pick<Firm, 'name' | 'aliases'>) => [f.name, ...(f.aliases ?? []).map((a) => a.name)]
-const alike = (a: Pick<Firm, 'name' | 'aliases'>, b: Pick<Firm, 'name' | 'aliases'>) =>
-  namesOf(a).some((x) => namesOf(b).some((y) => likelySameFirm(x, y)))
-
-async function allFirms(req: PayloadRequest) {
-  const firms = await req.payload.find({ collection: 'firms', pagination: false, depth: 0, sort: 'name', select: { name: true, aliases: true } })
-  return firms.docs
-}
-
 const idParam = (req: PayloadRequest) => Number(req.routeParams?.id)
-
-/** GET /api/firms/:id/duplicates: other records that look like the same firm. */
-export const firmDuplicates: PayloadHandler = async (req) => {
-  if (!req.user) return refuse()
-  const id = idParam(req)
-  const firms = await allFirms(req)
-  const self = firms.find((f) => f.id === id)
-  if (!self) return Response.json({ error: 'No such firm.' }, { status: 404 })
-  return Response.json({ firms: firms.filter((f) => f.id !== id && alike(self, f)).map((f) => ({ id: f.id, name: f.name })) })
-}
-
-/** GET /api/firms/duplicates: every pair of records that look like the same firm, A to Z. */
-export const allFirmDuplicates: PayloadHandler = async (req) => {
-  if (!req.user) return refuse()
-  const firms = (await allFirms(req)).map((f) => ({ id: f.id, name: f.name, names: namesOf(f) }))
-  const pairs = duplicatePairs(firms)
-    .map(([a, b]) => ({ a: { id: a.id, name: a.name }, b: { id: b.id, name: b.name } }))
-    .sort((p, q) => p.a.name.localeCompare(q.a.name))
-  return Response.json({ pairs })
-}
 
 /**
  * POST /api/firms/:id/merge with { mergeId, confirm }: merges that record into this one.

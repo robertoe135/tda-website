@@ -27,7 +27,22 @@ export const jaccard = (a: Set<string>, b: Set<string>): number => {
   return shared / (a.size + b.size - shared)
 }
 
-export { levenshtein, similarity } from '../../src/lib/firm-names'
+export const levenshtein = (a: string, b: string): number => {
+  const row = Array.from({ length: b.length + 1 }, (_, i) => i)
+  for (let i = 1; i <= a.length; i++) {
+    let prev = row[0]
+    row[0] = i
+    for (let j = 1; j <= b.length; j++) {
+      const tmp = row[j]
+      row[j] = Math.min(row[j] + 1, row[j - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1))
+      prev = tmp
+    }
+  }
+  return row[b.length]
+}
+
+export const similarity = (a: string, b: string): number =>
+  1 - levenshtein(a, b) / Math.max(a.length, b.length, 1)
 
 import { toCsv as csv } from '../../src/lib/csv'
 

@@ -6,7 +6,7 @@ import { authenticated } from '../access/authenticated'
 import { fillSlug, slug } from '../fields/slug'
 import { websiteField } from '../fields/website'
 import { normalizeName, normalizedNameField, preventNearDuplicates } from '../hooks/preventNearDuplicates'
-import { allFirmDuplicates, firmDuplicates, mergeFirm } from './firms-endpoints'
+import { mergeFirm } from './firms-endpoints'
 
 /**
  * Other names a firm goes by (SOM for Skidmore, Owings & Merrill) or has been misspelled as.
@@ -53,16 +53,10 @@ export const Firms: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'website', 'listAsCollaborator', 'slug'],
     group: 'Reference',
-    components: {
-      // Lists records that look like the same firm, to merge from either one's page.
-      beforeListTable: ['/components/admin/FirmDuplicates#FirmDuplicates'],
-    },
     description:
       'Architects, consultants and clients. Firms that are an architect on a project get a collaborator page; consultants appear in project credits; clients are shown unless the project is confidential.',
   },
   endpoints: [
-    { path: '/duplicates', method: 'get', handler: allFirmDuplicates },
-    { path: '/:id/duplicates', method: 'get', handler: firmDuplicates },
     { path: '/:id/merge', method: 'post', handler: mergeFirm },
   ],
   defaultSort: 'name',
@@ -120,7 +114,7 @@ export const Firms: CollectionConfig = {
       },
     },
     {
-      // Merge a duplicate record (another spelling of this firm) into this one.
+      // Merge another record of the same firm or client into this one.
       name: 'mergeTool',
       type: 'ui',
       admin: { position: 'sidebar', components: { Field: '/components/admin/MergeFirm#MergeFirm' } },

@@ -42,7 +42,7 @@ const FILLED: Record<string, string> = { website: 'its website', listAsCollabora
  * What merging `merge` into `keep` would change, and the button that does it. The merge itself
  * runs on the server in one transaction (collections/firms-endpoints).
  */
-export function MergePreview({ keep, merge, onDone, onCancel }: { keep: Firm; merge: Firm; onDone: (plan: Plan) => void; onCancel: () => void }) {
+function MergePreview({ keep, merge, onDone, onCancel }: { keep: Firm; merge: Firm; onDone: (plan: Plan) => void; onCancel: () => void }) {
   const [plan, setPlan] = useState<Plan>()
   const [busy, setBusy] = useState(false)
 
@@ -105,14 +105,13 @@ export function MergePreview({ keep, merge, onDone, onCancel }: { keep: Firm; me
 }
 
 /**
- * In a firm's sidebar: merge a duplicate (another record of the same firm or client) into this
- * one. Suggests records that look alike; any other can be found by name.
+ * In a firm's sidebar: merge another record of the same firm or client into this one. Find it
+ * by name, check what will change, confirm.
  */
 export function MergeFirm() {
   const { id, title } = useDocumentInfo()
   const modified = useFormModified()
   const router = useRouter()
-  const [suggested, setSuggested] = useState<Firm[]>()
   const [query, setQuery] = useState('')
   const [found, setFound] = useState<Firm[]>()
   const [chosen, setChosen] = useState<Firm>()
@@ -121,10 +120,6 @@ export function MergeFirm() {
   if (!id) return null
   const keep = { id: Number(id), name: String(title ?? 'this firm') }
 
-  const suggest = async () => {
-    const res = await fetch(`/api/firms/${keep.id}/duplicates`, { credentials: 'include' })
-    setSuggested(((await res.json().catch(() => ({}))) as { firms?: Firm[] }).firms ?? [])
-  }
   const search = async () => {
     if (!query.trim()) return
     const params = new URLSearchParams({ 'where[name][like]': query.trim(), limit: '10', depth: '0', sort: 'name' })
@@ -152,7 +147,7 @@ export function MergeFirm() {
 
   return (
     <div style={{ marginBottom: 'var(--base)' }}>
-      <h4 style={{ margin: 0 }}>Duplicates</h4>
+      <h4 style={{ margin: 0 }}>Merge</h4>
       <p style={small}>Another record of the same firm or client? Merge it into this one: its projects move here and its name becomes another name of this record.</p>
       {modified && <p style={small}>Save your changes before merging.</p>}
       {done && <p style={{ ...small, color: 'var(--theme-success-500)' }}>{done}</p>}
@@ -164,21 +159,12 @@ export function MergeFirm() {
           onDone={(plan) => {
             setDone(`Merged ${plan.merge} into this record${plan.projects?.length ? ` (${plan.projects.length} project${plan.projects.length === 1 ? '' : 's'})` : ''}.`)
             setChosen(undefined)
-            setSuggested((s) => s?.filter((f) => f.id !== chosen.id))
             setFound((s) => s?.filter((f) => f.id !== chosen.id))
             router.refresh()
           }}
         />
       ) : (
         <>
-          {!suggested && (
-            <div style={{ marginTop: '0.5rem' }}>
-              <Button size="small" buttonStyle="secondary" margin={false} onClick={suggest}>
-                Find likely duplicates
-              </Button>
-            </div>
-          )}
-          {pick(suggested, 'No record looks like this one. Search for one below.')}
           {/* Not a form: this sits inside the firm's own form, and Enter must not save the firm. */}
           <div role="search" style={{ display: 'flex', gap: '0.4rem', marginTop: '0.6rem' }}>
             <input
