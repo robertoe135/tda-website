@@ -5,7 +5,7 @@ import React from 'react'
 import { OrganizationJsonLd } from '@/components/OrganizationJsonLd'
 import { SiteFooter } from '@/components/SiteFooter'
 import { SiteNav } from '@/components/SiteNav'
-import { indexingAllowed } from '@/lib/seo'
+import { indexingAllowed, siteUrl } from '@/lib/seo'
 import '@fontsource-variable/dm-sans'
 import './styles.css'
 
@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Tillotson Design Associates',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'),
+  metadataBase: new URL(siteUrl()),
   // Not indexed until launch (src/lib/seo.ts): crawlers may read, but must not list, pages.
   ...(indexingAllowed() ? {} : { robots: { index: false, follow: true } }),
 }

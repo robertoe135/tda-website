@@ -1,11 +1,14 @@
 import { createLocalReq, getPayload, type Payload, type PayloadRequest } from 'payload'
 import sharp from 'sharp'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
 import { emailTile } from '@/collections/media-endpoints'
-import { EMAIL_TILE, emailTileURL, focalCrop } from '@/lib/email-tile'
+import { EMAIL_TILE, emailTileURL, focalCrop, storedTile, tileFilename } from '@/lib/email-tile'
 import config from '@/payload.config'
 import type { Media } from '@/payload-types'
+
+const put = vi.hoisted(() => vi.fn(async (name: string) => ({ url: `https://store.public.blob.vercel-storage.com/${name}` })))
+vi.mock('@vercel/blob', () => ({ put }))
 
 describe('newsletter tile photos', () => {
   it('crops the largest 3:2 area around the focal point, kept inside the photo', () => {
@@ -61,6 +64,25 @@ describe('newsletter tile photos', () => {
 
     it('says not found for a photo that does not exist', async () => {
       expect((await call(99999999)).status).toBe(404)
+    })
+
+    it('stores each tile on Blob once, so emails never load it from the site', async () => {
+      const token = 'vercel_blob_rw_store_secret'
+      const head = vi.spyOn(globalThis, 'fetch')
+      // Not there yet: cropped from the photo and uploaded.
+      head.mockResolvedValueOnce(new Response(null, { status: 404 }))
+      const first = await storedTile(media, token)
+      expect(first).toBe(`https://store.public.blob.vercel-storage.com/${tileFilename(media)}`)
+      expect(put).toHaveBeenCalledTimes(1)
+      const [, body] = put.mock.calls[0] as unknown as [string, Buffer]
+      expect(await sharp(body).metadata()).toMatchObject({ width: 600, height: 400 })
+      // Already there: reused.
+      head.mockResolvedValueOnce(new Response(null, { status: 200 }))
+      expect(await storedTile(media, token)).toBe(`https://store.public.blob.vercel-storage.com/${tileFilename(media)}`)
+      expect(put).toHaveBeenCalledTimes(1)
+      head.mockRestore()
+      // Without Blob (local development): none, and the newsletter uses the Images endpoint.
+      expect(await storedTile(media, undefined)).toBeUndefined()
     })
 
     it('gives each photo an address that changes when the photo does', () => {
