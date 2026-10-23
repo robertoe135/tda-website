@@ -74,6 +74,14 @@ describe('building an issue', () => {
     ])
   })
 
+  it('uses the tile stored on Blob when there is one', () => {
+    const photo = { id: 5, alt: 'Photo 5', filename: 'p5.jpg', updatedAt: '2026-10-23T10:00:00.000Z' } as unknown as Media
+    const blocks = [{ blockType: 'projectGrid', projects: [1] }] as unknown as Blocks
+    const items = buildItems(blocks, lookups([project(1, { heroImage: photo })], { tiles: new Map([[5, 'https://blob.test/email-tile-5.jpg']]) }), site)
+    const grid = items[0]
+    expect(grid.kind === 'grid' && grid.projects[0].image?.src).toBe('https://blob.test/email-tile-5.jpg')
+  })
+
   it('fills a project from the site, with credits, and falls back to its summary', () => {
     const [item] = buildItems(
       [{ blockType: 'project', project: 1, showCredits: true }] as unknown as Blocks,

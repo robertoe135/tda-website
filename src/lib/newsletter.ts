@@ -12,7 +12,7 @@ import type {
   SiteSetting,
 } from '../payload-types'
 import { blobFileURL } from './blob'
-import { emailTileURL } from './email-tile'
+import { emailTileURL, storedTile } from './email-tile'
 import { emailLogo } from './email-logo'
 import { siteUrl } from './seo'
 import { formatAddress } from './address'
@@ -82,6 +82,8 @@ export type Lookups = {
   awards: Map<number, Award>
   press: Map<number, Press>
   media: Map<number, Media>
+  /** Tile photos already on Blob, by image id (lib/email-tile). */
+  tiles?: Map<number, string>
 }
 
 type Rel = number | { id: number } | null | undefined
@@ -148,11 +150,13 @@ const projectImage = (l: Lookups, p: Project, size: 'card' | 'gallery') =>
  * A tile photo for projects side by side: the main image, else the first gallery photo (as on
  * the site), cropped to one shape so the tiles line up (lib/email-tile).
  */
-const tileImage = (l: Lookups, p: Project, site: string): EmailImage | undefined => {
-  const m = [p.heroImage, ...(p.gallery ?? []).map((g) => g.image)]
+const tilePhoto = (l: Lookups, p: Project) =>
+  [p.heroImage, ...(p.gallery ?? []).map((g) => g.image)]
     .map((r) => (isObj<Media>(r) ? r : media(l, r as Rel)))
     .find((x): x is Media => Boolean(x?.filename))
-  return m ? { src: emailTileURL(m, site), alt: m.alt } : undefined
+const tileImage = (l: Lookups, p: Project, site: string): EmailImage | undefined => {
+  const m = tilePhoto(l, p)
+  return m ? { src: l.tiles?.get(m.id) ?? emailTileURL(m, site), alt: m.alt } : undefined
 }
 
 type Block = NonNullable<Newsletter['content']>[number]
@@ -399,5 +403,17 @@ export async function loadLookups(payload: Payload, content: Newsletter['content
     read<Media>('media', want.media, 0),
     payload.findGlobal({ slug: 'siteSettings', depth: 0, overrideAccess: false }),
   ])
-  return { lookups: { projects, awards, press, media: mediaDocs } as Lookups, settings }
+  const lookups: Lookups = { projects, awards, press, media: mediaDocs }
+  // Tile photos for projects side by side, cropped and put on Blob once (lib/email-tile).
+  const photos = new Map<number, Media>()
+  for (const b of blocks)
+    if (b.blockType === 'projectGrid')
+      for (const id of ids(b.projects as Rel[])) {
+        const p = projects.get(id)
+        const m = p && tilePhoto(lookups, p)
+        if (m) photos.set(m.id, m)
+      }
+  const stored = await Promise.all([...photos.values()].map(async (m) => [m.id, await storedTile(m)] as const))
+  lookups.tiles = new Map(stored.filter((t): t is readonly [number, string] => Boolean(t[1])))
+  return { lookups, settings }
 }

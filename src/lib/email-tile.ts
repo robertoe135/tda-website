@@ -1,14 +1,22 @@
 import { readFile } from 'fs/promises'
 import path from 'path'
 
+import { put } from '@vercel/blob'
+import sharp from 'sharp'
+
 import type { Media } from '@/payload-types'
 
 import { blobFileURL } from './blob'
 
 /**
  * Newsletter tiles side by side need photos of one shape, and email programs cannot crop
- * (Outlook and Gmail ignore object-fit). So the newsletter asks for each tile photo already
- * cropped, from the Images endpoint /api/media/:id/email-tile (collections/Media.ts).
+ * (Outlook and Gmail ignore object-fit). So each tile photo is sent already cropped.
+ *
+ * The crop is stored on Blob, beside the photos, the first time an issue uses it (storedTile),
+ * and reused after. Like the logo (email-logo.ts), it must not load from the site's own
+ * address: before launch that can be the old Squarespace site, and a preview deployment's
+ * address is private. Without Blob (local development) it comes from the Images endpoint
+ * /api/media/:id/email-tile instead.
  */
 
 /** 3:2, as on the site's project tiles; twice the width drawn in the email, for sharp screens. */
@@ -44,3 +52,43 @@ export async function mediaBytes(m: Media): Promise<Buffer | undefined> {
   }
   return readFile(path.resolve(process.cwd(), 'media', filename)).catch(() => undefined)
 }
+
+/** The photo cropped to a tile around its focal point, as a JPEG. */
+export async function renderTile(bytes: Buffer, focalX = 50, focalY = 50): Promise<Buffer | undefined> {
+  // Upright first (uploads already are, but older files may carry a camera rotation).
+  const upright = await sharp(bytes).rotate().toBuffer()
+  const { width = 0, height = 0 } = await sharp(upright).metadata()
+  if (!width || !height) return undefined
+  return sharp(upright)
+    .extract(focalCrop(width, height, EMAIL_TILE.width / EMAIL_TILE.height, focalX, focalY))
+    .resize(EMAIL_TILE.width, EMAIL_TILE.height)
+    .jpeg({ quality: 82, mozjpeg: true })
+    .toBuffer()
+}
+
+/** The Blob file name of a photo's tile: new whenever the photo or its focal point changes. */
+export const tileFilename = (m: Pick<Media, 'id' | 'updatedAt'>) => `email-tile-${m.id}-${Date.parse(m.updatedAt) || 0}.jpg`
+
+/**
+ * The address of the photo's tile on Blob, made and uploaded the first time it is needed.
+ * Undefined without Blob, or when the photo cannot be read; the caller falls back to the
+ * Images endpoint.
+ */
+export async function storedTile(m: Media, token = process.env.BLOB_READ_WRITE_TOKEN): Promise<string | undefined> {
+  if (!token?.startsWith('vercel_blob_rw_')) return undefined
+  const name = tileFilename(m)
+  const url = blobFileURL(name, token)
+  try {
+    const there = await fetch(url, { method: 'HEAD' })
+    if (there.ok) return url
+    const bytes = await mediaBytes(m)
+    const tile = bytes && (await renderTile(bytes, m.focalX ?? 50, m.focalY ?? 50))
+    if (!tile) return undefined
+    const uploaded = await put(name, tile, { access: 'public', addRandomSuffix: false, allowOverwrite: true, contentType: 'image/jpeg', token })
+    return uploaded.url
+  } catch (e) {
+    console.error('Newsletter tile upload failed', m.id, (e as Error).message)
+    return undefined
+  }
+}
+
