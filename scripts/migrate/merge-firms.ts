@@ -15,71 +15,12 @@ import '../env'
 
 import { fileURLToPath } from 'url'
 
-import { getPayload, type Payload, type Where } from 'payload'
+import { getPayload } from 'payload'
 
 import config from '../../src/payload.config'
-import { normalizeName } from '../../src/hooks/preventNearDuplicates'
-import type { Firm, Project } from '../../src/payload-types'
-import { changeProject } from './versions'
+import { mergeFirms } from '../../src/lib/merge-firms'
 
-type Ref = number | { id: number } | null | undefined
-const idOf = (r: Ref) => (r && typeof r === 'object' ? r.id : r)
-const swap = (refs: Ref[] | null | undefined, from: number, to: number) => {
-  const ids = (refs ?? []).map(idOf).filter((id): id is number => typeof id === 'number')
-  return [...new Set(ids.map((id) => (id === from ? to : id)))]
-}
-
-export async function mergeFirms(payload: Payload, keepName: string, mergeName: string, write: boolean) {
-  const byName = async (name: string) => {
-    const found = await payload.find({ collection: 'firms', where: { name: { equals: name } }, limit: 2, depth: 0 })
-    if (found.docs.length !== 1) throw new Error(`Expected one firm named "${name}", found ${found.docs.length}.`)
-    return found.docs[0]
-  }
-  return mergeFirmRecords(payload, await byName(keepName), await byName(mergeName), write)
-}
-
-/** The merge itself, for two firm records already looked up. */
-export async function mergeFirmRecords(payload: Payload, keep: Firm, merge: Firm, write: boolean) {
-  if (keep.id === merge.id) throw new Error('Keep and merge are the same firm.')
-
-  // Projects naming the merged firm in their latest draft or in their published version: a
-  // published project can have a newer draft without the firm, or the other way round.
-  const where: Where = {
-    or: [{ architects: { in: [merge.id] } }, { clients: { in: [merge.id] } }, { 'credits.firms': { in: [merge.id] } }],
-  }
-  const [drafts, live] = await Promise.all([
-    payload.find({ collection: 'projects', draft: true, pagination: false, depth: 0, where }),
-    payload.find({ collection: 'projects', pagination: false, depth: 0, where: { and: [where, { _status: { equals: 'published' } }] } }),
-  ])
-  const found = new Map([...drafts.docs, ...live.docs].map((p) => [p.id, p.name]))
-  const changed = [...found.values()].sort()
-  const names = (p: Project) => [...(p.architects ?? []), ...(p.clients ?? []), ...(p.credits ?? []).flatMap((c) => c.firms)].map((r) => idOf(r as Ref))
-  // The firm's record is deleted below, which also removes it from every version that still
-  // names it, so each version is moved to the kept firm first (versions.ts).
-  for (const id of write ? found.keys() : []) {
-    await changeProject(payload, id, (p) =>
-      names(p).includes(merge.id)
-        ? {
-            architects: swap(p.architects as Ref[], merge.id, keep.id),
-            clients: swap(p.clients as Ref[], merge.id, keep.id),
-            credits: (p.credits ?? []).map((c) => ({ ...c, firms: swap(c.firms as Ref[], merge.id, keep.id) })),
-          }
-        : undefined,
-    )
-  }
-  // The merged name joins the main firm's aliases, after the record is gone (a name may not be
-  // both a firm and another firm's alias).
-  const aliases = [
-    ...(keep.aliases ?? []).map((a) => ({ name: a.name })),
-    { name: merge.name },
-    ...(merge.aliases ?? []).map((a) => ({ name: a.name })),
-  ].filter((a, i, all) => all.findIndex((b) => normalizeName(b.name) === normalizeName(a.name)) === i)
-  if (write) {
-    await payload.delete({ collection: 'firms', id: merge.id })
-    await payload.update({ collection: 'firms', id: keep.id, data: { aliases } })
-  }
-  return { keep: keep.name, merge: merge.name, projects: changed, aliases: aliases.map((a) => a.name) }
-}
+export { mergeFirmRecords, mergeFirms } from '../../src/lib/merge-firms'
 
 function assertLocalDatabase() {
   let host = ''
