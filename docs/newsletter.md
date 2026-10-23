@@ -15,7 +15,9 @@ removes addresses that bounce or complain. The design is option D ("Journal") fr
    - *Project*: choose a published project; its photo, name, city, architect, client and
      photographer come from the project. Write a note for the issue, or leave it empty to use
      the project's summary. A confidential project never shows its client.
-   - *Projects, two across*: for work in progress.
+   - *Projects, two across*: for work in progress. Every photo is cropped to the same 3:2 shape
+     around its focal point (set on the image), so the tiles line up; move the focal point to
+     change what shows.
    - *Awards* and *Press*: choose from what is already on the site.
    - *Conversation*, *Talks and events*, *Text*, *Image*: written in the issue itself.
    Empty blocks, and headings with nothing under them, are left out; sections renumber themselves.

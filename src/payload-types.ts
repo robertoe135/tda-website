@@ -832,7 +832,7 @@ export interface Newsletter {
           }
         | {
             /**
-             * Shown two across with photo, name and city. Good for work in progress.
+             * Shown two across with photo, name and city, every photo cropped to the same shape around its focal point. Good for work in progress.
              */
             projects?: (number | Project)[] | null;
             id?: string | null;

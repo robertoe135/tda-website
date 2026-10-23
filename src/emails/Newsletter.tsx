@@ -216,7 +216,8 @@ export function Item({ item }: { item: IssueItem }) {
                   >
                     {pr && (
                       <Link href={pr.href} style={{ color: C.text, textDecoration: 'none' }}>
-                        <Photo image={pr.image} width={250} height={173} />
+                        {/* Every tile 3:2, cropped on the server (lib/email-tile). */}
+                        <Photo image={pr.image} width={250} height={167} />
                         <Text style={p({ marginTop: 10, fontWeight: 400 })}>{pr.name}</Text>
                         {pr.city && (
                           <Text style={p({ fontSize: 13, lineHeight: '20px', color: C.muted })}>

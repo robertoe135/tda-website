@@ -4,6 +4,7 @@ import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
 import { sanitizeUpload } from '../hooks/sanitizeUpload'
 import { blobFileURL } from '../lib/blob'
+import { emailTile } from './media-endpoints'
 
 export const Media: CollectionConfig = {
   slug: 'media',
@@ -14,6 +15,8 @@ export const Media: CollectionConfig = {
     description:
       'Photographs and headshots. Every image needs a description for screen readers. Every image must be credited, on the image or, for project photos, on the project; crediting the photographer is part of the license. Large photos are reduced to 3000 px on the long side automatically as they upload. iPhone HEIC photos need exporting as JPEG first.',
   },
+  // The photo cropped for a newsletter tile (lib/email-tile).
+  endpoints: [{ path: '/:id/email-tile', method: 'get', handler: emailTile }],
   access: {
     read: anyone,
     create: authenticated,

@@ -12,6 +12,7 @@ import type {
   SiteSetting,
 } from '../payload-types'
 import { blobFileURL } from './blob'
+import { emailTileURL } from './email-tile'
 import { emailLogo } from './email-logo'
 import { siteUrl } from './seo'
 import { formatAddress } from './address'
@@ -143,6 +144,17 @@ const media = (l: Lookups, v: Rel) => {
 const projectImage = (l: Lookups, p: Project, size: 'card' | 'gallery') =>
   emailImage(isObj<Media>(p.heroImage) ? p.heroImage : media(l, p.heroImage as Rel), size)
 
+/**
+ * A tile photo for projects side by side: the main image, else the first gallery photo (as on
+ * the site), cropped to one shape so the tiles line up (lib/email-tile).
+ */
+const tileImage = (l: Lookups, p: Project, site: string): EmailImage | undefined => {
+  const m = [p.heroImage, ...(p.gallery ?? []).map((g) => g.image)]
+    .map((r) => (isObj<Media>(r) ? r : media(l, r as Rel)))
+    .find((x): x is Media => Boolean(x?.filename))
+  return m ? { src: emailTileURL(m, site), alt: m.alt } : undefined
+}
+
 type Block = NonNullable<Newsletter['content']>[number]
 
 /** The issue's blocks, filled in; empty ones dropped and sections without content removed. */
@@ -195,7 +207,7 @@ export function buildItems(
             name: p.name,
             city: city(p),
             href: href(p),
-            image: projectImage(l, p, 'card'),
+            image: tileImage(l, p, site),
           }))
         if (projects.length) out.push({ kind: 'grid', projects })
         break

@@ -58,6 +58,22 @@ describe('building an issue', () => {
     expect(grid.kind === 'grid' && grid.projects.map((p) => p.name)).toEqual(['Project 2'])
   })
 
+  it('gives projects side by side photos of one shape: the main image, else the first gallery photo', () => {
+    const photo = (id: number) => ({ id, alt: `Photo ${id}`, filename: `p${id}.jpg`, updatedAt: '2026-10-23T10:00:00.000Z' }) as unknown as Media
+    const blocks = [{ blockType: 'projectGrid', projects: [1, 2, 3] }] as unknown as Blocks
+    const items = buildItems(
+      blocks,
+      lookups([project(1, { heroImage: photo(5) }), project(2, { gallery: [{ image: photo(6) }] }), project(3)]),
+      site,
+    )
+    const grid = items[0]
+    expect(grid.kind === 'grid' && grid.projects.map((p) => p.image?.src)).toEqual([
+      `${site}/api/media/5/email-tile?v=${Date.parse('2026-10-23T10:00:00.000Z')}`,
+      `${site}/api/media/6/email-tile?v=${Date.parse('2026-10-23T10:00:00.000Z')}`,
+      undefined, // no photo yet: a grey tile of the same shape
+    ])
+  })
+
   it('fills a project from the site, with credits, and falls back to its summary', () => {
     const [item] = buildItems(
       [{ blockType: 'project', project: 1, showCredits: true }] as unknown as Blocks,
