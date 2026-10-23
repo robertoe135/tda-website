@@ -19,6 +19,7 @@ afterAll(async () => {
   await payload.delete({ collection: 'projects', where: { name: { like: prefix } } })
   await payload.delete({ collection: 'firms', where: { name: { like: prefix } } })
   await payload.delete({ collection: 'creditRoles', where: { name: { like: prefix } } })
+  await payload.delete({ collection: 'typologies', where: { name: { like: prefix } } })
 })
 
 describe('merging two records of one firm', () => {
@@ -55,8 +56,8 @@ describe('merging two records of one firm', () => {
   it('moves a published project too when it has a newer draft, without publishing the draft', async () => {
     const keep = await payload.create({ collection: 'firms', data: { name: `${prefix} Live Keep` } })
     const merge = await payload.create({ collection: 'firms', data: { name: `${prefix} Live Zzz Old` } })
-    const typology = (await payload.find({ collection: 'typologies', limit: 1, depth: 0 })).docs[0]?.id ??
-      (await payload.create({ collection: 'typologies', data: { name: `${prefix} Typology` } })).id
+    // Its own category: borrowing another test's lets that test delete it mid-run (tests run in parallel).
+    const typology = (await payload.create({ collection: 'typologies', data: { name: `${prefix} Typology` } })).id
     const project = await payload.create({
       collection: 'projects',
       data: { name: `${prefix} Live`, status: 'completed', typologies: [typology], summary: 'Live text.', architects: [merge.id], _status: 'published' },
