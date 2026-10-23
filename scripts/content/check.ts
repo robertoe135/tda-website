@@ -21,11 +21,12 @@ import path from 'path'
 import { getPayload } from 'payload'
 
 import config from '../../src/payload.config'
+import { siteUrl } from '../../src/lib/seo'
 import { dbHost } from '../media/upload'
 import { personIssues, possibleDuplicates, projectIssues, type ProjectRecord } from './lib'
 
 const OUT = path.join(path.dirname(new URL(import.meta.url).pathname), 'out', 'content-review.csv')
-const SITE = (process.env.NEXT_PUBLIC_SERVER_URL ?? 'http://localhost:3000').replace(/\/$/, '')
+const SITE = siteUrl()
 
 type Row = { area: string; name: string; live: string; issue: string; detail: string; admin: string }
 const csv = (value: string) => (/[",\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value)

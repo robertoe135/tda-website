@@ -2,6 +2,8 @@ import { createHmac } from 'crypto'
 
 import type { Payload } from 'payload'
 
+import { siteUrl } from './seo'
+
 /**
  * Career applications from the site's form: checked, saved as a Lead, and emailed to the
  * jobs inbox with the CV attached. The CV is not stored anywhere else.
@@ -78,7 +80,7 @@ export async function submitApplication(payload: Payload, form: FormData, ip: st
 
   const settings = await payload.findGlobal({ slug: 'siteSettings' })
   const to = settings.careersEmail || 'jobs@tillotsondesign.com'
-  const adminUrl = `${process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'}/admin/collections/leads/${lead.id}`
+  const adminUrl = `${siteUrl()}/admin/collections/leads/${lead.id}`
   const rows: [string, string][] = [
     ['Name', name],
     ['Email', email],

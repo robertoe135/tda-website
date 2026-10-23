@@ -5,7 +5,15 @@
  */
 export const indexingAllowed = () => process.env.ALLOW_INDEXING === 'true'
 
-export const siteUrl = () => (process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000').replace(/\/+$/, '')
+/**
+ * The site's address from NEXT_PUBLIC_SERVER_URL, without a trailing slash. Entered in Vercel
+ * as "tillotsondesign.com" it still works: https:// is added, since every page, email and
+ * sitemap link is built from it.
+ */
+export const siteUrl = (value = process.env.NEXT_PUBLIC_SERVER_URL) => {
+  const raw = value?.trim() || 'http://localhost:3000'
+  return (/^https?:\/\//i.test(raw) ? raw : `https://${raw}`).replace(/\/+$/, '')
+}
 
 // Crawlers that collect text for AI products, as their operators name them.
 export const AI_CRAWLERS = [
