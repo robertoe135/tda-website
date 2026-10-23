@@ -6,6 +6,7 @@ import { authenticated } from '../access/authenticated'
 import { fillSlug, slug } from '../fields/slug'
 import { websiteField } from '../fields/website'
 import { normalizeName, normalizedNameField, preventNearDuplicates } from '../hooks/preventNearDuplicates'
+import { mergeFirm } from './firms-endpoints'
 
 /**
  * Other names a firm goes by (SOM for Skidmore, Owings & Merrill) or has been misspelled as.
@@ -55,6 +56,9 @@ export const Firms: CollectionConfig = {
     description:
       'Architects, consultants and clients. Firms that are an architect on a project get a collaborator page; consultants appear in project credits; clients are shown unless the project is confidential.',
   },
+  endpoints: [
+    { path: '/:id/merge', method: 'post', handler: mergeFirm },
+  ],
   defaultSort: 'name',
   access: {
     read: anyone,
@@ -108,6 +112,12 @@ export const Firms: CollectionConfig = {
         description:
           'Lists this firm on About → Collaborators. Its name links to its projects in the portfolio once one is published.',
       },
+    },
+    {
+      // Merge another record of the same firm or client into this one.
+      name: 'mergeTool',
+      type: 'ui',
+      admin: { position: 'sidebar', components: { Field: '/components/admin/MergeFirm#MergeFirm' } },
     },
     normalizedNameField,
     slug('name'),

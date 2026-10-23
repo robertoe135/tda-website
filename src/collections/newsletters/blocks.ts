@@ -95,7 +95,7 @@ export const ProjectGridBlock: Block = {
       hasMany: true,
       filterOptions: () => published,
       admin: {
-        description: 'Shown two across with photo, name and city. Good for work in progress.',
+        description: 'Shown two across with photo, name and city, every photo cropped to the same shape around its focal point. Good for work in progress.',
       },
     },
   ],

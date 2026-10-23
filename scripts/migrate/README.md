@@ -165,7 +165,11 @@ A firm has one main record; its abbreviations and other spellings are **Other na
 old site. The site always shows the main name. Old filter links, imports and the admin's
 duplicate check all treat an alias as the main firm.
 
-When `review.csv` shows one firm as two records, a person picks the main one, then:
+When one firm is two records, a person picks the main one. **In the admin** (the usual way):
+open the record to keep, and under **Merge** in the sidebar find the other by name. Each merge
+shows what will change first and runs in one transaction (nothing changes if any step fails).
+It also moves Years of Light featuring the firm, and the main record takes the other's website
+and Collaborators listing when it has none. From the command line, the same merge:
 
 ```
 pnpm migrate:merge-firms --keep "Foster + Partners" --merge "Fosters + Partners"          # list
