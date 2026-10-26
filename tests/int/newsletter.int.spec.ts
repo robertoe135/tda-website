@@ -2,7 +2,7 @@ import { createLocalReq, getPayload, type Payload, type PayloadRequest } from 'p
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 
 import { sendNewsletter, sendTest } from '@/collections/newsletters/endpoints'
-import { RESEND_UNSUBSCRIBE, renderNewsletter } from '@/emails/Newsletter'
+import { RESEND_UNSUBSCRIBE, renderNewsletter, undetectable } from '@/emails/Newsletter'
 import { buildIssue, buildItems, type Lookups, toParagraphs } from '@/lib/newsletter'
 import { sendBroadcast } from '@/lib/resend'
 import config from '@/payload.config'
@@ -29,6 +29,14 @@ const lookups = (projects: Project[] = [], extra: Partial<Lookups> = {}): Lookup
   ...extra,
 })
 type Blocks = NonNullable<Newsletter['content']>
+
+describe('the issue line', () => {
+  it('cannot be taken for a date and turned into a link, yet reads the same', () => {
+    const line = undetectable('No. 1 · Spring / Summer · 2026')
+    expect(line).not.toMatch(/\d\d/)
+    expect(line.replace(/\u200C/g, '')).toBe('No. 1 · Spring / Summer · 2026')
+  })
+})
 
 describe('building an issue', () => {
   it('splits text into paragraphs at empty lines', () => {
