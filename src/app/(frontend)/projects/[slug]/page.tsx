@@ -11,6 +11,7 @@ import {
   filterHref,
   getPublishedProject,
   getPublishedProjects,
+  PROJECT_STATUS,
   projectPhotographerCredits,
   projectSlides,
   SQ_FT_TO_M2,
@@ -61,12 +62,6 @@ const ROLE_LABEL = {
   'project-manager': 'Project Manager',
   designer: 'Designers',
 } as const
-const STATUS: Record<Project['status'], string> = {
-  completed: 'Completed',
-  'in-progress': 'In Progress',
-  unbuilt: 'Unbuilt',
-  cancelled: 'Cancelled',
-}
 const LEVEL: Record<string, string> = {
   certified: 'Certified',
   silver: 'Silver',
@@ -261,7 +256,7 @@ export default async function ProjectPage({ params }: Props) {
                   {project.year}
                 </Row>
               )}
-              <Row label="Status">{STATUS[project.status]}</Row>
+              <Row label="Status">{PROJECT_STATUS[project.status]}</Row>
               {typologies.length > 0 && (
                 <Row label={typologies.length > 1 ? 'Categories' : 'Category'}>
                   <List

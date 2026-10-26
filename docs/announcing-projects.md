@@ -22,7 +22,7 @@ meanwhile.
 
 ## Where it shows
 
-- **Portfolio → List**: every project as text, with the place, architect, category and year.
+- **Portfolio → List**: every project as text, with the place, architect, category, status and year.
   Work in progress shows its expected completion year.
 - **Portfolio → Map**, once its location has coordinates.
 - **Portfolio → On the Boards**.
