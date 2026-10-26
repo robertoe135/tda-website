@@ -388,14 +388,18 @@ function ProjectList({ projects }: { projects: ProjectCard[] }) {
   )
 }
 
-/** The year, linking to it on the Timeline; work in progress links to On the Boards instead. */
+/**
+ * The year alone, linking to it on the Timeline. Work in progress not on the Timeline yet links
+ * to On the Boards instead; its year is the expected completion.
+ */
 function ListYear({ project: p }: { project: ProjectCard }) {
+  if (!p.year) return null
+  if (onTimeline(p)) return <Link href={`/timeline#year-${p.year}`}>{p.year}</Link>
   if (p.status === 'in-progress')
     return (
       <Link href={withView(filterHref('status', 'in-progress'), 'list')} title="Expected completion">
-        {p.year ? `${p.year}, on the boards` : 'On the boards'}
+        {p.year}
       </Link>
     )
-  if (!p.year) return null
-  return onTimeline(p) ? <Link href={`/timeline#year-${p.year}`}>{p.year}</Link> : <>{p.year}</>
+  return <>{p.year}</>
 }

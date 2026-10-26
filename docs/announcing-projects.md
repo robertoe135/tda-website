@@ -23,7 +23,7 @@ meanwhile.
 ## Where it shows
 
 - **Portfolio → List**: every project as text, with the place, architect, category and year.
-  Work in progress reads "2028, on the boards".
+  Work in progress shows its expected completion year.
 - **Portfolio → Map**, once its location has coordinates.
 - **Portfolio → On the Boards**.
 - **Its own page**: the facts, with no photo. Add the announcement under **Press** (the client's
