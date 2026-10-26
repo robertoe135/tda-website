@@ -3,12 +3,13 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { YearRail } from '@/components/YearRail'
+import { PROJECT_STATUS } from '@/lib/projects'
 import { getTimeline } from '@/lib/site'
 import { getStoryYears } from '@/lib/year-of-light'
 
 export const metadata: Metadata = {
   title: 'Timeline — Tillotson Design Associates',
-  description: 'Lighting design projects by Tillotson Design Associates, by year: completed work and work on the boards.',
+  description: 'Lighting design projects by Tillotson Design Associates, by year: completed work and work in progress.',
   alternates: { canonical: '/timeline' },
 }
 
@@ -67,7 +68,7 @@ export default async function TimelinePage() {
                   )}
                   <span className="shot-name">
                     {p.name}
-                    {p.status === 'in-progress' && <span className="shot-status">On the Boards</span>}
+                    {p.status === 'in-progress' && <span className="shot-status">{PROJECT_STATUS['in-progress']}</span>}
                   </span>
                 </Link>
               </li>

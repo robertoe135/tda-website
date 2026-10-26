@@ -114,7 +114,7 @@ export default async function ProjectsPage({ searchParams }: Props) {
       : undefined) ??
     value.replace(/-/g, ' ')
 
-  // The category line: All, each category in the old menu's order, then On the Boards.
+  // The category line: All, each category in the old menu's order, then In Progress.
   const noCategory = filters.typology.length === 0 && filters.status.length === 0
   const categories: CategoryLink[] = [
     { label: 'All', href: v(setHref(filters, { typology: [], status: [] })), current: noCategory },
@@ -128,7 +128,7 @@ export default async function ProjectsPage({ searchParams }: Props) {
     ...(usedStatuses.has('in-progress')
       ? [
           {
-            label: 'On the Boards',
+            label: PROJECT_STATUS['in-progress'],
             href: v(setHref(filters, { typology: [], status: ['in-progress'] })),
             current:
               filters.status.length === 1 &&
@@ -419,7 +419,7 @@ function ProjectList({ projects }: { projects: ProjectCard[] }) {
 
 /**
  * The year alone, linking to it on the Timeline. Work in progress not on the Timeline yet links
- * to On the Boards instead; its year is the expected completion.
+ * to In Progress instead; its year is the expected completion.
  */
 function ListYear({ project: p }: { project: ProjectCard }) {
   if (!p.year) return null

@@ -152,7 +152,8 @@ export const onTimeline = (p: {
 
 // ── filters ──────────────────────────────────────────────────────────────────
 
-// Wording from tillotsondesign.com: "on the boards" is TDA's term for work in progress.
+// Work in progress is "In Progress" everywhere on the site (the old site said "On the Boards";
+// its /on-the-boards address redirects to the filter, lib/legacy.ts).
 /** Each project status as the public site names it: project pages, the list view, the Status filter. */
 export const PROJECT_STATUS: Record<Project['status'], string> = {
   completed: 'Completed',
