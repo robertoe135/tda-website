@@ -26,6 +26,8 @@ meanwhile.
   Work in progress shows its expected completion year.
 - **Portfolio → Map**, once its location has coordinates.
 - **Portfolio → Status → In Progress**, which opens as the list.
+  The portfolio opens on completed work only (Status: Completed, ticked); unticking it, or any
+  link from a project page, shows every status.
 - **Its own page**: the facts, with no photo. Add the announcement under **Press** (the client's
   or architect's press release, or the article) so the page links to it.
 

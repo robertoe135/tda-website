@@ -25,6 +25,11 @@ import { mapData } from '@/lib/map'
 
 type View = 'grid' | 'list' | 'map'
 
+/** In the address: every status, chosen, as opposed to the bare portfolio (completed only). */
+const ALL_STATUSES = 'all'
+/** A link that would lead to the bare portfolio, kept to every status instead. */
+const keepAll = (href: string) => (href === '/projects' ? `/projects?status=${ALL_STATUSES}` : href)
+
 /** A portfolio address in the given view. */
 const withView = (href: string, view: View) => `${href}${href.includes('?') ? '&' : '?'}view=${view}`
 
@@ -49,7 +54,12 @@ export const metadata: Metadata = {
  */
 export default async function ProjectsPage({ searchParams }: Props) {
   const params = await searchParams
-  const filters = parseFilters(params)
+  const parsed = parseFilters(params)
+  // The bare portfolio shows completed work. Anything else in the address (a category, a place, a
+  // link from a project page) shows every status unless one is chosen; "all" is every status,
+  // chosen (Completed unticked).
+  const bare = FILTER_KEYS.every((k) => parsed[k].length === 0)
+  const filters: Filters = { ...parsed, status: bare ? ['completed'] : parsed.status.filter((s) => s !== ALL_STATUSES) }
   // A firm filter using another name of a firm goes to the main firm's address.
   const canonical = await canonicalFirmFilters(filters)
   if (canonical) permanentRedirect(canonical)
@@ -68,7 +78,7 @@ export default async function ProjectsPage({ searchParams }: Props) {
   const view: View = chosen ?? (onlyInProgress || withPhotos.length === 0 ? 'list' : 'grid')
   // Links keep a view the visitor chose; otherwise each page picks its own as above.
   const v = (href: string) => (chosen ? withView(href, chosen) : href)
-  const gridHref = setHref(filters, {})
+  const gridHref = keepAll(setHref(filters, {}))
   const views: { view: View; label: string }[] = [
     { view: 'grid', label: 'Grid' },
     { view: 'list', label: 'List' },
@@ -120,12 +130,12 @@ export default async function ProjectsPage({ searchParams }: Props) {
 
   // The category line: All, then each category in the old menu's order. Status is a menu.
   const categories: CategoryLink[] = [
-    { label: 'All', href: v(setHref(filters, { typology: [] })), current: filters.typology.length === 0 },
+    { label: 'All', href: v(keepAll(setHref(filters, { typology: [] }))), current: filters.typology.length === 0 },
     ...typologies
       .filter((t) => t.slug && usedTypologies.has(t.slug))
       .map((t) => ({
         label: t.name,
-        href: v(setHref(filters, { typology: [t.slug!] })),
+        href: v(keepAll(setHref(filters, { typology: [t.slug!] }))),
         current: filters.typology.includes(t.slug!),
       })),
   ]
@@ -183,7 +193,7 @@ export default async function ProjectsPage({ searchParams }: Props) {
           {chips.map(({ key, value }) => (
             <Link
               key={`${key}:${value}`}
-              href={v(toggleHref(filters, key, value))}
+              href={v(keepAll(toggleHref(filters, key, value)))}
               className="chip"
               aria-label={`Remove filter ${labelFor(key, value)}`}
             >
@@ -191,7 +201,7 @@ export default async function ProjectsPage({ searchParams }: Props) {
             </Link>
           ))}
           <Link
-            href={v(setHref(filters, Object.fromEntries(chips.map(({ key }) => [key, []]))))}
+            href={v(keepAll(setHref(filters, Object.fromEntries(chips.map(({ key }) => [key, []])))))}
             className="chip-clear"
           >
             Clear
@@ -209,7 +219,7 @@ export default async function ProjectsPage({ searchParams }: Props) {
           filterHref={Object.fromEntries(
             shown.flatMap((p) =>
               p.location?.slug
-                ? [[p.location.slug, setHref(filters, { location: [p.location.slug] })]]
+                ? [[p.location.slug, keepAll(setHref(filters, { location: [p.location.slug] }))]]
                 : [],
             ),
           )}
@@ -294,9 +304,14 @@ function FilterMenu({
         {FILTER_KEYS.filter((k) => k !== name).flatMap((k) =>
           filters[k].map((v) => <input key={`${k}:${v}`} type="hidden" name={k} value={v} />),
         )}
+        {/* Every status, chosen: so nothing ticked, or this menu used with every status, never
+            falls back to the bare portfolio's Completed only. */}
+        {(name === 'status' || filters.status.length === 0) && <input type="hidden" name="status" value={ALL_STATUSES} />}
         <div className="filters-actions">
           <button type="submit">Apply</button>
-          {chosen > 0 && <Link href={view ? withView(setHref(filters, { [name]: [] }), view) : setHref(filters, { [name]: [] })}>Clear</Link>}
+          {chosen > 0 && (
+            <Link href={view ? withView(keepAll(setHref(filters, { [name]: [] })), view) : keepAll(setHref(filters, { [name]: [] }))}>Clear</Link>
+          )}
         </div>
       </form>
     </details>
