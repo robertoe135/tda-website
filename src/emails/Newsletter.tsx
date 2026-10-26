@@ -30,7 +30,9 @@ const C = {
   ground: '#ececea',
   paper: '#ffffff',
 }
-const FONT = "'DM Sans', Helvetica, Arial, sans-serif"
+// Most inboxes (Gmail, Outlook) ignore web fonts and use the fallbacks. Text is set at the
+// regular weight: a light weight falls back to a spindly Helvetica or Arial, worst on Windows.
+const FONT = "'DM Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif"
 const W = 600
 const PAD = 40
 
@@ -39,7 +41,7 @@ const p = (extra: React.CSSProperties = {}): React.CSSProperties => ({
   fontFamily: FONT,
   fontSize: 15,
   lineHeight: '24px',
-  fontWeight: 300,
+  fontWeight: 400,
   color: C.text,
   ...extra,
 })
@@ -52,6 +54,12 @@ const label: React.CSSProperties = p({
   fontWeight: 400,
 })
 const link: React.CSSProperties = { color: C.text, textDecoration: 'underline' }
+/**
+ * Mail apps take "Spring / Summer · 2026" for a date and turn it into a blue link. An invisible
+ * zero-width non-joiner between digits stops that; the line looks and reads the same.
+ */
+export const undetectable = (text: string) => text.replace(/(\d)(?=\d)/g, '$1\u200C')
+
 const pad = (top: number, bottom = 0): React.CSSProperties => ({
   padding: `${top}px ${PAD}px ${bottom}px`,
 })
@@ -432,6 +440,8 @@ export function Masthead({ issue }: { issue: Issue }) {
               lineHeight: '44px',
               letterSpacing: '-0.01em',
               textAlign: 'center',
+              // Light suits the title's size, in DM Sans and in the fallbacks alike.
+              fontWeight: 300,
             })}
           >
             {issue.masthead}
@@ -439,7 +449,7 @@ export function Masthead({ issue }: { issue: Issue }) {
         )}
         {issue.issueLine && (
           <Text style={p({ marginTop: 10, color: C.muted, textAlign: 'center' })}>
-            {issue.issueLine}
+            {undetectable(issue.issueLine)}
           </Text>
         )}
       </Section>
@@ -530,6 +540,9 @@ export function NewsletterEmail({ issue, links = {} }: { issue: Issue; links?: L
           href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400&display=swap"
           rel="stylesheet"
         />
+        {/* Mail apps turn dates ("2026"), addresses and phone numbers into blue links. */}
+        <meta name="format-detection" content="telephone=no, date=no, address=no, email=no" />
+        <style>{`a[x-apple-data-detectors] { color: inherit !important; text-decoration: none !important; font: inherit !important; }`}</style>
         <style>{`@media (max-width: 620px) { .stack { display: block !important; width: 100% !important; padding-left: 0 !important; padding-right: 0 !important; } .stack img { max-width: 100% !important; } }`}</style>
       </Head>
       {issue.preheader && <Preview>{issue.preheader}</Preview>}
