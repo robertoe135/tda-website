@@ -25,9 +25,8 @@ import { mapData } from '@/lib/map'
 
 type View = 'grid' | 'list' | 'map'
 
-/** A portfolio address kept in the list or map view when one is showing (grid is the default). */
-const withView = (href: string, view: View) =>
-  view === 'grid' ? href : `${href}${href.includes('?') ? '&' : '?'}view=${view}`
+/** A portfolio address in the given view. */
+const withView = (href: string, view: View) => `${href}${href.includes('?') ? '&' : '?'}view=${view}`
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> }
 
@@ -41,8 +40,12 @@ export const metadata: Metadata = {
  * The portfolio, three ways: a grid of photographs (as on the old category pages), a list of
  * every project as text, and a map. Projects with no photos yet, announced work in progress
  * above all, are in the list and on the map, not in the grid. Categories are one line of links
- * in the old portfolio menu's order, so each has its own address; Location and Architect are
- * two small menus; filters reached from project pages show as removable chips.
+ * in the old portfolio menu's order, so each has its own address; Location, Status and Architect
+ * are small menus; filters reached from project pages show as removable chips.
+ *
+ * Without a chosen view, the list shows when the grid would have nothing to show (no photos in
+ * the results) or when only work in progress is asked for; otherwise the grid. A view picked
+ * from the switch is kept while filtering.
  */
 export default async function ProjectsPage({ searchParams }: Props) {
   const params = await searchParams
@@ -53,20 +56,24 @@ export default async function ProjectsPage({ searchParams }: Props) {
   const [projects, typologies] = await Promise.all([getPublishedProjects(), getTypologies()])
   const shown = projects.filter((p) => matches(p, filters))
 
+  // The grid is photographs: projects without any are in the list (and on the map).
+  const withPhotos = shown.filter((p) => p.image)
+  const withoutPhotos = shown.length - withPhotos.length
+
   // Grid, list or map. The map is offered once any location has coordinates (set in the admin).
   const hasMap = mapData(projects).cities.length > 0
-  const view: View = params.view === 'list' ? 'list' : hasMap && params.view === 'map' ? 'map' : 'grid'
-  const v = (href: string) => withView(href, view)
+  const chosen: View | undefined =
+    params.view === 'grid' || params.view === 'list' ? params.view : hasMap && params.view === 'map' ? 'map' : undefined
+  const onlyInProgress = filters.status.length === 1 && filters.status[0] === 'in-progress'
+  const view: View = chosen ?? (onlyInProgress || withPhotos.length === 0 ? 'list' : 'grid')
+  // Links keep a view the visitor chose; otherwise each page picks its own as above.
+  const v = (href: string) => (chosen ? withView(href, chosen) : href)
   const gridHref = setHref(filters, {})
   const views: { view: View; label: string }[] = [
     { view: 'grid', label: 'Grid' },
     { view: 'list', label: 'List' },
     ...(hasMap ? [{ view: 'map' as const, label: 'Map' }] : []),
   ]
-  // The grid is photographs: projects without any are in the list (and on the map).
-  const withPhotos = shown.filter((p) => p.image)
-  const withoutPhotos = shown.length - withPhotos.length
-
   // Only offer options that have at least one published project.
   const usedTypologies = new Set(projects.flatMap((p) => p.typologies.map((t) => t.slug)))
   // Each menu offers only what gives results with the other filters (no dead ends), plus
@@ -79,9 +86,6 @@ export default async function ProjectsPage({ searchParams }: Props) {
       .filter(Boolean),
     ...filters.region,
   ])
-  const usedStatuses = new Set(
-    projects.flatMap((p) => [p.status, p.featured ? 'featured' : undefined]),
-  )
   // The Status menu: each project status that gives results with the other filters, plus any
   // already chosen.
   const menuStatuses = new Set<string>([
@@ -114,35 +118,19 @@ export default async function ProjectsPage({ searchParams }: Props) {
       : undefined) ??
     value.replace(/-/g, ' ')
 
-  // The category line: All, each category in the old menu's order, then In Progress.
-  const noCategory = filters.typology.length === 0 && filters.status.length === 0
+  // The category line: All, then each category in the old menu's order. Status is a menu.
   const categories: CategoryLink[] = [
-    { label: 'All', href: v(setHref(filters, { typology: [], status: [] })), current: noCategory },
+    { label: 'All', href: v(setHref(filters, { typology: [] })), current: filters.typology.length === 0 },
     ...typologies
       .filter((t) => t.slug && usedTypologies.has(t.slug))
       .map((t) => ({
         label: t.name,
-        href: v(setHref(filters, { typology: [t.slug!], status: [] })),
-        current: filters.typology.includes(t.slug!) && filters.status.length === 0,
+        href: v(setHref(filters, { typology: [t.slug!] })),
+        current: filters.typology.includes(t.slug!),
       })),
-    ...(usedStatuses.has('in-progress')
-      ? [
-          {
-            label: PROJECT_STATUS['in-progress'],
-            href: v(setHref(filters, { typology: [], status: ['in-progress'] })),
-            current:
-              filters.status.length === 1 &&
-              filters.status[0] === 'in-progress' &&
-              !filters.typology.length,
-          },
-        ]
-      : []),
   ]
-  // Chips for what the line doesn't show: places, architects, and filters reached from project pages.
-  const chips = active.filter(
-    ({ key }) =>
-      key !== 'typology' && !(key === 'status' && filters.status.join() === 'in-progress'),
-  )
+  // Chips for what the line doesn't show: places, statuses, architects, and filters reached from project pages.
+  const chips = active.filter(({ key }) => key !== 'typology')
 
   return (
     <div className="portfolio">
@@ -158,7 +146,7 @@ export default async function ProjectsPage({ searchParams }: Props) {
               </Link>
             ))}
           </nav>
-          <FilterMenu label="Location" filters={filters} name="region" view={view}>
+          <FilterMenu label="Location" filters={filters} name="region" view={chosen}>
             {REGION_OPTIONS.filter((o) => usedRegions.has(o.value)).map((o) => (
               <Checkbox
                 key={o.value}
@@ -169,14 +157,14 @@ export default async function ProjectsPage({ searchParams }: Props) {
               />
             ))}
           </FilterMenu>
-          <FilterMenu label="Status" filters={filters} name="status" view={view}>
+          <FilterMenu label="Status" filters={filters} name="status" view={chosen}>
             {Object.entries(PROJECT_STATUS)
               .filter(([value]) => menuStatuses.has(value))
               .map(([value, label]) => (
                 <Checkbox key={value} name="status" value={value} label={label} filters={filters} />
               ))}
           </FilterMenu>
-          <FilterMenu label="Architect" filters={filters} name="architect" view={view} scroll>
+          <FilterMenu label="Architect" filters={filters} name="architect" view={chosen} scroll>
             {architects.map((a) => (
               <Checkbox
                 key={a.slug}
@@ -282,7 +270,7 @@ function FilterMenu({
   name: keyof Filters
   filters: Filters
   scroll?: boolean
-  view: View
+  view?: View
   children: React.ReactNode
 }) {
   const chosen = filters[name].length
@@ -302,13 +290,13 @@ function FilterMenu({
           <legend className="visually-hidden">{label}</legend>
           <div className={scroll ? 'filters-scroll' : undefined}>{children}</div>
         </fieldset>
-        {view !== 'grid' && <input type="hidden" name="view" value={view} />}
+        {view && <input type="hidden" name="view" value={view} />}
         {FILTER_KEYS.filter((k) => k !== name).flatMap((k) =>
           filters[k].map((v) => <input key={`${k}:${v}`} type="hidden" name={k} value={v} />),
         )}
         <div className="filters-actions">
           <button type="submit">Apply</button>
-          {chosen > 0 && <Link href={withView(setHref(filters, { [name]: [] }), view)}>Clear</Link>}
+          {chosen > 0 && <Link href={view ? withView(setHref(filters, { [name]: [] }), view) : setHref(filters, { [name]: [] })}>Clear</Link>}
         </div>
       </form>
     </details>

@@ -25,7 +25,7 @@ meanwhile.
 - **Portfolio → List**: every project as text, with the place, architect, category, status and year.
   Work in progress shows its expected completion year.
 - **Portfolio → Map**, once its location has coordinates.
-- **Portfolio → In Progress**.
+- **Portfolio → Status → In Progress**, which opens as the list.
 - **Its own page**: the facts, with no photo. Add the announcement under **Press** (the client's
   or architect's press release, or the article) so the page links to it.
 
@@ -35,7 +35,7 @@ completed. Any project can also be kept off the Timeline with **Hide from the Ti
 ## When it is built
 
 Add the photos and set the status to **Completed**. It moves into the grid and onto the Timeline
-by itself. If it is cancelled, set **Cancelled**: it leaves the Timeline and In Progress.
+by itself. If it is cancelled, set **Cancelled**: it leaves the Timeline and the In Progress filter.
 
 Renderings from the architect can be used with their permission: upload them like photos, with
 a **Credit override** such as "Rendering courtesy of Snøhetta".
