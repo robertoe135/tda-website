@@ -13,6 +13,7 @@ import {
   onTimeline,
   type ProjectCard,
   parseFilters,
+  PROJECT_STATUS,
   REGION_OPTIONS,
   setHref,
   STATUS_OPTIONS,
@@ -81,6 +82,12 @@ export default async function ProjectsPage({ searchParams }: Props) {
   const usedStatuses = new Set(
     projects.flatMap((p) => [p.status, p.featured ? 'featured' : undefined]),
   )
+  // The Status menu: each project status that gives results with the other filters, plus any
+  // already chosen.
+  const menuStatuses = new Set<string>([
+    ...without('status').flatMap((p) => (p.status ? [p.status] : [])),
+    ...filters.status,
+  ])
   const allArchitects = new Map(projects.flatMap((p) => p.architects).map((a) => [a.slug, a]))
   const architects = [
     ...new Map(
@@ -107,7 +114,7 @@ export default async function ProjectsPage({ searchParams }: Props) {
       : undefined) ??
     value.replace(/-/g, ' ')
 
-  // The category line: All, each category in the old menu's order, then On the Boards.
+  // The category line: All, each category in the old menu's order, then In Progress.
   const noCategory = filters.typology.length === 0 && filters.status.length === 0
   const categories: CategoryLink[] = [
     { label: 'All', href: v(setHref(filters, { typology: [], status: [] })), current: noCategory },
@@ -121,7 +128,7 @@ export default async function ProjectsPage({ searchParams }: Props) {
     ...(usedStatuses.has('in-progress')
       ? [
           {
-            label: 'On the Boards',
+            label: PROJECT_STATUS['in-progress'],
             href: v(setHref(filters, { typology: [], status: ['in-progress'] })),
             current:
               filters.status.length === 1 &&
@@ -161,6 +168,13 @@ export default async function ProjectsPage({ searchParams }: Props) {
                 filters={filters}
               />
             ))}
+          </FilterMenu>
+          <FilterMenu label="Status" filters={filters} name="status" view={view}>
+            {Object.entries(PROJECT_STATUS)
+              .filter(([value]) => menuStatuses.has(value))
+              .map(([value, label]) => (
+                <Checkbox key={value} name="status" value={value} label={label} filters={filters} />
+              ))}
           </FilterMenu>
           <FilterMenu label="Architect" filters={filters} name="architect" view={view} scroll>
             {architects.map((a) => (
@@ -328,9 +342,9 @@ function Checkbox({
 }
 
 /**
- * Every project as text: name, place, architect, category and year, each linking to its page
- * or filtered view. On a phone, the place goes under the name and the architect and category
- * columns are left out (they are on the project page).
+ * Every project as text: name, place, architect, category, status and year, each linking to its
+ * page or filtered view. On a phone, the place (and the status, unless completed) goes under the
+ * name and the other columns are left out (they are on the project page).
  */
 function ProjectList({ projects }: { projects: ProjectCard[] }) {
   return (
@@ -348,6 +362,9 @@ function ProjectList({ projects }: { projects: ProjectCard[] }) {
           <th scope="col" className="col-category">
             Category
           </th>
+          <th scope="col" className="col-status">
+            Status
+          </th>
           <th scope="col" className="col-year">
             Year
           </th>
@@ -358,9 +375,16 @@ function ProjectList({ projects }: { projects: ProjectCard[] }) {
           <tr key={p.id}>
             <th scope="row">
               <Link href={`/projects/${p.slug}`}>{p.name}</Link>
-              {p.location?.slug && (
+              {/* Phones: place and, unless completed, status under the name (their columns are hidden). */}
+              {(p.location?.slug || (p.status && p.status !== 'completed')) && (
                 <span className="list-place">
-                  <Link href={withView(filterHref('location', p.location.slug), 'list')}>{p.location.displayName}</Link>
+                  {p.location?.slug && (
+                    <Link href={withView(filterHref('location', p.location.slug), 'list')}>{p.location.displayName}</Link>
+                  )}
+                  {p.location?.slug && p.status && p.status !== 'completed' && ' · '}
+                  {p.status && p.status !== 'completed' && (
+                    <Link href={withView(filterHref('status', p.status), 'list')}>{PROJECT_STATUS[p.status]}</Link>
+                  )}
                 </span>
               )}
             </th>
@@ -378,6 +402,11 @@ function ProjectList({ projects }: { projects: ProjectCard[] }) {
             <td className="col-category">
               {p.typologies[0]?.slug && <Link href={withView(filterHref('typology', p.typologies[0].slug), 'list')}>{p.typologies[0].name}</Link>}
             </td>
+            <td className="col-status">
+              {p.status && (
+                <Link href={withView(filterHref('status', p.status), 'list')}>{PROJECT_STATUS[p.status]}</Link>
+              )}
+            </td>
             <td className="col-year">
               <ListYear project={p} />
             </td>
@@ -388,14 +417,18 @@ function ProjectList({ projects }: { projects: ProjectCard[] }) {
   )
 }
 
-/** The year, linking to it on the Timeline; work in progress links to On the Boards instead. */
+/**
+ * The year alone, linking to it on the Timeline. Work in progress not on the Timeline yet links
+ * to In Progress instead; its year is the expected completion.
+ */
 function ListYear({ project: p }: { project: ProjectCard }) {
+  if (!p.year) return null
+  if (onTimeline(p)) return <Link href={`/timeline#year-${p.year}`}>{p.year}</Link>
   if (p.status === 'in-progress')
     return (
       <Link href={withView(filterHref('status', 'in-progress'), 'list')} title="Expected completion">
-        {p.year ? `${p.year}, on the boards` : 'On the boards'}
+        {p.year}
       </Link>
     )
-  if (!p.year) return null
-  return onTimeline(p) ? <Link href={`/timeline#year-${p.year}`}>{p.year}</Link> : <>{p.year}</>
+  return <>{p.year}</>
 }
