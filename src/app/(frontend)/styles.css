@@ -714,3 +714,27 @@ body:has(.contact-intro) .footer-statement { display: none; }
   .year-rail a:hover .year-rail-label, .year-rail a:focus-visible .year-rail-label { opacity: 1; transform: translate(0, -50%); }
 }
 @media (prefers-reduced-motion: reduce) { .year-rail a::before, .year-rail-label { transition: none; } }
+
+/* Search (app/(frontend)/search) */
+.search { max-width: 56rem; }
+.search-form { display: flex; gap: 0.5rem; margin: 0 0 1.25rem; }
+.search-form input { flex: 1; min-width: 0; min-height: 44px; padding: 0 0.9rem; border: 1px solid #c8c8c8; border-radius: 0; font: inherit; font-weight: 300; font-size: 1rem; background: var(--bg); color: var(--text); }
+.search-form input:focus { outline: 2px solid var(--text); outline-offset: -1px; }
+.search-form button { min-height: 44px; padding: 0 1.1rem; border: 0; background: var(--text); color: var(--bg); font: inherit; font-size: 0.9rem; cursor: pointer; }
+.search-hint, .search-count { font-weight: 300; font-size: 0.9rem; color: var(--muted); margin: 0 0 1.25rem; }
+.search-count a { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+.search-shortcuts { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 1.25rem; }
+.search-kind { color: var(--muted); font-size: 0.75em; margin-left: 0.25rem; }
+.search-results { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.search-result { display: grid; grid-template-columns: 7.5rem 1fr; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--line); align-items: start; }
+.search-result-image { display: block; aspect-ratio: 3 / 2; background: #f4f4f4; overflow: hidden; }
+.search-result-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.search-result-name { margin: 0; font-weight: 400; font-size: 1.05rem; }
+.search-result-name a { color: var(--text); }
+.search-result-meta { margin: 0.2rem 0 0; font-weight: 300; font-size: 0.85rem; color: var(--muted); }
+.search-result-facts { list-style: none; margin: 0.45rem 0 0; padding: 0; font-weight: 300; font-size: 0.85rem; }
+.search-result-facts li { margin-top: 0.15rem; }
+.search-result-facts a { color: var(--text); }
+.search-fact-label { color: var(--muted); }
+@media (min-width: 720px) { .search-result { grid-template-columns: 10rem 1fr; gap: 1.25rem; } }
+
