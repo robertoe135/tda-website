@@ -113,6 +113,10 @@ render without it. Bios and headshots come from the people themselves via market
 - Firms & clients: a person merges two records in the admin (Merge, in the kept record's
   sidebar), via `src/lib/merge-firms.ts` in one transaction. Never merge or rename firms
   without a person choosing.
+- Site search (`/search`, `src/lib/search.ts`) reads projects as the public does (overrideAccess
+  false): never internal fields, unpublished work or a confidential owner. A public query that
+  selects `clients` must also select `confidential`; the clients' field access hides them
+  otherwise (it fails closed).
 - `projectNumber` (text, unique, drafts included) and `aliases` (array of { `name` }): internal only.
   Field read access is staff-only, so the public API, site and queries never see them; the admin
   list search covers both, and the CSV export includes them.

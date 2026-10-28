@@ -68,6 +68,7 @@ export async function getPublishedProjects(): Promise<ProjectCard[]> {
       architects: true,
       credits: true,
       clients: true,
+      confidential: true, // the clients' field access needs it (Projects.ts)
       heroImage: true,
       gallery: true,
       photographers: true,

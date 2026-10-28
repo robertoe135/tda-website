@@ -267,8 +267,10 @@ export const Projects: CollectionConfig = {
                       'The owner. Can be the same firm as the architect. Add missing clients under Firms & clients.',
                   },
                   access: {
-                    // Hidden from the public API, not just the page, when confidential.
-                    read: ({ req, doc }) => Boolean(req.user) || !doc?.confidential,
+                    // Hidden from the public API, not just the page, when confidential. Shown only
+                    // when the project is known not to be: a read that selects clients without
+                    // "confidential" must not reveal them.
+                    read: ({ req, doc }) => Boolean(req.user) || doc?.confidential === false,
                   },
                 },
                 {

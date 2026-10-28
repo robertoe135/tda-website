@@ -31,6 +31,7 @@ import * as migration_20261021_200211_project_number_aliases from './20261021_20
 import * as migration_20261022_205140_home_tile_name from './20261022_205140_home_tile_name';
 import * as migration_20261022_205529_project_hide_from_timeline from './20261022_205529_project_hide_from_timeline';
 import * as migration_20261022_223525_project_announce_approval from './20261022_223525_project_announce_approval';
+import * as migration_20261028_025138_project_confidential_default from './20261028_025138_project_confidential_default';
 
 export const migrations = [
   {
@@ -196,6 +197,11 @@ export const migrations = [
   {
     up: migration_20261022_223525_project_announce_approval.up,
     down: migration_20261022_223525_project_announce_approval.down,
-    name: '20261022_223525_project_announce_approval'
+    name: '20261022_223525_project_announce_approval',
+  },
+  {
+    up: migration_20261028_025138_project_confidential_default.up,
+    down: migration_20261028_025138_project_confidential_default.down,
+    name: '20261028_025138_project_confidential_default'
   },
 ];

@@ -130,6 +130,11 @@ export function SiteNav() {
               Contact
             </Link>
           </li>
+          <li>
+            <Link href="/search" aria-current={current('/search')}>
+              Search
+            </Link>
+          </li>
         </ul>
       </nav>
     </>

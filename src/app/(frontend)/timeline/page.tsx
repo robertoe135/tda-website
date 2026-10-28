@@ -23,8 +23,8 @@ const tileRatio = (ratio?: number) =>
   ratio ? Math.min(MAX_RATIO, Math.max(MIN_RATIO, ratio)) : NO_PHOTO_RATIO
 
 /**
- * Published projects by year, completed and in progress (under their expected year, marked On
- * the Boards); never unbuilt or cancelled ones. Picture first: each year is a band of photographs at
+ * Published projects by year, completed and in progress (under their expected year, marked In
+ * Progress); never unbuilt or cancelled ones. Picture first: each year is a band of photographs at
  * one height, each keeping its own proportions, filling the row edge to edge. The year is small
  * and stays at the top of its band while it scrolls. Project names show on hover and keyboard
  * focus, and always on touch screens. A project without a photo shows its name on a plain tile
