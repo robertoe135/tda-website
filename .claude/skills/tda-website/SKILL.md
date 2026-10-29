@@ -224,6 +224,19 @@ If project data is synced, do it with a one-way script that reads an **allowlist
 fields, writes drafts into Payload, and is run manually. Anything not on the allowlist (fees,
 hours, contacts, internal notes) never leaves the internal app.
 
+The one live path is the app's Marketing tab **Send to website** button, which calls
+`POST /api/projects/from-app` (`src/collections/app-sync-endpoint.ts`, `src/lib/app-sync.ts`,
+`docs/app-sync.md`). The app calls the website, never the reverse, with this site's own
+`APP_SYNC_TOKEN`. The endpoint reads the request down to the allowlist, matches the project by
+TDA project number, and saves a draft: a new project is created hidden (in progress,
+confidential); an existing one only gets fields that are still empty here. Firms, people,
+places, owners and credit roles must already exist (firms by name or other name). A name with
+no exact match takes the single closest record (similarity 0.8 or more, no tie) and is marked
+"Suggested: check"; one with nothing close is left empty. Records are never created or renamed.
+Every send is kept on the project's staff-only `fromApp` field and shown on its From the TDA app
+tab (`components/admin/FromAppPanel.tsx`). Adding a field to the allowlist is a decision about
+what may leave the internal app.
+
 ## Before calling a task done
 
 - `pnpm payload generate:types` and `tsc --noEmit` pass

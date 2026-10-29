@@ -33,6 +33,7 @@ import * as migration_20261022_205529_project_hide_from_timeline from './2026102
 import * as migration_20261022_223525_project_announce_approval from './20261022_223525_project_announce_approval';
 import * as migration_20261028_025138_project_confidential_default from './20261028_025138_project_confidential_default';
 import * as migration_20261029_165838_split_clients from './20261029_165838_split_clients';
+import * as migration_20261029_181521_project_from_app from './20261029_181521_project_from_app';
 
 export const migrations = [
   {
@@ -208,6 +209,11 @@ export const migrations = [
   {
     up: migration_20261029_165838_split_clients.up,
     down: migration_20261029_165838_split_clients.down,
-    name: '20261029_165838_split_clients'
+    name: '20261029_165838_split_clients',
+  },
+  {
+    up: migration_20261029_181521_project_from_app.up,
+    down: migration_20261029_181521_project_from_app.down,
+    name: '20261029_181521_project_from_app'
   },
 ];

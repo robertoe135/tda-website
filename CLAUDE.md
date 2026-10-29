@@ -16,8 +16,13 @@ folder holds the audit of the current site, the competitor analysis, and the pit
 - Never write, invent or "improve" biographies, project descriptions, client names or credits.
   Leave fields empty and flag them for marketing.
 - Never connect to the internal TDA app (app.tillotsondesign.com) at runtime or reuse its
-  credentials. Any data sync is a manual, one-way, allowlisted script that writes drafts.
+  credentials. Data comes from it only one way, by a person's action, as an allowlist of public
+  fields written as drafts: a script, or the app's "Send to website" button calling
+  `POST /api/projects/from-app` with this site's own `APP_SYNC_TOKEN` (docs/app-sync.md).
 - Never correct real place, firm or project names on your own. Write anomalies to a review file.
+  The app-sync endpoint may link a sent name to the closest existing record, never renaming
+  either, only in a draft and only marked "Suggested: check" on the project's From the TDA app
+  tab (docs/app-sync.md).
 - Editors are marketing staff, not developers. A change that only a developer can maintain needs
   a reason, and should usually be a field in the admin instead.
 - Publishing in the admin must update the live site without a redeploy (revalidation hooks).
