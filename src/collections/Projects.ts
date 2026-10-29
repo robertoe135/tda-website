@@ -4,6 +4,7 @@ import { authenticated } from '../access/authenticated'
 import { publishedOrAuthenticated } from '../access/publishedOrAuthenticated'
 import { fillSlug, slug } from '../fields/slug'
 import { stillNeededField } from '../fields/stillNeeded'
+import { fromApp } from './app-sync-endpoint'
 import { exportProjects, importTeam, teamWorksheet } from './projects-endpoints'
 
 // Project facts are structured fields, never sentences: architect, location, year and team
@@ -60,6 +61,8 @@ export const Projects: CollectionConfig = {
     { path: '/export', method: 'get', handler: exportProjects },
     { path: '/team-worksheet', method: 'get', handler: teamWorksheet },
     { path: '/import-team', method: 'post', handler: importTeam },
+    // The internal TDA app's "Send to website" button; its own token, drafts only (docs/app-sync.md).
+    { path: '/from-app', method: 'post', handler: fromApp },
   ],
   defaultSort: '-year',
   versions: { drafts: true, maxPerDoc: 50 },
@@ -368,6 +371,22 @@ export const Projects: CollectionConfig = {
               collection: 'press',
               on: 'projects',
               admin: { description: 'Add articles under Press and pick this project.' },
+            },
+          ],
+        },
+        {
+          label: 'From the TDA app',
+          fields: [
+            {
+              // What the internal app last sent and how each name matched (docs/app-sync.md).
+              // Written only by POST /api/projects/from-app; staff only, never public.
+              name: 'fromApp',
+              type: 'json',
+              access: { read: staffOnly, update: () => false, create: () => false },
+              admin: {
+                readOnly: true,
+                components: { Field: '/components/admin/FromAppPanel#FromAppPanel' },
+              },
             },
           ],
         },

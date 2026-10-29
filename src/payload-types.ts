@@ -303,6 +303,15 @@ export interface Project {
     hasNextPage?: boolean;
     totalDocs?: number;
   };
+  fromApp?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   /**
    * Every address this project had on the old site, e.g. /corporate/one-vanderbilt. Visitors and search engines using them are redirected here.
    */
@@ -1274,6 +1283,7 @@ export interface ProjectsSelect<T extends boolean = true> {
   photographers?: T;
   awards?: T;
   press?: T;
+  fromApp?: T;
   legacyUrls?:
     | T
     | {
