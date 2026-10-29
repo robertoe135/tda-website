@@ -16,7 +16,6 @@ const card = (id: number, extra: Partial<ProjectCard> = {}): ProjectCard => ({
   typologies: [{ name: 'Performing Arts', slug: 'performing-arts' }],
   architects: [],
   collaboratorSlugs: [],
-  clientSlugs: [],
   photographers: [],
   ...extra,
 })
@@ -88,11 +87,11 @@ describe('building the story', () => {
     expect(awards.awards.map((a) => a.project.href)).toEqual(['/projects/project-1', '/projects/project-2'])
   })
 
-  it('features the firm on the most awarded projects, architects and credited firms but never clients', () => {
+  it('features the firm on the most awarded projects, architects and credited firms', () => {
     const projects = [
-      card(1, { architects: [{ name: 'Studio A', slug: 'studio-a' }], collaboratorSlugs: ['eng-b'], clientSlugs: ['owner-c'] }),
-      card(2, { architects: [{ name: 'Studio A', slug: 'studio-a' }], clientSlugs: ['owner-c'] }),
-      card(3, { collaboratorSlugs: ['eng-b'], clientSlugs: ['owner-c'] }),
+      card(1, { architects: [{ name: 'Studio A', slug: 'studio-a' }], collaboratorSlugs: ['eng-b'] }),
+      card(2, { architects: [{ name: 'Studio A', slug: 'studio-a' }] }),
+      card(3, { collaboratorSlugs: ['eng-b'] }),
     ]
     const awards = [1, 2, 3].map((project) => ({ name: 'Award', project }))
     const credited = new Map([['eng-b', 'Engineer B']])

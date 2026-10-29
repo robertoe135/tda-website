@@ -2,6 +2,7 @@ import type { Payload } from 'payload'
 
 import type {
   Award,
+  Client,
   Firm,
   Location,
   Media,
@@ -12,6 +13,7 @@ import type {
   SiteSetting,
 } from '../payload-types'
 import { blobFileURL } from './blob'
+import { withClientNames } from './client-names'
 import { emailTileURL, storedTile } from './email-tile'
 import { emailLogo } from './email-logo'
 import { siteUrl } from './seo'
@@ -116,7 +118,7 @@ export function emailImage(
 
 const names = (v: unknown[] | null | undefined) =>
   (v ?? [])
-    .filter(isObj<Firm | Photographer>)
+    .filter(isObj<Client | Firm | Photographer>)
     .map((f) => f.name)
     .filter(Boolean)
     .join(', ')
@@ -396,13 +398,15 @@ export async function loadLookups(payload: Payload, content: Newsletter['content
     })
     return new Map((res.docs as unknown as T[]).map((d) => [d.id, d]))
   }
-  const [projects, awards, press, mediaDocs, settings] = await Promise.all([
+  const [readProjects, awards, press, mediaDocs, settings] = await Promise.all([
     read<Project>('projects', want.projects, 1),
     read<Award>('awards', want.awards, 1),
     read<Press>('press', want.press, 0),
     read<Media>('media', want.media, 0),
     payload.findGlobal({ slug: 'siteSettings', depth: 0, overrideAccess: false }),
   ])
+  // Owners by name, as plain text, on projects that are not confidential (lib/client-names).
+  const projects = new Map((await withClientNames(payload, [...readProjects.values()])).map((p) => [p.id, p]))
   const lookups: Lookups = { projects, awards, press, media: mediaDocs }
   // Tile photos for projects side by side, cropped and put on Blob once (lib/email-tile).
   const photos = new Map<number, Media>()

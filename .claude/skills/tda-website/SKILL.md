@@ -73,6 +73,11 @@ Collections, with the fields that matter. Every collection that has a public pag
   rather than a point field, to avoid a PostGIS dependency). Displayed as "New York, NY".
 - **firms** (architects and other collaborators): `name`, `slug`, `website`, `projects` (join
   on `projects.architects`). Firm names are canonical here and nowhere else.
+- **clients** (project owners), apart from firms: `name`. TDA rarely works for an owner twice,
+  so by TDA's decision (Oct 2026) a client is the one exception to "every label links": no page,
+  no portfolio filter, not in site search, shown as plain text on a project page. The collection
+  is staff-only to read, list included (it names owners of private residences); the public site
+  gets names through `src/lib/client-names.ts`, for non-confidential projects only.
 - **photographers**: `name`, `website`.
 
 ### people
@@ -96,8 +101,8 @@ render without it. Bios and headshots come from the people themselves via market
 - `otherCollaborators` (array of { `firm` relationship, `role` select: interior designer,
   landscape architect, exhibit designer, artist, other })
 - `team` (relationship to people, hasMany), filtered so only `showOnSite` people are selectable
-- `client` (text) and `confidential` (boolean). When `confidential` is true, the frontend hides
-  client and shows location at city level only. Residential projects are usually confidential.
+- `clients` (relationship to clients) and `confidential` (boolean). When `confidential` is true,
+  the frontend hides the client and shows location at city level only. Residential projects are usually confidential.
 - `predecessorFirm` (text, optional), for work completed under Kugler Tillotson Associates
 - `summary` (plain text, about 2 sentences, used on cards and meta descriptions)
 - `description` (rich text)
@@ -110,13 +115,15 @@ render without it. Bios and headshots come from the people themselves via market
   obeys it. "Still needed" lists "Approval to announce" until then.
 - `hideFromTimeline` (checkbox). The Timeline also leaves out work in progress with no photos
   of its own; it appears there once completed, and meanwhile in the portfolio's list and map.
-- Firms & clients: a person merges two records in the admin (Merge, in the kept record's
-  sidebar), via `src/lib/merge-firms.ts` in one transaction. Never merge or rename firms
-  without a person choosing.
+- Firms, clients and photographers: a person merges two records in the admin (Merge, in the kept
+  record's sidebar; `src/collections/merge-endpoint.ts`), in one transaction: firms via
+  `src/lib/merge-firms.ts` (their other names and Years of Light), clients and photographers via
+  `src/lib/merge-records.ts` (a photographer's photos too). Never merge or rename without a
+  person choosing.
 - Site search (`/search`, `src/lib/search.ts`) reads projects as the public does (overrideAccess
-  false): never internal fields, unpublished work or a confidential owner. A public query that
-  selects `clients` must also select `confidential`; the clients' field access hides them
-  otherwise (it fails closed).
+  false): never internal fields, unpublished work or any owner. A public query that selects
+  `clients` must also select `confidential`; the clients' field access hides them otherwise (it
+  fails closed).
 - `projectNumber` (text, unique, drafts included) and `aliases` (array of { `name` }): internal only.
   Field read access is staff-only, so the public API, site and queries never see them; the admin
   list search covers both, and the CSV export includes them.

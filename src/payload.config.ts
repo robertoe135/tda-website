@@ -13,6 +13,7 @@ import { Videos } from './collections/Videos'
 import { Leads } from './collections/Leads'
 import { Typologies } from './collections/Typologies'
 import { Locations } from './collections/Locations'
+import { Clients } from './collections/Clients'
 import { Firms } from './collections/Firms'
 import { Photographers } from './collections/Photographers'
 import { CreditRoles } from './collections/CreditRoles'
@@ -51,7 +52,7 @@ export default buildConfig({
       providers: ['/components/admin/UploadGuard#UploadGuard'],
     },
   },
-  collections: [Projects, People, Media, Videos, Awards, Press, Newsletters, YearsOfLight, Typologies, Locations, Firms, Photographers, CreditRoles, Credentials, Leads, Users],
+  collections: [Projects, People, Media, Videos, Awards, Press, Newsletters, YearsOfLight, Typologies, Locations, Firms, Clients, Photographers, CreditRoles, Credentials, Leads, Users],
   globals: [Home, About, SiteSettings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

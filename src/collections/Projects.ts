@@ -260,11 +260,11 @@ export const Projects: CollectionConfig = {
                   name: 'clients',
                   label: 'Client',
                   type: 'relationship',
-                  relationTo: 'firms',
+                  relationTo: 'clients',
                   hasMany: true,
                   admin: {
                     description:
-                      'The owner. Can be the same firm as the architect. Add missing clients under Firms & clients.',
+                      'The owner, shown as plain text on the project page. Add missing ones under Clients.',
                   },
                   access: {
                     // Hidden from the public API, not just the page, when confidential. Shown only

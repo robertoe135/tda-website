@@ -42,7 +42,7 @@ const projectCount = async (payload: Payload, id: number) =>
   (
     await payload.count({
       collection: 'projects',
-      where: { or: [{ architects: { in: [id] } }, { clients: { in: [id] } }, { 'credits.firms': { in: [id] } }] },
+      where: { or: [{ architects: { in: [id] } }, { 'credits.firms': { in: [id] } }] },
     })
   ).totalDocs
 

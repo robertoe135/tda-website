@@ -8,7 +8,7 @@ import type { Firm, Location, Media, Photographer, Project, Typology } from '@/p
 /**
  * Data for the public projects pages. Every query runs with access control on
  * (overrideAccess: false), so pages only ever see what an anonymous visitor may see:
- * published projects, and no client on confidential ones.
+ * published projects, and no client on confidential ones (see lib/client-names).
  */
 
 export const getPayloadClient = async () => getPayload({ config })
@@ -29,9 +29,8 @@ export type ProjectCard = {
   photographers: { name: string; slug: string }[]
   /** The main image, card-sized with larger sizes in srcSet, when one has been uploaded. */
   image?: CardImage
-  /** Slugs of firms in the credits list and of clients, for the collaborator/client filters. */
+  /** Slugs of firms in the credits list, for the collaborator filter. */
   collaboratorSlugs: string[]
-  clientSlugs: string[]
 }
 
 const isObject = <T>(value: unknown): value is T => typeof value === 'object' && value !== null
@@ -67,8 +66,6 @@ export async function getPublishedProjects(): Promise<ProjectCard[]> {
       typologies: true,
       architects: true,
       credits: true,
-      clients: true,
-      confidential: true, // the clients' field access needs it (Projects.ts)
       heroImage: true,
       gallery: true,
       photographers: true,
@@ -113,8 +110,6 @@ export async function getPublishedProjects(): Promise<ProjectCard[]> {
     collaboratorSlugs: (p.credits ?? []).flatMap((c) =>
       c.firms.filter(isObject<Firm>).map((f) => f.slug ?? ''),
     ),
-    // Empty for confidential projects: field access removes clients from public reads.
-    clientSlugs: (p.clients ?? []).filter(isObject<Firm>).map((f) => f.slug ?? ''),
   }))
 }
 
@@ -178,9 +173,9 @@ export const REGION_OPTIONS = [
 ] as const
 
 /** URL parameters. Several values in one group mean "any of"; different groups mean "all of". */
-export const FILTER_KEYS = ['status', 'typology', 'region', 'location', 'architect', 'collaborator', 'client', 'photographer'] as const
+export const FILTER_KEYS = ['status', 'typology', 'region', 'location', 'architect', 'collaborator', 'photographer'] as const
 /** Reached from labels on project pages rather than offered as checkboxes. */
-export const LINK_ONLY_KEYS = ['location', 'collaborator', 'client', 'photographer'] as const
+export const LINK_ONLY_KEYS = ['location', 'collaborator', 'photographer'] as const
 export type FilterKey = (typeof FILTER_KEYS)[number]
 export type Filters = Record<FilterKey, string[]>
 
@@ -207,7 +202,6 @@ export function matches(project: ProjectCard, filters: Filters): boolean {
     any(filters.location, [project.location?.slug]) &&
     any(filters.architect, project.architects.map((a) => a.slug)) &&
     any(filters.collaborator, project.collaboratorSlugs) &&
-    any(filters.client, project.clientSlugs) &&
     any(filters.photographer, project.photographers.map((ph) => ph.slug))
   )
 }
@@ -217,7 +211,7 @@ export const filterHref = (key: FilterKey, value: string) =>
   `/projects?${new URLSearchParams({ [key]: value }).toString()}`
 
 /** Link that adds or removes one value from the current filters. */
-const FIRM_KEYS = ['architect', 'collaborator', 'client'] as const
+const FIRM_KEYS = ['architect', 'collaborator'] as const
 
 /**
  * Firm filters written with another name of a firm (an alias, e.g. an old link to

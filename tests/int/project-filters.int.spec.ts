@@ -14,7 +14,6 @@ const project: ProjectCard = {
   typologies: [{ name: 'Corporate', slug: 'corporate' }],
   architects: [{ name: 'Kohn Pedersen Fox', slug: 'kohn-pedersen-fox' }],
   collaboratorSlugs: ['severud-associates'],
-  clientSlugs: ['sl-green-realty-corporation'],
   photographers: [{ name: 'Max Touhey', slug: 'max-touhey' }],
 }
 
@@ -35,7 +34,8 @@ describe('project filters', () => {
 
   it('filters by the link-only keys used on project pages', () => {
     expect(matches(project, parseFilters({ collaborator: 'severud-associates' }))).toBe(true)
-    expect(matches(project, parseFilters({ client: 'sl-green-realty-corporation' }))).toBe(true)
+    // Clients are not a filter (collections/Clients): an old ?client= link shows everything.
+    expect(matches(project, parseFilters({ client: 'anyone' }))).toBe(true)
     expect(matches(project, parseFilters({ location: 'london-uk' }))).toBe(false)
   })
 

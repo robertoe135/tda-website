@@ -78,6 +78,7 @@ export interface Config {
     typologies: Typology;
     locations: Location;
     firms: Firm;
+    clients: Client;
     photographers: Photographer;
     creditRoles: CreditRole;
     credentials: Credential;
@@ -99,6 +100,9 @@ export interface Config {
     firms: {
       projects: 'projects';
     };
+    clients: {
+      projects: 'projects';
+    };
   };
   collectionsSelect: {
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
@@ -112,6 +116,7 @@ export interface Config {
     typologies: TypologiesSelect<false> | TypologiesSelect<true>;
     locations: LocationsSelect<false> | LocationsSelect<true>;
     firms: FirmsSelect<false> | FirmsSelect<true>;
+    clients: ClientsSelect<false> | ClientsSelect<true>;
     photographers: PhotographersSelect<false> | PhotographersSelect<true>;
     creditRoles: CreditRolesSelect<false> | CreditRolesSelect<true>;
     credentials: CredentialsSelect<false> | CredentialsSelect<true>;
@@ -231,9 +236,9 @@ export interface Project {
       }[]
     | null;
   /**
-   * The owner. Can be the same firm as the architect. Add missing clients under Firms & clients.
+   * The owner, shown as plain text on the project page. Add missing ones under Clients.
    */
-  clients?: (number | Firm)[] | null;
+  clients?: (number | Client)[] | null;
   /**
    * Hides the client everywhere on the public site. Usual for residences.
    */
@@ -413,7 +418,7 @@ export interface Typology {
   createdAt: string;
 }
 /**
- * Architects, consultants and clients. Firms that are an architect on a project get a collaborator page; consultants appear in project credits; clients are shown unless the project is confidential.
+ * Architects and consultants. Firms that are an architect on a project get a collaborator page; consultants appear in project credits. Project owners are under Clients.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "firms".
@@ -675,6 +680,30 @@ export interface Photographer {
    */
   generateSlug?: boolean | null;
   slug?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Project owners. Shown as plain text on a project page unless the project is confidential; never linked or searchable.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "clients".
+ */
+export interface Client {
+  id: number;
+  /**
+   * As the owner is named in credits, e.g. Lincoln Center for the Performing Arts.
+   */
+  name: string;
+  /**
+   * Projects this client owns. Edit the project to change this.
+   */
+  projects?: {
+    docs?: (number | Project)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  normalizedName?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1127,6 +1156,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'firms';
         value: number | Firm;
+      } | null)
+    | ({
+        relationTo: 'clients';
+        value: number | Client;
       } | null)
     | ({
         relationTo: 'photographers';
@@ -1599,6 +1632,17 @@ export interface FirmsSelect<T extends boolean = true> {
   normalizedName?: T;
   generateSlug?: T;
   slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "clients_select".
+ */
+export interface ClientsSelect<T extends boolean = true> {
+  name?: T;
+  projects?: T;
+  normalizedName?: T;
   updatedAt?: T;
   createdAt?: T;
 }

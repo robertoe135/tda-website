@@ -4,9 +4,10 @@ import { cardImage, type CardImage, filterHref, getPayloadClient, PROJECT_STATUS
 
 /**
  * Site search (app/(frontend)/search): every published project, by any of its words. Its name,
- * year, place, categories, status, architects, owner, each credit (role and firm), the TDA team,
- * the photographers and its summary. Read as the public sees projects, so confidential owners,
- * unpublished work and internal fields (project number, internal names) are never searchable.
+ * year, place, categories, status, architects, each credit (role and firm), the TDA team, the
+ * photographers and its summary. Never its owner: clients are not searchable. Read as the public
+ * sees projects, so unpublished work and internal fields (project number, internal names) are
+ * never searchable either.
  */
 
 /** One searchable fact of a project, shown under a result when it matched; links where it can. */
@@ -46,7 +47,7 @@ export async function getSearchIndex(): Promise<SearchDoc[]> {
   const payload = await getPayloadClient()
   const result = await payload.find({
     collection: 'projects',
-    overrideAccess: false, // the public view: published, no confidential owner, no internal fields
+    overrideAccess: false, // the public view: published, no internal fields
     pagination: false,
     depth: 1,
     sort: ['-year', 'name'],
@@ -61,8 +62,6 @@ export async function getSearchIndex(): Promise<SearchDoc[]> {
       typologies: true,
       architects: true,
       credits: true,
-      clients: true,
-      confidential: true, // the clients' field access needs it (Projects.ts)
       team: true,
       photographers: true,
       heroImage: true,
@@ -82,8 +81,6 @@ export async function getSearchIndex(): Promise<SearchDoc[]> {
       add('Category', t.name, 5, t.slug ? filterHref('typology', t.slug) : undefined)
     for (const f of (p.architects ?? []).filter(isObject<Firm>))
       add('Design architect', f.name, 6, f.slug ? filterHref('architect', f.slug) : undefined)
-    for (const f of (p.clients ?? []).filter(isObject<Firm>))
-      add('Owner', f.name, 4, f.slug ? filterHref('client', f.slug) : undefined)
     for (const c of p.credits ?? []) {
       const role = isObject<CreditRole>(c.role) ? c.role.name : 'Credit'
       for (const f of (c.firms ?? []).filter(isObject<Firm>))

@@ -10,7 +10,6 @@ const card = (id: number, o: Partial<ProjectCard> = {}): ProjectCard => ({
   typologies: [],
   architects: [],
   collaboratorSlugs: [],
-  clientSlugs: [],
   photographers: [],
   status: 'completed',
   ...o,
