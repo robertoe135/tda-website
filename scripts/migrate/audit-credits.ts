@@ -25,7 +25,7 @@ import { getPayload, type Payload } from 'payload'
 import config from '../../src/payload.config'
 import { normalizeName } from '../../src/hooks/preventNearDuplicates'
 import { projectPhotographers } from '../../src/lib/projects'
-import type { Award, Firm, Location, Project } from '../../src/payload-types'
+import type { Award, Client, Firm, Location, Project } from '../../src/payload-types'
 import type { ProjectRecord } from './extract'
 import { labelFirmSplitter, parseArea, parseCertifications, planFirmCredits } from './import'
 import { cacheDir, csv, similarity, SITE, splitCredit } from './lib'
@@ -75,8 +75,9 @@ export function compareProject(p: ProjectRecord, v: Project, version: 'live' | '
   if (old.length) for (const name of credited) if (!old.some((n) => samePerson(n, name))) add('photographer', old.join(', '), name, 'Credited on the project, not on the old page.')
 
   // Owner (kept even when the project is confidential: the page hides it, the record has it).
-  if (c?.owner && !(v.clients ?? []).flatMap(firmNames).some((n) => sameFirm(n, c.owner!)))
-    add('owner', c.owner, (v.clients ?? []).flatMap((f) => (isObject<Firm>(f) ? [f.name] : [])).join(', '), 'Owner on the old page is not the project’s client.')
+  const owners = (v.clients ?? []).flatMap((f) => (isObject<Client>(f) ? [f.name] : []))
+  if (c?.owner && !owners.some((n) => sameFirm(n, c.owner!)))
+    add('owner', c.owner, owners.join(', '), 'Owner on the old page is not the project’s client.')
 
   // Location, as "City, ST" (or "City, Country").
   const loc = p.location ?? c?.location

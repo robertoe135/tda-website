@@ -11,6 +11,7 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
+  await payload.delete({ collection: 'clients', where: { name: { like: prefix } } })
   await payload.delete({ collection: 'creditRoles', where: { name: { like: prefix } } })
   await payload.delete({ collection: 'awards', where: { name: { like: prefix } } })
   await payload.delete({ collection: 'press', where: { title: { like: prefix } } })
@@ -55,8 +56,8 @@ describe('projects', () => {
   })
 
   it('hides the clients of a confidential project from the public API', async () => {
-    const owner = await payload.create({ collection: 'firms', data: { name: `${prefix} Open Owner` } })
-    const privateOwner = await payload.create({ collection: 'firms', data: { name: `${prefix} Private Owner` } })
+    const owner = await payload.create({ collection: 'clients', data: { name: `${prefix} Open Owner` } })
+    const privateOwner = await payload.create({ collection: 'clients', data: { name: `${prefix} Private Owner` } })
     const open = await payload.create({
       collection: 'projects',
       data: { name: `${prefix} Open`, status: 'completed', clients: [owner.id], _status: 'published' },

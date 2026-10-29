@@ -4,7 +4,7 @@
  *   pnpm migrate:merge-firms --keep "Foster + Partners" --merge "Fosters + Partners"           # list
  *   pnpm migrate:merge-firms --keep "Foster + Partners" --merge "Fosters + Partners" --write   # merge
  *
- * Every project that names the merged firm as architect, client or in its credits is pointed
+ * Every project that names the merged firm as architect or in its credits is pointed
  * at the kept (main) firm instead (no repeats). The merged record is deleted and its name, with
  * any aliases it had, becomes an alias of the main firm: never shown, but old links, filters
  * and imports using it land on the main firm. Names must match exactly; nothing is guessed. A draft stays a draft; a published project is

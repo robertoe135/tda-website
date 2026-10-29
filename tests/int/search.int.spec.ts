@@ -1,7 +1,6 @@
 import { getPayload, type Payload } from 'payload'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
-import { getPublishedProjects } from '@/lib/projects'
 import { getSearchIndex, normalize, type SearchDoc, searchProjects, searchShortcuts } from '@/lib/search'
 import config from '@/payload.config'
 
@@ -65,7 +64,7 @@ describe('search', () => {
     beforeAll(async () => {
       payload = await getPayload({ config })
       const typology = (await payload.create({ collection: 'typologies', data: { name: `${tag} Typology` } })).id
-      const owner = (await payload.create({ collection: 'firms', data: { name: `Secretowner ${tag}` } })).id
+      const owner = (await payload.create({ collection: 'clients', data: { name: `Secretowner ${tag}` } })).id
       const role = (await payload.create({ collection: 'creditRoles', data: { name: `${tag} Acoustics` } })).id
       const acoustician = (await payload.create({ collection: 'firms', data: { name: `Quietroom ${tag}` } })).id
       await payload.create({
@@ -92,24 +91,20 @@ describe('search', () => {
     afterAll(async () => {
       await payload.delete({ collection: 'projects', where: { name: { like: tag } } })
       await payload.delete({ collection: 'firms', where: { name: { like: tag } } })
+      await payload.delete({ collection: 'clients', where: { name: { like: tag } } })
       await payload.delete({ collection: 'creditRoles', where: { name: { like: tag } } })
       await payload.delete({ collection: 'typologies', where: { name: { like: tag } } })
     })
 
-    it('searches credits, but never a confidential owner, internal names, project numbers or unpublished work', async () => {
+    it('searches credits, but never an owner, internal names, project numbers or unpublished work', async () => {
       const index = await getSearchIndex()
       const hits = (q: string) => searchProjects(index, q).map((r) => r.doc.name)
       expect(hits(`quietroom ${tag}`)).toEqual([`${tag} Residence`])
-      // The same owner on a project that is not confidential is searchable there only.
-      expect(hits(`secretowner ${tag}`)).toEqual([`${tag} Public Hall`])
+      // Clients are not searchable, even on a project that is not confidential.
+      expect(hits(`secretowner ${tag}`)).toEqual([])
       expect(hits(`codename${tag}`)).toEqual([])
       expect(hits(`${tag}-77`)).toEqual([])
       expect(hits(`${tag} unpublished`)).toEqual([])
-    })
-
-    it('never lets the portfolio’s client filter reveal a confidential owner', async () => {
-      const cards = (await getPublishedProjects()).filter((c) => c.name.startsWith(tag))
-      expect(Object.fromEntries(cards.map((c) => [c.name, c.clientSlugs.length]))).toEqual({ [`${tag} Residence`]: 0, [`${tag} Public Hall`]: 1 })
     })
   })
 })

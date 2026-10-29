@@ -6,7 +6,7 @@ import { authenticated } from '../access/authenticated'
 import { fillSlug, slug } from '../fields/slug'
 import { websiteField } from '../fields/website'
 import { normalizeName, normalizedNameField, preventNearDuplicates } from '../hooks/preventNearDuplicates'
-import { mergeFirm } from './firms-endpoints'
+import { mergeHandler } from './merge-endpoint'
 
 /**
  * Other names a firm goes by (SOM for Skidmore, Owings & Merrill) or has been misspelled as.
@@ -48,16 +48,16 @@ const checkAliases: CollectionBeforeValidateHook = async ({ data, originalDoc, r
 // Architects and other collaborators. Firm names are canonical here and nowhere else.
 export const Firms: CollectionConfig = {
   slug: 'firms',
-  labels: { singular: 'Firm or client', plural: 'Firms & clients' },
+  labels: { singular: 'Firm', plural: 'Firms' },
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'website', 'listAsCollaborator', 'slug'],
     group: 'Reference',
     description:
-      'Architects, consultants and clients. Firms that are an architect on a project get a collaborator page; consultants appear in project credits; clients are shown unless the project is confidential.',
+      'Architects and consultants. Firms that are an architect on a project get a collaborator page; consultants appear in project credits. Project owners are under Clients.',
   },
   endpoints: [
-    { path: '/:id/merge', method: 'post', handler: mergeFirm },
+    { path: '/:id/merge', method: 'post', handler: mergeHandler('firms') },
   ],
   defaultSort: 'name',
   access: {
@@ -114,10 +114,10 @@ export const Firms: CollectionConfig = {
       },
     },
     {
-      // Merge another record of the same firm or client into this one.
+      // Merge another record of the same firm into this one.
       name: 'mergeTool',
       type: 'ui',
-      admin: { position: 'sidebar', components: { Field: '/components/admin/MergeFirm#MergeFirm' } },
+      admin: { position: 'sidebar', components: { Field: '/components/admin/MergeRecords#MergeRecords' } },
     },
     normalizedNameField,
     slug('name'),

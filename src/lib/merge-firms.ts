@@ -9,7 +9,7 @@ import { changeDoc, changeProject } from './project-versions'
  * Merging two records of one firm, once a person has decided which is right (the admin's
  * "Merge a duplicate" on a firm, or pnpm migrate:merge-firms).
  *
- * Every project that names the merged firm as architect, client or in its credits names the
+ * Every project that names the merged firm as architect or in its credits names the
  * main firm instead (no repeats), in its published version and its latest draft alike; Years
  * of Light featuring it do too. The main firm takes the merged one's website and its place on
  * Collaborators when it has none. The merged record is deleted and its name, with its other
@@ -59,7 +59,6 @@ export async function mergeFirmRecords(
   const where: Where = {
     or: [
       { architects: { in: [merge.id] } },
-      { clients: { in: [merge.id] } },
       { 'credits.firms': { in: [merge.id] } },
     ],
   }
@@ -77,7 +76,6 @@ export async function mergeFirmRecords(
   const names = (p: Project) =>
     [
       ...(p.architects ?? []),
-      ...(p.clients ?? []),
       ...(p.credits ?? []).flatMap((c) => c.firms),
     ].map((r) => idOf(r as Ref))
   // The firm's record is deleted below, which also removes it from every version that still
@@ -90,7 +88,6 @@ export async function mergeFirmRecords(
         names(p).includes(merge.id)
           ? {
               architects: swap(p.architects as Ref[], merge.id, keep.id),
-              clients: swap(p.clients as Ref[], merge.id, keep.id),
               credits: (p.credits ?? []).map((c) => ({
                 ...c,
                 firms: swap(c.firms as Ref[], merge.id, keep.id),

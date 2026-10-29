@@ -391,7 +391,7 @@ export async function addProjects(payload: Payload, plans: FolderPlan[], options
       certifications: certifications ?? [],
       architects: [...new Set(await Promise.all(d.architects.map((f) => findOrCreate('firms', f))))],
       credits: creditRows,
-      clients: d.owner ? [await findOrCreate('firms', d.owner)] : [],
+      clients: d.owner ? [await findOrCreate('clients', d.owner)] : [],
       photographers: [...new Set(await Promise.all(d.photographers.map((p) => findOrCreate('photographers', p))))],
       description: d.text.length ? richText(d.text) : undefined,
     }

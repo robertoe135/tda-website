@@ -1,9 +1,11 @@
 import { createLocalReq, getPayload, type Payload, type PayloadRequest } from 'payload'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
-import { mergeFirm } from '@/collections/firms-endpoints'
+import { mergeHandler } from '@/collections/merge-endpoint'
 import config from '@/payload.config'
 import type { Firm, Project, User, YearsOfLight } from '@/payload-types'
+
+const mergeFirm = mergeHandler('firms')
 
 describe('merging two firms in the admin', () => {
   let payload: Payload
@@ -24,7 +26,7 @@ describe('merging two firms in the admin', () => {
     const typology = await payload.create({ collection: 'typologies', data: { name: `${tag} Typology` } })
     project = await payload.create({
       collection: 'projects',
-      data: { name: `${tag} Hall`, status: 'completed', typologies: [typology.id], architects: [dupe.id], clients: [other.id], _status: 'published' },
+      data: { name: `${tag} Hall`, status: 'completed', typologies: [typology.id], architects: [dupe.id, other.id], _status: 'published' },
     })
     year = await payload.create({ collection: 'years-of-light', data: { year: 1991, collaborators: [dupe.id], _status: 'published' } })
   })
@@ -58,8 +60,7 @@ describe('merging two firms in the admin', () => {
     const result = await (await mergeFirm(await req(keep.id, { mergeId: dupe.id, confirm: true }))).json()
     expect(result.merged).toBe(true)
     const live = (await payload.findByID({ collection: 'projects', id: project.id, depth: 0 })) as Project
-    expect(live.architects).toEqual([keep.id])
-    expect(live.clients).toEqual([other.id])
+    expect(live.architects).toEqual([keep.id, other.id])
     const y = (await payload.findByID({ collection: 'years-of-light', id: year.id, depth: 0 })) as YearsOfLight
     expect(y.collaborators).toEqual([keep.id])
     const kept = (await payload.findByID({ collection: 'firms', id: keep.id })) as Firm

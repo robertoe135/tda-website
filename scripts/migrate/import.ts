@@ -195,7 +195,7 @@ export function firmFinder(payload: Payload) {
 export function finder(payload: Payload) {
   const cache = new Map<string, number>()
   return async function findOrCreate(
-    collection: 'firms' | 'photographers' | 'creditRoles' | 'typologies',
+    collection: 'firms' | 'clients' | 'photographers' | 'creditRoles' | 'typologies',
     name: string,
     extra: Record<string, unknown> = {},
   ): Promise<number> {
@@ -357,7 +357,7 @@ async function main() {
       }
     }
 
-    const clients = c?.owner ? [await firmId(c.owner)] : []
+    const clients = c?.owner ? [await findOrCreate('clients', c.owner)] : []
     const residential = p.typologies.includes('residential')
 
     const area = parseArea(c?.area)

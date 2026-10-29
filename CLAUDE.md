@@ -12,6 +12,7 @@ folder holds the audit of the current site, the competitor analysis, and the pit
 - Project information is structured data. Never store architect, location, year or team as
   free text inside a name or description.
 - Every tag, chip or metadata label links to a filtered view or a detail page. No dead ends.
+  The one exception, by TDA's choice: a project's client is plain text (see the skill).
 - Never write, invent or "improve" biographies, project descriptions, client names or credits.
   Leave fields empty and flag them for marketing.
 - Never connect to the internal TDA app (app.tillotsondesign.com) at runtime or reuse its

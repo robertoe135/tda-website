@@ -14,12 +14,15 @@ import {
   PROJECT_STATUS,
   projectPhotographerCredits,
   projectSlides,
+  getPayloadClient,
   SQ_FT_TO_M2,
 } from '@/lib/projects'
+import { withClientNames } from '@/lib/client-names'
 import { reflow } from '@/lib/reflow'
 import { otherProjects } from '@/lib/related'
 import type {
   Award,
+  Client,
   CreditRole,
   Firm,
   Location,
@@ -156,7 +159,9 @@ export default async function ProjectPage({ params }: Props) {
   const location = isObject<Location>(project.location) ? project.location : undefined
   const architects = (project.architects ?? []).filter(isObject<Firm>)
   const typologies = (project.typologies ?? []).filter(isObject<Typology>)
-  const owners = (project.clients ?? []).filter(isObject<Firm>) // absent when confidential
+  // Plain text: clients have no page, filter or search (collections/Clients). None when confidential.
+  const [{ clients }] = await withClientNames(await getPayloadClient(), [project])
+  const owners = (clients ?? []).filter(isObject<Client>)
   const credits = (project.credits ?? [])
     .map((c, i) => ({
       id: i,
@@ -184,7 +189,7 @@ export default async function ProjectPage({ params }: Props) {
       : []),
     ...architects.map((a) => ({ href: filterHref('architect', a.slug ?? ''), label: a.name })),
   ]
-  const firmLink = (key: 'architect' | 'client' | 'collaborator', f: Firm) => (
+  const firmLink = (key: 'architect' | 'collaborator', f: Firm) => (
     <MetaLink href={filterHref(key, f.slug ?? '')}>{f.name}</MetaLink>
   )
   const people = (list: Person[]) => <List items={list} render={(p) => <PersonName person={p} />} />
@@ -269,7 +274,7 @@ export default async function ProjectPage({ params }: Props) {
               )}
               {owners.length > 0 && (
                 <Row label="Owner">
-                  <List items={owners} render={(f) => firmLink('client', f)} />
+                  <List items={owners} render={(c) => c.name} />
                 </Row>
               )}
               {project.areaSqFt && (

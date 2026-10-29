@@ -23,7 +23,7 @@ afterAll(async () => {
 })
 
 describe('merging two records of one firm', () => {
-  it('moves architects, clients and credits to the kept firm, without repeats, then deletes the other', async () => {
+  it('moves architects and credits to the kept firm, without repeats, then deletes the other', async () => {
     const keep = await payload.create({ collection: 'firms', data: { name: `${prefix} Keep Partners` } })
     const merge = await payload.create({ collection: 'firms', data: { name: `${prefix} Zzz Other Spelling` } })
     const role = await payload.create({ collection: 'creditRoles', data: { name: `${prefix} Engineer` } })
@@ -32,7 +32,6 @@ describe('merging two records of one firm', () => {
       data: {
         name: `${prefix} Project`,
         architects: [keep.id, merge.id],
-        clients: [merge.id],
         credits: [{ role: role.id, firms: [merge.id] }],
       },
       draft: true,
@@ -45,7 +44,6 @@ describe('merging two records of one firm', () => {
     await mergeFirms(payload, keep.name, merge.name, true)
     const after = await payload.findByID({ collection: 'projects', id: project.id, draft: true, depth: 0 })
     expect(after.architects).toEqual([keep.id])
-    expect(after.clients).toEqual([keep.id])
     expect(after.credits?.[0].firms).toEqual([keep.id])
     expect(after._status).toBe('draft')
     expect((await payload.find({ collection: 'firms', where: { id: { equals: merge.id } } })).totalDocs).toBe(0)
